@@ -1,0 +1,15 @@
+function [ output ] = inter_test( X,lamb,TX,C,A )
+% This is used to calculate values on final testing points
+ch=length(TX);
+[N,~] = size(X);
+V=ones(N,ch);
+for j=1:ch
+
+[ D ] = mq2d( X, TX{j}, A{j}, C{j} );
+
+V(:,j) = D*lamb{j};
+
+end
+output=sum(V,2);
+end
+
