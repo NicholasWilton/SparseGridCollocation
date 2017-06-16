@@ -15,7 +15,7 @@
 #include <iostream>
 #include <C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\include\eigen-eigen-67e894c6cd8f\Eigen\Dense>
 #include <C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\include\eigen-eigen-67e894c6cd8f\Eigen\LU>
-
+#include "CppUnitTest.h"
 
 
 // TODO: reference additional headers your program requires here
