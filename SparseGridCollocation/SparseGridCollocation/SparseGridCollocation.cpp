@@ -162,11 +162,16 @@ vector<MatrixXd> SparseGridCollocation::mqd2(MatrixXd TP, MatrixXd CN, MatrixXd 
 		double qC = C(0, 1) * C(0, 1) * C(0, 1) * C(0, 1);
 		VectorXd dTpCn = TP.col(1).array() - CN(j, 1);
 
-		VectorXd a5 = -2 * (sA / sC + 4 * qA * (dTpCn.array() * dTpCn.array() / qC) * FAI2.array() * FAI1.array());
+		VectorXd a5 = 4 * qA * (dTpCn.array() * dTpCn.array() / qC);
 		Logger::WriteMessage(printMatrixI(a5).c_str());
-		VectorXd b5 = (TP.col(1).array() * TP.col(1).array()).array() * a5.array() ;
+		VectorXd b5 = -2 * sA / sC + a5.array();
+		Logger::WriteMessage(printMatrixI(b5).c_str());
+		VectorXd c5 = b5.array()  * FAI2.array() * FAI1.array();
+		Logger::WriteMessage(printMatrixI(c5).c_str());
+		VectorXd d5 = (TP.col(1).array() * TP.col(1).array()).array() * c5.array();
+		Logger::WriteMessage(printMatrixI(d5).c_str());
 		//VectorXd c5 = b5.array() * FAI2.array() * FAI1.array();
-		Dxx.col(j) = b5;
+		Dxx.col(j) = d5;
 		Logger::WriteMessage(printMatrixI(Dxx).c_str());
 	}
 	result->push_back(*D);
