@@ -7,6 +7,7 @@
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace Eigen;
 
+
 namespace UnitTest
 {
 	TEST_CLASS(testMq)
@@ -84,6 +85,7 @@ namespace UnitTest
 
 			vector<MatrixXd> result = test->mqd2(TX, TX1, A, C);
 
+			Logger::WriteMessage(test->printMatrixI(result[0]).c_str());
 			Assert::IsTrue(checkMatrix(uFAI, result[0]));
 			Assert::IsTrue(checkMatrix(uFAI_t, result[1]));
 			Assert::IsTrue(checkMatrix(uFAI_x, result[2]));

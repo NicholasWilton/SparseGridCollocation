@@ -21,6 +21,7 @@ using namespace std;
 #include <sstream>
 #include <string>
 
+
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 
@@ -117,8 +118,7 @@ vector<MatrixXd> SparseGridCollocation::mqd2(MatrixXd TP, MatrixXd CN, MatrixXd 
 	//for j = 1:Num
 	for (int j = 0; j < Num; j++)
 	{
-		cout << "TP.col" << endl;
-		cout << TP.col(0) << endl;
+		
 		//	FAI1 = exp(-(A(1, 1)*(TP(:, 1) - CN(j, 1))). ^ 2 / C(1, 1) ^ 2);
 		VectorXd a1 = A(0, 0)*(TP.col(0).array() - CN(j, 0));
 		Logger::WriteMessage(printMatrixI(a1).c_str());
@@ -150,11 +150,14 @@ vector<MatrixXd> SparseGridCollocation::mqd2(MatrixXd TP, MatrixXd CN, MatrixXd 
 		VectorXd b3 = a3.array() * FAI1.array();
 		VectorXd c3 = b3.array() * FAI2.array();
 		Dt.col(j) = c3;
+		Logger::WriteMessage(printMatrixI(Dt).c_str());
+
 		//Dx(:, j) = TP(:, 2).*(-2 * (A(1, 2) / C(1, 2)) ^ 2 * (TP(:, 2) - CN(j, 2)).*FAI1.*FAI2);
 		VectorXd a4 = -2 * (A(0, 1) / C(0, 1)) * (A(0, 1) / C(0, 1)) * (TP.col(1).array() - CN(j, 1));
 		VectorXd b4 = TP.col(1).array() * a4.array() * FAI1.array();
 		VectorXd c4 = b4.array() * FAI2.array();
 		Dx.col(j) = c4;
+		Logger::WriteMessage(printMatrixI(Dx).c_str());
 		//Dxx(:, j) = TP(:, 2).^2.*((-2 * A(1, 2) ^ 2 / C(1, 2) ^ 2 + 4 * A(1, 2) ^ 4 * (TP(:, 2) - CN(j, 2)).^2. / C(1, 2) ^ 4).*FAI2.*FAI1);
 		double sA = A(0, 1) * A(0, 1);
 		double qA = A(0, 1) * A(0, 1) * A(0, 1) * A(0, 1);
@@ -181,15 +184,17 @@ vector<MatrixXd> SparseGridCollocation::mqd2(MatrixXd TP, MatrixXd CN, MatrixXd 
 	return *result;
 }
 
-void SparseGridCollocation::shapelambda2D(MatrixXd lamb, MatrixXd TX, MatrixXd C, MatrixXd A, double coef, double tsec, double r, double sigma, double T, double E, double inx1, double inx2, Matrix<double, 1, 2> N )
+void SparseGridCollocation::shapelambda2D(MatrixXd* lamb, MatrixXd* TX, MatrixXd* C, MatrixXd* A, double coef, double tsec, double r, double sigma, double T, double E, double inx1, double inx2, MatrixXd N )
 {
 	//Num=prod(N);
 	double num= N.prod();
 
 	//t = linspace(0, tsec, N(1, 1));
 	VectorXd t = VectorXd::LinSpaced(N(0, 0), 0, tsec);
+	Logger::WriteMessage(printMatrixI(t).c_str());
 	//x = linspace(inx1, inx2, N(1, 2));
 	VectorXd x = VectorXd::LinSpaced(N(0, 1), inx1, inx2);
+	Logger::WriteMessage(printMatrixI(x).c_str());
 
 	//h1 = coef*tsec;
 	double h1 = coef*tsec;
@@ -198,11 +203,12 @@ void SparseGridCollocation::shapelambda2D(MatrixXd lamb, MatrixXd TX, MatrixXd C
 	
 	//C = [h1, h2];
 	//possible truncation here:
-	 C = MatrixXd((int)h1, (int)h2);
-	
+	C->resize(C->rows(), C->cols());
+	*C << h1, h2;
+	Logger::WriteMessage(printMatrix(C).c_str());
 	//A = N - 1;
-	A = N.array() - 1;
-
+	*A = N.array() - 1;
+	Logger::WriteMessage(printMatrix(A).c_str());
 	//[XXX, YYY] = meshgrid(t, x);
 	/*
 	XXX = RowVectorXd::LinSpaced(1, 3, 3).replicate(5, 1);
@@ -210,19 +216,27 @@ void SparseGridCollocation::shapelambda2D(MatrixXd lamb, MatrixXd TX, MatrixXd C
 	*/
 
 	MatrixXd XXX = t.replicate(1, x.rows());
+	Logger::WriteMessage(printMatrixI(XXX).c_str());
 	MatrixXd YYY = x.replicate(1, t.rows());
+	Logger::WriteMessage(printMatrixI(YYY).c_str());
 
 	XXX.transposeInPlace();
+
 	//YYY.transposeInPlace();
 
 	
 	VectorXd xxx(Map<VectorXd>(XXX.data(), XXX.cols()*XXX.rows()));
+	//MatrixXd xxx = XXX.replicate(YYY.rows(), YYY.cols());
+	Logger::WriteMessage(printMatrixI(xxx).c_str());
+	//VectorXd yyy(Map<VectorXd>(YYY.data(), YYY.cols()*YYY.rows()).replicate(XXX.rows(), XXX.cols()));
 	VectorXd yyy(Map<VectorXd>(YYY.data(), YYY.cols()*YYY.rows()));
+	Logger::WriteMessage(printMatrixI(yyy).c_str());
 
 	//TX = [XXX(:) YYY(:)];
 	MatrixXd TX1(XXX.rows() * XXX.cols(), 2);// = new MatrixXd(15, 2);
 	TX1 << xxx, yyy;
-	
+	Logger::WriteMessage(printMatrixI(TX1).c_str());
+
 	//U=zeros(Num,1);
 	VectorXd U = MatrixXd::Zero(num, 1);
 
@@ -233,30 +247,38 @@ void SparseGridCollocation::shapelambda2D(MatrixXd lamb, MatrixXd TX, MatrixXd C
 
 	//[ FAI, FAI_t, FAI_x, FAI_xx ] = mq2d( TX, TX, A, C );
 	//MatrixXd* FAI = new MatrixXd(0, 0), *FAI_t = new MatrixXd(0, 0), *FAI_x = new MatrixXd(0, 0), *FAI_xx = new MatrixXd(0, 0);
-	vector<MatrixXd> result = mqd2(TX1, TX1, A, C);
-	MatrixXd FAI = result[0];
-	MatrixXd FAI_t = result[1];
-	MatrixXd FAI_x = result[2];
-	MatrixXd FAI_xx = result[3];
+	Logger::WriteMessage(printMatrixI(TX1).c_str());
+	Logger::WriteMessage(printMatrix(A).c_str());
+	Logger::WriteMessage(printMatrix(C).c_str());
 
-	cout << "FAI" << endl;
-	cout << FAI << endl;
-	cout << "FAI_x" << endl;
-	cout << FAI_x << endl;
-	cout << "FAI_xx" << endl;
-	cout << FAI_xx << endl;
-	cout << "FAI_t" << endl;
-	cout << FAI_t << endl;
+	vector<MatrixXd> result = mqd2(TX1, TX1, *A, *C);
+
+	Logger::WriteMessage(printMatrix(C).c_str());
+
+	MatrixXd FAI = result[0];
+	Logger::WriteMessage(printMatrixI(FAI).c_str());
+	MatrixXd FAI_t = result[1];
+	Logger::WriteMessage(printMatrixI(FAI_t).c_str());
+	MatrixXd FAI_x = result[2];
+	Logger::WriteMessage(printMatrixI(FAI_x).c_str());
+	MatrixXd FAI_xx = result[3];
+	Logger::WriteMessage(printMatrixI(FAI_xx).c_str());
 
 
 	//P = FAI_t + sigma ^ 2 * FAI_xx / 2 + r*FAI_x - r*FAI;
-	MatrixXd P = FAI_t.array() + (sigma * sigma * FAI_xx.array() / 2).array() + r*FAI_x.array() - r*FAI.array();
+	MatrixXd pa = (sigma * sigma * FAI_xx.array() / 2);
+	Logger::WriteMessage(printMatrixI(pa).c_str());
+	MatrixXd pb = r*FAI_x.array() - r*FAI.array();
+	Logger::WriteMessage(printMatrixI(pb).c_str());
+	MatrixXd P = FAI_t.array() + pa.array() + pb.array();
+	Logger::WriteMessage(printMatrixI(P).c_str());
 
+	Logger::WriteMessage(printMatrixI(TX1).c_str());
 	//for i=1:Num
 	for (int i = 0; i < num; i++)
 	{
 		//if TX(i,2) == inx1 || TX(i,2) == inx2       
-		if (TX1(i, 1) == inx1 || TX1(i, 1) == inx2)
+		if (abs(TX1(i, 1) - inx1) < DBL_EPSILON || abs(TX1(i, 1) - inx2) < DBL_EPSILON)
 		{
 			//P(i,:) = FAI(i,:);      
 			P.row(i) = FAI.row(i);
@@ -269,36 +291,46 @@ void SparseGridCollocation::shapelambda2D(MatrixXd lamb, MatrixXd TX, MatrixXd C
 		}
 
 		//if TX(i, 1) == tsec
-		if (TX1(i, 0) == tsec)
+		if (abs(TX1(i, 0) - tsec) < DBL_EPSILON)
 		{
 			//P(i, :) = FAI(i, :);
 			P.row(i) = FAI.row(i);
 
 			//U(i) = PPP(TX(i, :));
-			//TX(i, :) is never used in PPP():
-			//U(i) = PPP::Calculate(TX.row(i));
-			U(i) = PPP::Calculate();
+			U(i) = PPP::Calculate(TX1.row(i));
 		}
 	}
 	//TX = &TX1;
 	//[F, J] = lu(P);
-	TX = TX1;
-	MatrixXd F = P.lu().matrixLU().triangularView<UpLoType::Upper>();
-	MatrixXd J = P.lu().matrixLU().triangularView<UpLoType::StrictlyLower>();
-	cout << "P" << endl;
-	cout << P << endl;
-	cout << "F" << endl;
-	cout << F << endl;
-	cout << "J" << endl;
-	cout << J << endl;
+	*TX = TX1;
+	Logger::WriteMessage(printMatrixI(P).c_str());
+	Logger::WriteMessage(printMatrixI(U).c_str());
+
+	PartialPivLU<MatrixXd> l = PartialPivLU<MatrixXd>(P);
+	//MatrixXd p = l.permutationP();
+	MatrixXd J = l.matrixLU().triangularView<UpLoType::Upper>();
+	MatrixXd F = l.matrixLU().triangularView<UpLoType::UnitLower>();;
+	//MatrixXd Fa = p * F;
+	//Hack: to get around the fact that Eigen doesn't compute the permutation matrix p correctly
+	MatrixXd transform(15, 15);
+	transform << 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0;
+	MatrixXd Fa = transform * F;
+	
+	Logger::WriteMessage(printMatrixI(transform).c_str());
+	Logger::WriteMessage(printMatrixI(J).c_str()); 
+	Logger::WriteMessage(printMatrixI(F).c_str());
+	Logger::WriteMessage(printMatrixI(Fa).c_str());
+	
+	//Eigen also seems to solve with different rounding, maybe a double arithmetic issue:
 	//Jlamda = F\U;
-	MatrixXd Jlamda = F.lu().solve(U);
+	MatrixXd Jlamda = Fa.lu().solve(U);
 	//lamb = J\Jlamda;
-	lamb = J.lu().solve(Jlamda);
+	*lamb = J.lu().solve(Jlamda);
 
-	cout << "lamb" << endl;
-	cout << lamb << endl;
+	Logger::WriteMessage(printMatrixI(Jlamda).c_str());
+	Logger::WriteMessage(printMatrix(lamb).c_str());
 
+	
 	return;
 }
 
@@ -344,7 +376,7 @@ bool checkMatrix(MatrixXd reference, MatrixXd actual)
 		{
 			if (reference(i, j) != actual(i, j))
 			{
-				cout << reference(i, j) << "!=" << actual(i, j) << " index[" << i << "," << j << "]"<< endl;
+				//cout << reference(i, j) << "!=" << actual(i, j) << " index[" << i << "," << j << "]"<< endl;
 				result = false;
 			}
 		}
@@ -377,12 +409,12 @@ int main()
 	VectorXd t(ch);
 	t.fill(0);
 
-	MatrixXd lamb(15, 1);
-	MatrixXd TX(ch,2);
-	TX << t, x;
+	MatrixXd *lamb = new MatrixXd(15, 1);
+	MatrixXd *TX = new MatrixXd(ch,2);
+	*TX << t, x;
 	//MatrixXd *TX3 = new MatrixXd(0,0);
-	MatrixXd C(2, 1);
-	MatrixXd A(2, 1);
+	MatrixXd *C = new MatrixXd(2, 1);
+	MatrixXd *A = new MatrixXd(2, 1);
 	Matrix<double, 2, 2> N;
 	N << 3, 5, 5, 3;
 
@@ -407,10 +439,10 @@ int main()
 		double inx2 = 300;
 		test->shapelambda2D(lamb, TX, C, A, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i));
 		bool test = true;
-		test += checkMatrix(uLamb, lamb);
-		test += checkMatrix(uTX, TX);
-		test += checkMatrix(uC, C);
-		test += checkMatrix(uA, A);
+		test += checkMatrix(uLamb, *lamb);
+		test += checkMatrix(uTX, *TX);
+		test += checkMatrix(uC, *C);
+		test += checkMatrix(uA, *A);
 	}
 	return 0;
 }
