@@ -3,6 +3,8 @@
 #include "SparseGridCollocation.h"
 #include <Eigen/Dense>
 #include "Math.h"
+#include "testCommon.h"
+#include "Common.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace Eigen;
@@ -14,52 +16,6 @@ namespace UnitTest
 	{
 	public:
 
-		bool checkMatrix(MatrixXd reference, MatrixXd actual)
-		{
-
-			bool result = true;
-			int cols = reference.cols();
-			int rows = reference.rows();
-			//int size = 200 * cols * rows;
-			wchar_t message[20000];
-			for (int i = 0; i < rows; i++)
-				for (int j = 0; j < cols; j++)
-				{
-					double diff = sqrt((reference(i, j) - actual(i, j)) * (reference(i, j) - actual(i, j)));
-					if ( diff > 0.0000001)
-					{
-						const IOFormat fmt(2, DontAlignCols, "\t", " ", "", "", "", "");
-						
-						
-						//std::cout << reference.format(fmt) << "\t|" << actual.format(fmt) << std::endl;
-
-						_swprintf(message, L"%g != %g index[%i,%i]", reference(i, j), actual(i, j), i, j);
-						Logger::WriteMessage(message);
-						//cout << reference(i, j) << "!=" << actual(i, j) << " index[" << i << "," << j << "]" << endl;
-						result = false;
-					}
-				}
-			//if (!result)
-			//	Assert::Fail(message, LINE_INFO());
-
-			return result;
-		}
-
-		bool checkMatrix(MatrixXd* reference, MatrixXd* actual)
-		{
-			bool result = true;
-			int cols = reference->cols();
-			int rows = reference->rows();
-			for (int i = 0; i < rows; i++)
-				for (int j = 0; j < cols; j++)
-				{
-					MatrixXd r = *reference;
-					MatrixXd a = *actual;
-					if (r(i, j) != a(i, j))
-						result = false;
-				}
-			return result;
-		}
 
 		TEST_METHOD(TestMq2d)
 		{
@@ -85,11 +41,11 @@ namespace UnitTest
 
 			vector<MatrixXd> result = test->mqd2(TX, TX1, A, C);
 
-			Logger::WriteMessage(test->printMatrixI(result[0]).c_str());
-			Assert::IsTrue(checkMatrix(uFAI, result[0]));
-			Assert::IsTrue(checkMatrix(uFAI_t, result[1]));
-			Assert::IsTrue(checkMatrix(uFAI_x, result[2]));
-			Assert::IsTrue(checkMatrix(uFAI_xx, result[3]));
+			Logger::WriteMessage(Common::printMatrix(result[0]).c_str());
+			Assert::IsTrue(testCommon::checkMatrix(uFAI, result[0], 0.0000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI_t, result[1], 0.0000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI_x, result[2], 0.0000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI_xx, result[3], 0.0000001));
 		}
 
 

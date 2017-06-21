@@ -24,9 +24,6 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="example.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="PPP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -37,6 +34,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SparseGridCollocation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -53,10 +53,10 @@
     <ClCompile Include="PPP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="example.cpp">
+    <ClCompile Include="SparseGridCollocation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SparseGridCollocation.cpp">
+    <ClCompile Include="Common.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

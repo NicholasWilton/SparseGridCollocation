@@ -90,7 +90,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\include\eigen-eigen-67e894c6cd8f;C:\Users\User\Documents\Visual Studio 2015\Projects\SparseGridGollocation\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\include\eigen-eigen-67e894c6cd8f\Eigen;C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\include\eigen-eigen-67e894c6cd8f;C:\Users\User\Documents\Visual Studio 2015\Projects\SparseGridGollocation\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -151,7 +151,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="example.h" />
+    <ClInclude Include="Common.h" />
     <ClInclude Include="PPP.h" />
     <ClInclude Include="SmoothInitialU.h" />
     <ClInclude Include="SmoothInitialX.h" />
@@ -160,7 +160,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="example.cpp" />
+    <ClCompile Include="Common.cpp" />
     <ClCompile Include="PPP.cpp" />
     <ClCompile Include="SmoothInitialU.cpp" />
     <ClCompile Include="SmoothInitialX.cpp" />

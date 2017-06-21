@@ -11,3 +11,5 @@
 #include "CppUnitTest.h"
 
 // TODO: reference additional headers your program requires here
+
+#include "..\include\eigen-eigen-67e894c6cd8f\Eigen\StdVector"
