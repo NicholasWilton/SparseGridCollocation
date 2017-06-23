@@ -407,6 +407,157 @@ vector<MatrixXd> SparseGridCollocation::shapelambda2D_1(double coef, double tsec
 	return result;
 }
 
+vector<MatrixXd> SparseGridCollocation::shapelambda2D_2(double coef, double tsec, double r, double sigma, double T, double E, double inx1, double inx2, MatrixXd N,
+	vector<MatrixXd> lamb2, vector<MatrixXd> TX2, vector<MatrixXd> C2, vector<MatrixXd> A2, 
+	vector<MatrixXd> lamb3, vector<MatrixXd> TX3, vector<MatrixXd> C3, vector<MatrixXd> A3,
+	vector<MatrixXd> lamb_3, vector<MatrixXd> TX_3, vector<MatrixXd> C_3, vector<MatrixXd> A_3,
+	vector<MatrixXd> lamb4, vector<MatrixXd> TX4, vector<MatrixXd> C4, vector<MatrixXd> A4)
+{
+	//Num=prod(N);
+	double num = N.prod();
+
+	//t = linspace(0, tsec, N(1, 1));
+	VectorXd t = VectorXd::LinSpaced(N(0, 0), 0, tsec);
+	Logger::WriteMessage(Common::printMatrix(t).c_str());
+	//x = linspace(inx1, inx2, N(1, 2));
+	VectorXd x = VectorXd::LinSpaced(N(0, 1), inx1, inx2);
+	Logger::WriteMessage(Common::printMatrix(x).c_str());
+
+	//h1 = coef*tsec;
+	double h1 = coef*tsec;
+	//h2 = coef*(inx2 - inx1);
+	double h2 = coef*(inx2 - inx1);
+
+	//C = [h1, h2];
+	//possible truncation here:
+	MatrixXd c(1, 2);
+	c << h1, h2;
+	Logger::WriteMessage(Common::printMatrix(c).c_str());
+	//A = N - 1;
+	MatrixXd a = N.array() - 1;
+	Logger::WriteMessage(Common::printMatrix(a).c_str());
+	//[XXX, YYY] = meshgrid(t, x);
+	/*
+	XXX = RowVectorXd::LinSpaced(1, 3, 3).replicate(5, 1);
+	YYY = VectorXd::LinSpaced(10, 14, 5).replicate(1, 3);
+	*/
+
+	MatrixXd XXX = t.replicate(1, x.rows());
+	Logger::WriteMessage(Common::printMatrix(XXX).c_str());
+	MatrixXd YYY = x.replicate(1, t.rows());
+	Logger::WriteMessage(Common::printMatrix(YYY).c_str());
+
+	XXX.transposeInPlace();
+
+	//YYY.transposeInPlace();
+
+
+	VectorXd xxx(Map<VectorXd>(XXX.data(), XXX.cols()*XXX.rows()));
+	//MatrixXd xxx = XXX.replicate(YYY.rows(), YYY.cols());
+	Logger::WriteMessage(Common::printMatrix(xxx).c_str());
+	//VectorXd yyy(Map<VectorXd>(YYY.data(), YYY.cols()*YYY.rows()).replicate(XXX.rows(), XXX.cols()));
+	VectorXd yyy(Map<VectorXd>(YYY.data(), YYY.cols()*YYY.rows()));
+	Logger::WriteMessage(Common::printMatrix(yyy).c_str());
+
+	//TX = [XXX(:) YYY(:)];
+	MatrixXd TX1(XXX.rows() * XXX.cols(), 2);// = new MatrixXd(15, 2);
+	TX1 << xxx, yyy;
+	Logger::WriteMessage(Common::printMatrix(TX1).c_str());
+
+
+
+	vector<MatrixXd> mqd = mqd2(TX1, TX1, a, c);
+	MatrixXd FAI = mqd[0];
+	MatrixXd FAI_t = mqd[1];
+	MatrixXd FAI_x = mqd[2];
+	MatrixXd FAI_xx = mqd[3];
+
+
+	//P = FAI_t + sigma ^ 2 * FAI_xx / 2 + r*FAI_x - r*FAI;
+	MatrixXd pa = (sigma * sigma * FAI_xx.array() / 2);
+	MatrixXd pb = r*FAI_x.array() - r*FAI.array();
+	MatrixXd P = FAI_t.array() + pa.array() + pb.array();
+
+	//U=zeros(Num,1);
+	VectorXd U = MatrixXd::Zero(num, 1);
+	U = U - PDE(TX1, r, sigma, lamb2, TX2, C2, A2, lamb3, TX3, C3, A3) 
+		- PDE(TX1, r, sigma, lamb_3, TX_3, C_3, A_3, lamb4, TX4, C4, A4);
+
+	//for i=1:Num
+	for (int i = 0; i < num; i++)
+	{
+		//if TX(i,2) == inx1 || TX(i,2) == inx2       
+		if (abs(TX1(i, 1) - inx1) < DBL_EPSILON || abs(TX1(i, 1) - inx2) < DBL_EPSILON)
+		{
+			//P(i,:) = FAI(i,:);      
+			P.row(i) = FAI.row(i);
+			//U(i) = max(0, TX(i, 2) - E*exp(-r * (T - TX(i, 1)))) - ...
+				//(inner_test(TX(i, 1), TX(i, 2), lamb3, TX3, C3, A3) - inner_test(TX(i, 1), TX(i, 2), lamb2, TX2, C2, A2)) - ...
+				//(inner_test(TX(i, 1), TX(i, 2), lamb4, TX4, C4, A4) - inner_test(TX(i, 1), TX(i, 2), lamb_3, TX_3, C_3, A_3));  % boundary condition
+
+			double max = TX1(i, 1) - E*exp(-r * (T - TX1(i, 0)));
+			U(i) = 0;
+			if (max > 0)
+				U(i) = max 
+				- (inner_test(TX1(i, 0), TX1(i, 1), lamb3, TX3, C3, A3) - inner_test(TX1(i, 0), TX1(i, 1), lamb2, TX2, C2, A2))
+				- (inner_test(TX1(i, 0), TX1(i, 1), lamb4, TX4, C4, A4) - inner_test(TX1(i, 0), TX1(i, 1), lamb_3, TX_3, C_3, A_3));
+			else
+				U(i) = max
+				- (inner_test(TX1(i, 0), TX1(i, 1), lamb3, TX3, C3, A3) - inner_test(TX1(i, 0), TX1(i, 1), lamb2, TX2, C2, A2))
+				- (inner_test(TX1(i, 0), TX1(i, 1), lamb4, TX4, C4, A4) - inner_test(TX1(i, 0), TX1(i, 1), lamb_3, TX_3, C_3, A_3));
+		}
+
+		//if TX(i, 1) == tsec
+		if (abs(TX1(i, 0) - tsec) < DBL_EPSILON)
+		{
+			//P(i, :) = FAI(i, :);
+			P.row(i) = FAI.row(i);
+
+			//U(i) = PPP(TX(i, :)) - ...
+			//        U(i) = PPP( TX(i,:) ) - ...
+			//(inner_test(TX(i, 1), TX(i, 2), lamb3, TX3, C3, A3) - inner_test(TX(i, 1), TX(i, 2), lamb2, TX2, C2, A2)) - ...
+			//	(inner_test(TX(i, 1), TX(i, 2), lamb4, TX4, C4, A4) - inner_test(TX(i, 1), TX(i, 2), lamb_3, TX_3, C_3, A_3));
+			
+			U(i) = PPP::Calculate(TX1.row(i))
+				- (inner_test(TX1(i, 0), TX1(i, 1), lamb3, TX3, C3, A3) - inner_test(TX1(i, 0), TX1(i, 1), lamb2, TX2, C2, A2))
+				- (inner_test(TX1(i, 0), TX1(i, 1), lamb4, TX4, C4, A4) - inner_test(TX1(i, 0), TX1(i, 1), lamb_3, TX_3, C_3, A_3));
+		}
+
+	}
+	//TX = &TX1;
+	//[F, J] = lu(P);
+	MatrixXd TX = TX1;
+	Logger::WriteMessage(Common::printMatrix(P).c_str());
+	Logger::WriteMessage(Common::printMatrix(U).c_str());
+
+	PartialPivLU<MatrixXd> lu = PartialPivLU<MatrixXd>(P);
+	//MatrixXd p = l.permutationP();
+	MatrixXd J = lu.matrixLU().triangularView<UpLoType::Upper>();
+	MatrixXd F = lu.matrixLU().triangularView<UpLoType::UnitLower>();;
+	//MatrixXd Fa = p * F;
+	//Hack: to get around the fact that Eigen doesn't compute the permutation matrix p correctly
+	MatrixXd transform(15, 15);
+	transform << 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0;
+	MatrixXd Fa = transform * F;
+
+	Logger::WriteMessage(Common::printMatrix(transform).c_str());
+	Logger::WriteMessage(Common::printMatrix(J).c_str());
+	Logger::WriteMessage(Common::printMatrix(F).c_str());
+	Logger::WriteMessage(Common::printMatrix(Fa).c_str());
+
+	//Eigen also seems to solve with different rounding, maybe a double arithmetic issue:
+	//Jlamda = F\U;
+	MatrixXd Jlamda = Fa.lu().solve(U);
+	//lamb = J\Jlamda;
+	MatrixXd l = J.lu().solve(Jlamda);
+
+	Logger::WriteMessage(Common::printMatrix(Jlamda).c_str());
+	Logger::WriteMessage(Common::printMatrix(l).c_str());
+
+	vector<MatrixXd> result = { l, TX, c, a };
+	return result;
+}
+
 MatrixXd SparseGridCollocation::primeNMatrix(int b, int d)
 {
 	//L = subnumber(b, d);
@@ -476,6 +627,43 @@ vector<vector<MatrixXd>> SparseGridCollocation::interpolate1(double coef, double
 		//	[lamb{ i }, TX{ i }, C{ i }, A{ i }, PU{ i }] = ...
 		//	shapelambda2D_1(coef, tsec, r, sigma, T, E, inx1, inx2, N(i, :), lamb2, TX2, C2, A2, lamb3, TX3, C3, A3);
 		vector<MatrixXd> res = shapelambda2D_1(coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), lamb2, TX2, C2, A2, lamb3, TX3, C3, A3);
+		Lamb.push_back(res[0]);
+		TX.push_back(res[1]);
+		C.push_back(res[2]);
+		A.push_back(res[3]);
+		//end
+	}
+
+	vector<vector<MatrixXd>> result;
+	result.push_back(Lamb);
+	result.push_back(TX);
+	result.push_back(C);
+	result.push_back(A);
+
+	return result;
+}
+
+vector<vector<MatrixXd>> SparseGridCollocation::interpolate2(double coef, double tsec, int b, int d, double inx1, double inx2, double r, double sigma, double T, double E,
+	vector<MatrixXd> lamb2, vector<MatrixXd> TX2, vector<MatrixXd> C2, vector<MatrixXd> A2,
+	vector<MatrixXd> lamb3, vector<MatrixXd> TX3, vector<MatrixXd> C3, vector<MatrixXd> A3,
+	vector<MatrixXd> lamb_3, vector<MatrixXd> TX_3, vector<MatrixXd> C_3, vector<MatrixXd> A_3,
+	vector<MatrixXd> lamb4, vector<MatrixXd> TX4, vector<MatrixXd> C4, vector<MatrixXd> A4)
+{
+	MatrixXd N = primeNMatrix(b, d);
+	vector<MatrixXd> Lamb;
+	vector<MatrixXd> TX;
+	vector<MatrixXd> C;
+	vector<MatrixXd> A;
+
+	//parfor i = 1 : ch
+	for (int i = 0; i < N.rows(); i++)
+	{
+		//	[lamb{ i }, TX{ i }, C{ i }, A{ i }, PU{ i }] = ...
+		//	shapelambda2D_1(coef, tsec, r, sigma, T, E, inx1, inx2, N(i, :), lamb2, TX2, C2, A2, lamb3, TX3, C3, A3);
+		vector<MatrixXd> res = shapelambda2D_2(coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), 
+			lamb2, TX2, C2, A2, lamb3, TX3, C3, A3, 
+			lamb_3, TX_3, C_3, A_3,
+			lamb4, TX4, C4, A4);
 		Lamb.push_back(res[0]);
 		TX.push_back(res[1]);
 		C.push_back(res[2]);
@@ -593,11 +781,11 @@ MatrixXd SparseGridCollocation::PDE(MatrixXd node, double r, double sigma,
 	return output;
 }
 
-double inner_test(double t, double x, vector<MatrixXd> lamb, vector<MatrixXd> TX, vector<MatrixXd> C, vector<MatrixXd> A )
+double SparseGridCollocation::inner_test(double t, double x, vector<MatrixXd> lamb, vector<MatrixXd> TX, vector<MatrixXd> C, vector<MatrixXd> A )
 {
 	// This is used in the PDE system re - construct for initial and boundary conditions
 	int ch = TX.size();
-	MatrixXd V = MatrixXd::Ones(1, ch);
+	vector<MatrixXd> V;
 	//for j = 1:ch
 	for (int j = 0; j < ch; j++)
 	{
@@ -616,15 +804,21 @@ double inner_test(double t, double x, vector<MatrixXd> lamb, vector<MatrixXd> TX
 		MatrixXd square2 = (A[j](0, 1) * (t - (TX[j].col(1).array())).array()) * (A[j](0, 1) * (t - (TX[j].col(1).array())).array());
 		MatrixXd FAI2 = -square2 / (C[j](0, 1) * C[j](0, 1));
 		//D = FAI1.*FAI2;
-		MatrixXd D = FAI1.cwiseProduct(FAI2);
+		VectorXd D = FAI1.cwiseProduct(FAI2).eval();
 		//V(j) = D'*lamb{j};
-		V(0, j) = D.transpose * lamb[j];
+		V.push_back(D.transpose() * lamb[j]);
 			//   .....................
 			//end
 	}
 
 		//output = sum(V);
-	double output = V.sum();
+	double output = 0;
+	int i = 0;
+	for (vector<MatrixXd>::iterator it = V.begin(); it < V.end(); it++, i++)
+	{
+		output += V[i].sum();
+
+	}
 	
 	return output;
 }
@@ -681,5 +875,137 @@ void SparseGridCollocation::MuSIK()
 	//	lamb_3, TX_3, C_3, A_3, lamb4, TX4, C4, A4);
 	
 	//ttt(3) = toc;
+}
+
+void SparseGridCollocation::interpolateGeneric(string prefix, double coef, double tsec, int b, int d, double inx1, double inx2, double r, double sigma, double T, double E, vector<string> keys)
+{
+	vector<MatrixXd> Lamb;
+	vector<MatrixXd> TX;
+	vector<MatrixXd> C;
+	vector<MatrixXd> A;
+
+	MatrixXd N = primeNMatrix(b, d);
+
+	for (int i = 0; i < N.rows(); i++)
+	{
+		vector<MatrixXd> res = shapelambda2D(coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i));
+
+		Lamb.push_back(res[0]);
+		TX.push_back(res[1]);
+		C.push_back(res[2]);
+		A.push_back(res[3]);
+	}
+
+	vector<vector<MatrixXd>> result;
+	result.push_back(Lamb);
+	result.push_back(TX);
+	result.push_back(C);
+	result.push_back(A);
+	vInterpolation[prefix] = result;
+
+}
+
+
+vector<MatrixXd> SparseGridCollocation::shapelambda2DGeneric(double coef, double tsec, double r, double sigma, double T, double E, double inx1, double inx2, MatrixXd N, vector<string> keys)
+{
+
+	double num = N.prod();
+
+	VectorXd t = VectorXd::LinSpaced(N(0, 0), 0, tsec);
+	VectorXd x = VectorXd::LinSpaced(N(0, 1), inx1, inx2);
+	double h1 = coef*tsec;
+	double h2 = coef*(inx2 - inx1);
+
+	MatrixXd c(1, 2);
+	c << h1, h2;
+	MatrixXd a = N.array() - 1;
+
+	MatrixXd XXX = t.replicate(1, x.rows());
+	MatrixXd YYY = x.replicate(1, t.rows());
+
+	XXX.transposeInPlace();
+	VectorXd xxx(Map<VectorXd>(XXX.data(), XXX.cols()*XXX.rows()));
+	VectorXd yyy(Map<VectorXd>(YYY.data(), YYY.cols()*YYY.rows()));
+
+	MatrixXd TX1(XXX.rows() * XXX.cols(), 2);
+	TX1 << xxx, yyy;
+
+	vector<MatrixXd> mqd = mqd2(TX1, TX1, a, c);
+	MatrixXd FAI = mqd[0];
+	MatrixXd FAI_t = mqd[1];
+	MatrixXd FAI_x = mqd[2];
+	MatrixXd FAI_xx = mqd[3];
+
+	MatrixXd pa = (sigma * sigma * FAI_xx.array() / 2);
+	MatrixXd pb = r*FAI_x.array() - r*FAI.array();
+	MatrixXd P = FAI_t.array() + pa.array() + pb.array();
+
+	VectorXd U = MatrixXd::Zero(num, 1);
+	for (int s =0; s < keys.size; s+=2)
+	{
+		string k1 = keys[s];
+		string k2 = keys[s+1];
+		U -= PDE(TX1, r, sigma, 
+			vInterpolation[k1][0], vInterpolation[k1][1], vInterpolation[k1][2], vInterpolation[k1][3],
+			vInterpolation[k2][0], vInterpolation[k2][1], vInterpolation[k2][2], vInterpolation[k2][3]);
+	}
+	/*
+	U = U - PDE(TX1, r, sigma, lamb2, TX2, C2, A2, lamb3, TX3, C3, A3)
+		- PDE(TX1, r, sigma, lamb_3, TX_3, C_3, A_3, lamb4, TX4, C4, A4);*/
+
+	for (int i = 0; i < num; i++)
+	{
+		if (abs(TX1(i, 1) - inx1) < DBL_EPSILON || abs(TX1(i, 1) - inx2) < DBL_EPSILON)
+		{
+			P.row(i) = FAI.row(i);
+			double max = TX1(i, 1) - E*exp(-r * (T - TX1(i, 0)));
+			U(i) = 0;
+			double sub = 0;
+			for (int s = 0; s < keys.size; s += 2)
+			{
+				string k1 = keys[s];
+				string k2 = keys[s + 1];
+				sub += (inner_test(TX1(i, 0), TX1(i, 1), vInterpolation[k2][0], vInterpolation[k2][0], vInterpolation[k2][0], vInterpolation[k2][0])
+					- inner_test(TX1(i, 0), TX1(i, 1), vInterpolation[k1][0], vInterpolation[k1][0], vInterpolation[k1][0], vInterpolation[k1][0]));
+			}
+			U(i) -= sub;
+
+			if (max > 0)
+				U(i) = max
+				- (inner_test(TX1(i, 0), TX1(i, 1), lamb3, TX3, C3, A3) - inner_test(TX1(i, 0), TX1(i, 1), lamb2, TX2, C2, A2))
+				- (inner_test(TX1(i, 0), TX1(i, 1), lamb4, TX4, C4, A4) - inner_test(TX1(i, 0), TX1(i, 1), lamb_3, TX_3, C_3, A_3));
+			else
+				U(i) = 0
+				- (inner_test(TX1(i, 0), TX1(i, 1), lamb3, TX3, C3, A3) - inner_test(TX1(i, 0), TX1(i, 1), lamb2, TX2, C2, A2))
+				- (inner_test(TX1(i, 0), TX1(i, 1), lamb4, TX4, C4, A4) - inner_test(TX1(i, 0), TX1(i, 1), lamb_3, TX_3, C_3, A_3));
+		}
+
+		if (abs(TX1(i, 0) - tsec) < DBL_EPSILON)
+		{
+			P.row(i) = FAI.row(i);
+
+			U(i) = PPP::Calculate(TX1.row(i))
+				- (inner_test(TX1(i, 0), TX1(i, 1), lamb3, TX3, C3, A3) - inner_test(TX1(i, 0), TX1(i, 1), lamb2, TX2, C2, A2))
+				- (inner_test(TX1(i, 0), TX1(i, 1), lamb4, TX4, C4, A4) - inner_test(TX1(i, 0), TX1(i, 1), lamb_3, TX_3, C_3, A_3));
+		}
+	}
+	MatrixXd TX = TX1;
+	
+	PartialPivLU<MatrixXd> lu = PartialPivLU<MatrixXd>(P);
+	MatrixXd J = lu.matrixLU().triangularView<UpLoType::Upper>();
+	MatrixXd F = lu.matrixLU().triangularView<UpLoType::UnitLower>();;
+	//Hack: to get around the fact that Eigen doesn't compute the permutation matrix p correctly
+	MatrixXd transform(15, 15);
+	transform << 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0;
+	MatrixXd Fa = transform * F;
+
+	//Eigen also seems to solve with different rounding, maybe a double arithmetic issue:
+	//Jlamda = F\U;
+	MatrixXd Jlamda = Fa.lu().solve(U);
+	//lamb = J\Jlamda;
+	MatrixXd l = J.lu().solve(Jlamda);
+
+	vector<MatrixXd> result = { l, TX, c, a };
+	return result;
 }
 
