@@ -19,23 +19,23 @@ testCommon::~testCommon()
 {
 }
 
-bool testCommon::checkMatrix(MatrixXd reference, MatrixXd actual)
+bool testCommon::checkMatrix(MatrixXd expected, MatrixXd actual)
 {
 	bool result = true;
-	int cols = reference.cols();
-	int rows = reference.rows();
+	int cols = expected.cols();
+	int rows = expected.rows();
 	wchar_t message[20000];
 
 	for (int i = 0; i < rows; i++)
 		for (int j = 0; j < cols; j++)
 		{
-			double diff = abs((reference(i, j) - actual(i, j)));
+			double diff = abs((expected(i, j) - actual(i, j)));
 
 			if (diff > DBL_EPSILON)
 			{
 				const IOFormat fmt(2, DontAlignCols, "\t", " ", "", "", "", "");
 
-				_swprintf(message, L"%g != %g index[%i,%i]", reference(i, j), actual(i, j), i, j);
+				_swprintf(message, L"%g != %g index[%i,%i]", expected(i, j), actual(i, j), i, j);
 
 				Logger::WriteMessage(message);
 
@@ -46,22 +46,22 @@ bool testCommon::checkMatrix(MatrixXd reference, MatrixXd actual)
 	return result;
 }
 
-bool testCommon::checkMatrix(MatrixXd reference, MatrixXd actual, double precision)
+bool testCommon::checkMatrix(MatrixXd expected, MatrixXd actual, double precision)
 {
 	bool result = true;
-	int cols = reference.cols();
-	int rows = reference.rows();
+	int cols = expected.cols();
+	int rows = expected.rows();
 	wchar_t message[20000];
 
 	for (int i = 0; i < rows; i++)
 		for (int j = 0; j < cols; j++)
 		{
-			double diff = abs((reference(i, j) - actual(i, j)));
+			double diff = abs((expected(i, j) - actual(i, j)));
 			if (diff > precision)
 			{
 				const IOFormat fmt(2, DontAlignCols, "\t", " ", "", "", "", "");
 
-				_swprintf(message, L"%g != %g index[%i,%i]", reference(i, j), actual(i, j), i, j);
+				_swprintf(message, L"%g != %g index[%i,%i]", expected(i, j), actual(i, j), i, j);
 
 				Logger::WriteMessage(message);
 

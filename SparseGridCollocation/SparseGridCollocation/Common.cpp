@@ -38,3 +38,24 @@ wstring Common::printMatrix(MatrixXd m)
 
 	return ss.str();
 }
+
+double Common::prod(vector<double> x)
+{
+	double prod = 1.0;
+
+	for (unsigned int i = 0; i < x.size(); i++)
+		prod *= x[i];
+	return prod;
+}
+
+
+vector<double> Common::linspace(double a, double b, size_t N)
+{
+	double h = (b - a) / (N - 1);
+	vector<double> xs(N);
+	typename vector<double>::iterator x;
+	double val;
+	for (x = xs.begin(), val = a; x != xs.end(); ++x, val += h)
+		*x = val;
+	return xs;
+}
