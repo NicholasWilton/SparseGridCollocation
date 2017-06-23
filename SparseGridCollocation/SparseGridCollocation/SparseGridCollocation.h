@@ -47,6 +47,7 @@ public:
 		vector<MatrixXd> lamb4, vector<MatrixXd> TX4, vector<MatrixXd> C4, vector<MatrixXd> A4);
 
 	void MuSIK();
+	void MuSIKGeneric();
 
 private:
 	map<string, vector<vector<MatrixXd>> > vInterpolation;

@@ -27,10 +27,6 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 SparseGridCollocation::SparseGridCollocation()
 {
-	vInterpolation.push_back(vLamb);
-	vInterpolation.push_back(vTX);
-	vInterpolation.push_back(vC);
-	vInterpolation.push_back(vA);
 }
 
 vector<MatrixXd> SparseGridCollocation::mqd2(MatrixXd TP, MatrixXd CN, MatrixXd A, MatrixXd C)
@@ -877,23 +873,96 @@ void SparseGridCollocation::MuSIK()
 	//ttt(3) = toc;
 }
 
+
+void SparseGridCollocation::MuSIKGeneric()
+{
+	double E = 100;// strike price
+
+	double r = 0.03; // interest rate
+	double sigma = 0.15;
+	double T = 1; // Maturity
+	double inx1 = 0; // stock price S belongs to[inx1 inx2]
+	double inx2 = 3 * E;
+	//TODO: load from smooth initial:
+	double Tdone = 0.135;
+	double tsec = T - Tdone; // Initial time boundary for sparse grid
+	int d = 2; // dimension
+	double coef = 2; // coef stands for the connection constant number
+
+	int ch = 10000;
+
+	//t = linspace(0, tsec, N(1, 1));
+	VectorXd x = VectorXd::LinSpaced(ch, inx1, inx2);
+	VectorXd t = VectorXd::Zero(ch, 1);
+
+	//TX = [t x']; //% testing nodes
+	MatrixXd TX(ch, 2);
+	TX << t, x;
+
+	//% na, nb = level n + dimension d - 1
+	int na = 3;
+	int nb = 2;
+	//tic
+
+
+	// Level 2 ....lamb stands for \lambda the coefficients, TX stands for nodes
+	// C stands for shape parater, A stands for scale parameter
+	vector<vector<MatrixXd>> res3 = interpolate(coef, tsec, na, d, inx1, inx2, r, sigma, T, E);
+
+	vector<vector<MatrixXd>> res2 = interpolate(coef, tsec, nb, d, inx1, inx2, r, sigma, T, E);
+
+	//Level 3 ....multilevel method has to use all previous information
+	vector<string> level3 = {"2","3"};
+	interpolateGeneric("4", coef, tsec, na + 1, d, inx1, inx2, r, sigma, T, E, level3);
+	interpolateGeneric("_3", coef, tsec, nb + 1, d, inx1, inx2, r, sigma, T, E, level3);
+
+	//ttt(2) = toc;
+	//Level 4 ....higher level needs more information
+	vector<string> level4 = { "2","3","_3","4" };
+	interpolateGeneric("5", coef, tsec, na + 1, d, inx1, inx2, r, sigma, T, E, level4);
+	interpolateGeneric("_4", coef, tsec, nb + 1, d, inx1, inx2, r, sigma, T, E, level4);
+
+	//ttt(3) = toc;
+
+	//Level 5
+	vector<string> level5 = { "2","3","_3","4","_4","5" };
+	interpolateGeneric("6", coef, tsec, na + 1, d, inx1, inx2, r, sigma, T, E, level5);
+	interpolateGeneric("_5", coef, tsec, nb + 1, d, inx1, inx2, r, sigma, T, E, level5);
+
+	//ttt(4) = toc;
+
+	//Level 6
+	vector<string> level6 = { "2","3","_3","4","_4","5" };
+	interpolateGeneric("7", coef, tsec, na + 1, d, inx1, inx2, r, sigma, T, E, level6);
+	interpolateGeneric("_6", coef, tsec, nb + 1, d, inx1, inx2, r, sigma, T, E, level6);
+
+	//ttt(5) = toc;
+
+	//Level7
+	vector<string> level7 = { "2","3","_3","4","_4","5","_5","6" };
+	interpolateGeneric("8", coef, tsec, na + 1, d, inx1, inx2, r, sigma, T, E, level7);
+	interpolateGeneric("_7", coef, tsec, nb + 1, d, inx1, inx2, r, sigma, T, E, level7);
+
+}
 void SparseGridCollocation::interpolateGeneric(string prefix, double coef, double tsec, int b, int d, double inx1, double inx2, double r, double sigma, double T, double E, vector<string> keys)
 {
 	vector<MatrixXd> Lamb;
 	vector<MatrixXd> TX;
 	vector<MatrixXd> C;
 	vector<MatrixXd> A;
+	vector<MatrixXd> U;
 
 	MatrixXd N = primeNMatrix(b, d);
 
 	for (int i = 0; i < N.rows(); i++)
 	{
-		vector<MatrixXd> res = shapelambda2D(coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i));
+		vector<MatrixXd> res = shapelambda2DGeneric(coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys);
 
 		Lamb.push_back(res[0]);
 		TX.push_back(res[1]);
 		C.push_back(res[2]);
 		A.push_back(res[3]);
+		U.push_back(res[4]);
 	}
 
 	vector<vector<MatrixXd>> result;
@@ -901,6 +970,7 @@ void SparseGridCollocation::interpolateGeneric(string prefix, double coef, doubl
 	result.push_back(TX);
 	result.push_back(C);
 	result.push_back(A);
+	result.push_back(U);
 	vInterpolation[prefix] = result;
 
 }
@@ -941,7 +1011,7 @@ vector<MatrixXd> SparseGridCollocation::shapelambda2DGeneric(double coef, double
 	MatrixXd P = FAI_t.array() + pa.array() + pb.array();
 
 	VectorXd U = MatrixXd::Zero(num, 1);
-	for (int s =0; s < keys.size; s+=2)
+	for (int s =0; s < keys.size(); s+=2)
 	{
 		string k1 = keys[s];
 		string k2 = keys[s+1];
@@ -949,9 +1019,6 @@ vector<MatrixXd> SparseGridCollocation::shapelambda2DGeneric(double coef, double
 			vInterpolation[k1][0], vInterpolation[k1][1], vInterpolation[k1][2], vInterpolation[k1][3],
 			vInterpolation[k2][0], vInterpolation[k2][1], vInterpolation[k2][2], vInterpolation[k2][3]);
 	}
-	/*
-	U = U - PDE(TX1, r, sigma, lamb2, TX2, C2, A2, lamb3, TX3, C3, A3)
-		- PDE(TX1, r, sigma, lamb_3, TX_3, C_3, A_3, lamb4, TX4, C4, A4);*/
 
 	for (int i = 0; i < num; i++)
 	{
@@ -961,32 +1028,32 @@ vector<MatrixXd> SparseGridCollocation::shapelambda2DGeneric(double coef, double
 			double max = TX1(i, 1) - E*exp(-r * (T - TX1(i, 0)));
 			U(i) = 0;
 			double sub = 0;
-			for (int s = 0; s < keys.size; s += 2)
+			for (int s = 0; s < keys.size(); s += 2)
 			{
 				string k1 = keys[s];
 				string k2 = keys[s + 1];
 				sub += (inner_test(TX1(i, 0), TX1(i, 1), vInterpolation[k2][0], vInterpolation[k2][0], vInterpolation[k2][0], vInterpolation[k2][0])
 					- inner_test(TX1(i, 0), TX1(i, 1), vInterpolation[k1][0], vInterpolation[k1][0], vInterpolation[k1][0], vInterpolation[k1][0]));
 			}
-			U(i) -= sub;
 
 			if (max > 0)
-				U(i) = max
-				- (inner_test(TX1(i, 0), TX1(i, 1), lamb3, TX3, C3, A3) - inner_test(TX1(i, 0), TX1(i, 1), lamb2, TX2, C2, A2))
-				- (inner_test(TX1(i, 0), TX1(i, 1), lamb4, TX4, C4, A4) - inner_test(TX1(i, 0), TX1(i, 1), lamb_3, TX_3, C_3, A_3));
+				U(i) = max - sub;
 			else
-				U(i) = 0
-				- (inner_test(TX1(i, 0), TX1(i, 1), lamb3, TX3, C3, A3) - inner_test(TX1(i, 0), TX1(i, 1), lamb2, TX2, C2, A2))
-				- (inner_test(TX1(i, 0), TX1(i, 1), lamb4, TX4, C4, A4) - inner_test(TX1(i, 0), TX1(i, 1), lamb_3, TX_3, C_3, A_3));
+				U(i) = 0 - sub;
 		}
 
 		if (abs(TX1(i, 0) - tsec) < DBL_EPSILON)
 		{
 			P.row(i) = FAI.row(i);
-
-			U(i) = PPP::Calculate(TX1.row(i))
-				- (inner_test(TX1(i, 0), TX1(i, 1), lamb3, TX3, C3, A3) - inner_test(TX1(i, 0), TX1(i, 1), lamb2, TX2, C2, A2))
-				- (inner_test(TX1(i, 0), TX1(i, 1), lamb4, TX4, C4, A4) - inner_test(TX1(i, 0), TX1(i, 1), lamb_3, TX_3, C_3, A_3));
+			double sub = 0;
+			for (int s = 0; s < keys.size(); s += 2)
+			{
+				string k1 = keys[s];
+				string k2 = keys[s + 1];
+				sub += (inner_test(TX1(i, 0), TX1(i, 1), vInterpolation[k2][0], vInterpolation[k2][0], vInterpolation[k2][0], vInterpolation[k2][0])
+					- inner_test(TX1(i, 0), TX1(i, 1), vInterpolation[k1][0], vInterpolation[k1][0], vInterpolation[k1][0], vInterpolation[k1][0]));
+			}
+			U(i) = PPP::Calculate(TX1.row(i)) - sub;
 		}
 	}
 	MatrixXd TX = TX1;
@@ -1005,7 +1072,7 @@ vector<MatrixXd> SparseGridCollocation::shapelambda2DGeneric(double coef, double
 	//lamb = J\Jlamda;
 	MatrixXd l = J.lu().solve(Jlamda);
 
-	vector<MatrixXd> result = { l, TX, c, a };
+	vector<MatrixXd> result = { l, TX, c, a, U };
 	return result;
 }
 
