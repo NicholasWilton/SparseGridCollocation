@@ -23,7 +23,11 @@ public:
 	MatrixXd PDE(MatrixXd node, double r, double sigma, 
 		vector<MatrixXd> lambda2, vector<MatrixXd> TX2, vector<MatrixXd> C2, vector<MatrixXd> A2, 
 		vector<MatrixXd> lambda3, vector<MatrixXd> TX3, vector<MatrixXd> C3, vector<MatrixXd> A3 );
+	MatrixXd ECP(MatrixXd X, double r, double sigma, double T, double E);
 	double inner_test(double t, double x, vector<MatrixXd> lamb, vector<MatrixXd> TX, vector<MatrixXd> C, vector<MatrixXd> A);
+	VectorXd inter_test(MatrixXd X, vector<MatrixXd> lamb, vector<MatrixXd> TX, vector<MatrixXd> C, vector<MatrixXd> A);
+	double normCDF(double value);
+	double RootMeanSquare(VectorXd v);
 	
 	vector<MatrixXd> shapelambda2D(double coef, double tsec, double r, double sigma, double T, double E, double inx1, double inx2, MatrixXd N);
 	vector<MatrixXd> shapelambda2D_1(double coef, double tsec, double r, double sigma, double T, double E, double inx1, double inx2, MatrixXd N,
@@ -47,7 +51,7 @@ public:
 		vector<MatrixXd> lamb4, vector<MatrixXd> TX4, vector<MatrixXd> C4, vector<MatrixXd> A4);
 
 	void MuSIK();
-	void MuSIKGeneric();
+	vector<VectorXd> SparseGridCollocation::MuSIKGeneric();
 
 private:
 	map<string, vector<vector<MatrixXd>> > vInterpolation;

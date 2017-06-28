@@ -161,6 +161,7 @@
     <ClCompile Include="testCommon.cpp" />
     <ClCompile Include="testInterpolate.cpp" />
     <ClCompile Include="testMq.cpp" />
+    <ClCompile Include="testMuSIKc.cpp" />
     <ClCompile Include="testShapeLambda.cpp" />
   </ItemGroup>
   <ItemGroup>

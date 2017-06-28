@@ -8,6 +8,7 @@
 #include "windows.h"
 #include "Common.h"
 
+
 using Eigen::Matrix;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -21,6 +22,10 @@ using namespace std;
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <cmath>
+#include <math.h>
+#include <thread>
+#include <mutex>
 
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -53,26 +58,26 @@ vector<MatrixXd> SparseGridCollocation::mqd2(MatrixXd TP, MatrixXd CN, MatrixXd 
 		
 		//	FAI1 = exp(-(A(1, 1)*(TP(:, 1) - CN(j, 1))). ^ 2 / C(1, 1) ^ 2);
 		VectorXd a1 = A(0, 0)*(TP.col(0).array() - CN(j, 0));
-		Logger::WriteMessage(Common::printMatrix(a1).c_str());
+		//Logger::WriteMessage(Common::printMatrix(a1).c_str());
 
 		VectorXd b1 = -(a1.array() * a1.array()) / (C(0, 0) *C(0, 0));
-		Logger::WriteMessage(Common::printMatrix(b1).c_str());
+		//Logger::WriteMessage(Common::printMatrix(b1).c_str());
 
 		VectorXd FAI1 = b1.array().exp();
-		Logger::WriteMessage(Common::printMatrix(FAI1).c_str());
+		//Logger::WriteMessage(Common::printMatrix(FAI1).c_str());
 
 		//FAI2 = exp(-(A(1, 2)*(TP(:, 2) - CN(j, 2))). ^ 2 / C(1, 2) ^ 2);
 		VectorXd a2 = A(0, 1)*(TP.col(1).array() - CN(j, 1));
-		Logger::WriteMessage(Common::printMatrix(a2).c_str());
+		//Logger::WriteMessage(Common::printMatrix(a2).c_str());
 		
 		VectorXd b2 = -(a2.array() * a2.array()) / (C(0, 1) *C(0, 1));
-		Logger::WriteMessage(Common::printMatrix(b2).c_str());
+		//Logger::WriteMessage(Common::printMatrix(b2).c_str());
 		
 		VectorXd FAI2 = b2.array().exp();
-		Logger::WriteMessage(Common::printMatrix(FAI2).c_str());
+		//Logger::WriteMessage(Common::printMatrix(FAI2).c_str());
 		//D(:, j) = FAI1.*FAI2;
 		D->col(j) = FAI1.array() * FAI2.array();
-		Logger::WriteMessage(Common::printMatrix(*D).c_str());
+		//Logger::WriteMessage(Common::printMatrix(*D).c_str());
 
 		//TODO: this is basically how Matlab handles overloading:
 		//if nargout > 1
@@ -82,14 +87,14 @@ vector<MatrixXd> SparseGridCollocation::mqd2(MatrixXd TP, MatrixXd CN, MatrixXd 
 		VectorXd b3 = a3.array() * FAI1.array();
 		VectorXd c3 = b3.array() * FAI2.array();
 		Dt.col(j) = c3;
-		Logger::WriteMessage(Common::printMatrix(Dt).c_str());
+		//Logger::WriteMessage(Common::printMatrix(Dt).c_str());
 
 		//Dx(:, j) = TP(:, 2).*(-2 * (A(1, 2) / C(1, 2)) ^ 2 * (TP(:, 2) - CN(j, 2)).*FAI1.*FAI2);
 		VectorXd a4 = -2 * (A(0, 1) / C(0, 1)) * (A(0, 1) / C(0, 1)) * (TP.col(1).array() - CN(j, 1));
 		VectorXd b4 = TP.col(1).array() * a4.array() * FAI1.array();
 		VectorXd c4 = b4.array() * FAI2.array();
 		Dx.col(j) = c4;
-		Logger::WriteMessage(Common::printMatrix(Dx).c_str());
+		//Logger::WriteMessage(Common::printMatrix(Dx).c_str());
 		//Dxx(:, j) = TP(:, 2).^2.*((-2 * A(1, 2) ^ 2 / C(1, 2) ^ 2 + 4 * A(1, 2) ^ 4 * (TP(:, 2) - CN(j, 2)).^2. / C(1, 2) ^ 4).*FAI2.*FAI1);
 		double sA = A(0, 1) * A(0, 1);
 		double qA = A(0, 1) * A(0, 1) * A(0, 1) * A(0, 1);
@@ -98,16 +103,16 @@ vector<MatrixXd> SparseGridCollocation::mqd2(MatrixXd TP, MatrixXd CN, MatrixXd 
 		VectorXd dTpCn = TP.col(1).array() - CN(j, 1);
 
 		VectorXd a5 = 4 * qA * (dTpCn.array() * dTpCn.array() / qC);
-		Logger::WriteMessage(Common::printMatrix(a5).c_str());
+		//Logger::WriteMessage(Common::printMatrix(a5).c_str());
 		VectorXd b5 = -2 * sA / sC + a5.array();
-		Logger::WriteMessage(Common::printMatrix(b5).c_str());
+		//Logger::WriteMessage(Common::printMatrix(b5).c_str());
 		VectorXd c5 = b5.array()  * FAI2.array() * FAI1.array();
-		Logger::WriteMessage(Common::printMatrix(c5).c_str());
+		//Logger::WriteMessage(Common::printMatrix(c5).c_str());
 		VectorXd d5 = (TP.col(1).array() * TP.col(1).array()).array() * c5.array();
-		Logger::WriteMessage(Common::printMatrix(d5).c_str());
+		//Logger::WriteMessage(Common::printMatrix(d5).c_str());
 		//VectorXd c5 = b5.array() * FAI2.array() * FAI1.array();
 		Dxx.col(j) = d5;
-		Logger::WriteMessage(Common::printMatrix(Dxx).c_str());
+		//Logger::WriteMessage(Common::printMatrix(Dxx).c_str());
 	}
 	result->push_back(*D);
 	result->push_back(Dt);
@@ -246,7 +251,8 @@ vector<MatrixXd> SparseGridCollocation::shapelambda2D(double coef, double tsec, 
 	//Hack: to get around the fact that Eigen doesn't compute the permutation matrix p correctly
 	MatrixXd transform(15, 15);
 	transform << 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0;
-	MatrixXd Fa = transform * F;
+	//MatrixXd Fa = transform * F;
+	MatrixXd Fa = F;
 	
 	Logger::WriteMessage(Common::printMatrix(transform).c_str());
 	Logger::WriteMessage(Common::printMatrix(J).c_str()); 
@@ -564,13 +570,13 @@ MatrixXd SparseGridCollocation::primeNMatrix(int b, int d)
 	//N = ones(ch, d);
 	MatrixXd N = MatrixXd::Ones(ch, d);
 	//for i = 1:d
-	for (int i = 0; i < d; i++)
+	for (int i = 0; i < ch; i++)
 		//	N(:, i) = 2.^L(:, i) + 1;
-		for (int j = 0; j < L.rows(); j++)
+		for (int j = 0; j < d; j++)
 			N(i, j) = pow(2, L(i, j)) + 1;
 	//end
 
-	Logger::WriteMessage(Common::printMatrix(N).c_str());
+	//Logger::WriteMessage(Common::printMatrix(N).c_str());
 	return N;
 }
 
@@ -700,7 +706,7 @@ MatrixXd SparseGridCollocation::subnumber(int b, int d)
 		{
 			//	indextemp = subnumber(b - i, d - 1);
 			MatrixXd indextemp = subnumber(b - (i + 1), d - 1);
-			Logger::WriteMessage(Common::printMatrix(indextemp).c_str());
+			//Logger::WriteMessage(Common::printMatrix(indextemp).c_str());
 			//[s, ~] = size(indextemp);
 			int s = indextemp.rows();
 			//ntop = nbot + s - 1;
@@ -711,11 +717,11 @@ MatrixXd SparseGridCollocation::subnumber(int b, int d)
 			MatrixXd ones = MatrixXd::Ones(s, 1);
 
 			l.block(nbot - 1, 0, ntop - nbot + 1, 1) = ones.array() * (i + 1);
-			Logger::WriteMessage(Common::printMatrix(l).c_str());
+			//Logger::WriteMessage(Common::printMatrix(l).c_str());
 
 			//L(nbot:ntop, 2 : d) = indextemp;
 			l.block(nbot - 1, 1, ntop - nbot + 1, d - 1) = indextemp;
-			Logger::WriteMessage(Common::printMatrix(l).c_str());
+			//Logger::WriteMessage(Common::printMatrix(l).c_str());
 			//nbot = ntop + 1;
 			nbot = ntop + 1;
 			//end
@@ -723,10 +729,10 @@ MatrixXd SparseGridCollocation::subnumber(int b, int d)
 			if (L.rows() > 0)
 			{
 				l.block(0, 0, l.rows()-1, l.cols()) = L;
-				Logger::WriteMessage(Common::printMatrix(l).c_str());
+				//Logger::WriteMessage(Common::printMatrix(l).c_str());
 			}
 			L = l;
-			Logger::WriteMessage(Common::printMatrix(L).c_str());
+			//Logger::WriteMessage(Common::printMatrix(L).c_str());
 		}
 		//	end
 		
@@ -752,8 +758,12 @@ MatrixXd SparseGridCollocation::PDE(MatrixXd node, double r, double sigma,
 		//[FAI2, FAI2_t, FAI2_x, FAI2_xx] = mq2d(node, TX2{ j }, A2{ j }, C2{ j });
 		vector<MatrixXd> mqd = mqd2(node, TX2[j], A2[j], C2[j]);
 		//   this equation is determined specially by B - S
-			//U2(:, j) = FAI2_t*lamda2{ j } +sigma ^ 2 / 2 * FAI2_xx*lamda2{ j } +r*FAI2_x*lamda2{ j } -r*FAI2*lamda2{ j };
-		U2.col(j) = mqd[1] * lambda2[j] + (pow(sigma, 2) / 2) * mqd[3] + r * mqd[2] * lambda2[j] - r * mqd[0] * lambda2[j];
+		//U2(:, j) = FAI2_t*lamda2{ j } +sigma ^ 2 / 2 * FAI2_xx*lamda2{ j } +r*FAI2_x*lamda2{ j } -r*FAI2*lamda2{ j };
+		MatrixXd a = mqd[1] * lambda2[j];
+		MatrixXd b = (pow(sigma, 2) / 2) * mqd[3] * lambda2[j];
+		MatrixXd c = r * mqd[2] * lambda2[j];
+		MatrixXd d = r * mqd[0] * lambda2[j];
+		U2.col(j) = a + b + c - d;
 		//end
 	}
 		//ch3 = length(TX3);
@@ -768,13 +778,65 @@ MatrixXd SparseGridCollocation::PDE(MatrixXd node, double r, double sigma,
 		//   this equation is determined specially by B - S
 			//U3(:, j) = FAI3_t*lamda3{ j } +sigma ^ 2 / 2 * FAI3_xx*lamda3{ j } +r*FAI3_x*lamda3{ j } -r*FAI3*lamda3{ j };
 		//end
-		U3.col(j) = mqd[1] * lambda3[j] + (pow(sigma, 2) / 2) * mqd[3] + r * mqd[2] * lambda3[j] - r * mqd[0] * lambda3[j];
+		MatrixXd a = mqd[1] * lambda3[j];
+		MatrixXd b = (pow(sigma, 2) / 2) * mqd[3] * lambda3[j];
+		MatrixXd c = r * mqd[2] * lambda3[j];
+		MatrixXd d = r * mqd[0] * lambda3[j];
+		U3.col(j) = a + b + c - d;
 	}
 		//output is depending on the combination tech
 		//output = (sum(U3, 2) - sum(U2, 2));
 	MatrixXd output = U3.rowwise().sum() - U2.rowwise().sum();
 	
 	return output;
+}
+
+MatrixXd SparseGridCollocation::ECP(MatrixXd X, double r, double sigma, double T, double E)
+{
+	// Analytical price for European call option
+	//t = X(:, 1);
+	VectorXd t= X.col(0);
+	//S = X(:, 2);
+	VectorXd S = X.col(1);
+	//M = T - t;
+	VectorXd M = T - t.array();
+	//[N, ~] = size(X);
+	int N = X.size();
+	//P = ones(N, 1);
+	VectorXd P = VectorXd::Ones(N, 1);
+	//d1 = ones(N, 1);
+	VectorXd d1 = VectorXd::Ones(N, 1);
+	//d2 = ones(N, 1);
+	VectorXd d2 = VectorXd::Ones(N, 1);
+
+	//I0 = M == 0;
+	MatrixXd I0 = (M.array() == 0).select(M,0);
+	//I1 = M ~= 0;
+	MatrixXd I1 = (M.array() != 0).select(M,0);
+
+	//P(I0) = max(S(I0) - E, 0);
+	for (int i = 0; i < N; i++)
+	{
+		if (S(i) - E > 0)
+			P(i) = S(i) - E;
+		else
+			P(i) = 0;
+
+
+		//d1(I1) = (log(S(I1) . / E) + (r + sigma ^ 2 / 2).*M(I1)) . / (sigma.*sqrt(M(I1)));
+		d1(i) = (log(S(i) / E) + (r + sigma * sigma / 2)* M(i)) / (sigma * sqrt(M(i)));
+		//d2(I1) = (log(S(I1) . / E) + (r - sigma ^ 2 / 2).*M(I1)) . / (sigma.*sqrt(M(I1)));
+		d2(i) = (log(S(i) / E) + (r - sigma * sigma / 2)* M(i)) / (sigma * sqrt(M(i)));
+		//P(I1) = -E.*exp(-r.*M(I1)).*normcdf(d2(I1)) + S(I1).*normcdf(d1(I1));
+		P(i) = S(i) * normCDF(d1(i)) - E * exp(-r * M(i)) * normCDF(d2(i));
+	}
+	return P;
+}
+
+double SparseGridCollocation::normCDF(double value)
+{
+	//return 0.5 * erfc(-value * M_SQRT1_2);
+	return 0.5 * erfc(-value * (1/sqrt(2)));
 }
 
 double SparseGridCollocation::inner_test(double t, double x, vector<MatrixXd> lamb, vector<MatrixXd> TX, vector<MatrixXd> C, vector<MatrixXd> A )
@@ -794,11 +856,11 @@ double SparseGridCollocation::inner_test(double t, double x, vector<MatrixXd> la
 		//   Gaussian RBF  .......
 		//FAI1 = exp(-(A{ j }(1, 1)*(t - TX{ j }(:, 1))). ^ 2 / C{ j }(1, 1) ^ 2);
 		MatrixXd square1 = (A[j](0, 0) * (t - (TX[j].col(0).array())).array()) * (A[j](0, 0) * (t - (TX[j].col(0).array())).array());
-		MatrixXd FAI1 = - square1 / (C[j](0, 0) * C[j](0, 0));
+		MatrixXd FAI1 = (- square1 / (C[j](0, 0) * C[j](0, 0))).array().exp();
 
 		//FAI2 = exp(-(A{ j }(1, 2)*(x - TX{ j }(:, 2))). ^ 2 / C{ j }(1, 2) ^ 2);
 		MatrixXd square2 = (A[j](0, 1) * (t - (TX[j].col(1).array())).array()) * (A[j](0, 1) * (t - (TX[j].col(1).array())).array());
-		MatrixXd FAI2 = -square2 / (C[j](0, 1) * C[j](0, 1));
+		MatrixXd FAI2 = (-square2 / (C[j](0, 1) * C[j](0, 1))).array().exp();
 		//D = FAI1.*FAI2;
 		VectorXd D = FAI1.cwiseProduct(FAI2).eval();
 		//V(j) = D'*lamb{j};
@@ -816,6 +878,33 @@ double SparseGridCollocation::inner_test(double t, double x, vector<MatrixXd> la
 
 	}
 	
+	return output;
+}
+
+VectorXd SparseGridCollocation::inter_test(MatrixXd X, vector<MatrixXd> lamb, vector<MatrixXd> TX, vector<MatrixXd> C, vector<MatrixXd> A)
+{
+	// This is used to calculate values on final testing points
+	//ch = length(TX);
+	int ch = TX.size();
+	
+	//[N, ~] = size(X);
+	int N = X.rows();
+	//V = ones(N, ch);
+	MatrixXd V = MatrixXd::Ones(N, ch);
+	//for j = 1:ch
+	vector<MatrixXd> res;
+	for (int j = 0; j < ch; j++)
+	{
+		//[D] = mq2d(X, TX{ j }, A{ j }, C{ j });
+		vector<MatrixXd> D = mqd2(X, TX[j], A[j], C[j]);
+
+		//V(:, j) = D*lamb{ j };
+		VectorXd v = D[0] * lamb[j];
+		V.col(j) = v;
+		//end
+	}
+		//output = sum(V, 2);
+	VectorXd output = V.colwise().sum();
 	return output;
 }
 
@@ -874,7 +963,7 @@ void SparseGridCollocation::MuSIK()
 }
 
 
-void SparseGridCollocation::MuSIKGeneric()
+vector<VectorXd> SparseGridCollocation::MuSIKGeneric()
 {
 	double E = 100;// strike price
 
@@ -907,43 +996,154 @@ void SparseGridCollocation::MuSIKGeneric()
 
 	// Level 2 ....lamb stands for \lambda the coefficients, TX stands for nodes
 	// C stands for shape parater, A stands for scale parameter
-	vector<vector<MatrixXd>> res3 = interpolate(coef, tsec, na, d, inx1, inx2, r, sigma, T, E);
-
-	vector<vector<MatrixXd>> res2 = interpolate(coef, tsec, nb, d, inx1, inx2, r, sigma, T, E);
+	/*vector<vector<MatrixXd>> res3 = interpolate(coef, tsec, na, d, inx1, inx2, r, sigma, T, E);
+	vector<vector<MatrixXd>> res2 = interpolate(coef, tsec, nb, d, inx1, inx2, r, sigma, T, E);*/
+	
+	Logger::WriteMessage("level2");
+	vector<string> level2 = { };
+	interpolateGeneric("3", coef, tsec, na, d, inx1, inx2, r, sigma, T, E, level2);
+	interpolateGeneric("2", coef, tsec, nb, d, inx1, inx2, r, sigma, T, E, level2);
 
 	//Level 3 ....multilevel method has to use all previous information
+	Logger::WriteMessage("level3");
 	vector<string> level3 = {"2","3"};
 	interpolateGeneric("4", coef, tsec, na + 1, d, inx1, inx2, r, sigma, T, E, level3);
 	interpolateGeneric("_3", coef, tsec, nb + 1, d, inx1, inx2, r, sigma, T, E, level3);
 
 	//ttt(2) = toc;
 	//Level 4 ....higher level needs more information
+	Logger::WriteMessage("level4");
 	vector<string> level4 = { "2","3","_3","4" };
-	interpolateGeneric("5", coef, tsec, na + 1, d, inx1, inx2, r, sigma, T, E, level4);
-	interpolateGeneric("_4", coef, tsec, nb + 1, d, inx1, inx2, r, sigma, T, E, level4);
+	interpolateGeneric("5", coef, tsec, na + 2, d, inx1, inx2, r, sigma, T, E, level4);
+	interpolateGeneric("_4", coef, tsec, nb + 2, d, inx1, inx2, r, sigma, T, E, level4);
 
 	//ttt(3) = toc;
 
 	//Level 5
+	Logger::WriteMessage("level5");
 	vector<string> level5 = { "2","3","_3","4","_4","5" };
-	interpolateGeneric("6", coef, tsec, na + 1, d, inx1, inx2, r, sigma, T, E, level5);
-	interpolateGeneric("_5", coef, tsec, nb + 1, d, inx1, inx2, r, sigma, T, E, level5);
+	interpolateGeneric("6", coef, tsec, na + 3, d, inx1, inx2, r, sigma, T, E, level5);
+	interpolateGeneric("_5", coef, tsec, nb + 3, d, inx1, inx2, r, sigma, T, E, level5);
 
 	//ttt(4) = toc;
 
 	//Level 6
-	vector<string> level6 = { "2","3","_3","4","_4","5" };
-	interpolateGeneric("7", coef, tsec, na + 1, d, inx1, inx2, r, sigma, T, E, level6);
-	interpolateGeneric("_6", coef, tsec, nb + 1, d, inx1, inx2, r, sigma, T, E, level6);
+	Logger::WriteMessage("level6");
+	vector<string> level6 = { "2","3","_3","4","_4","5", "_5", "6" };
+	interpolateGeneric("7", coef, tsec, na + 4, d, inx1, inx2, r, sigma, T, E, level6);
+	interpolateGeneric("_6", coef, tsec, nb + 4, d, inx1, inx2, r, sigma, T, E, level6);
 
 	//ttt(5) = toc;
 
 	//Level7
-	vector<string> level7 = { "2","3","_3","4","_4","5","_5","6" };
-	interpolateGeneric("8", coef, tsec, na + 1, d, inx1, inx2, r, sigma, T, E, level7);
-	interpolateGeneric("_7", coef, tsec, nb + 1, d, inx1, inx2, r, sigma, T, E, level7);
+	Logger::WriteMessage("level7");
+	vector<string> level7 = { "2","3","_3","4","_4","5","_5","6", "_6", "7" };
+	interpolateGeneric("8", coef, tsec, na + 5, d, inx1, inx2, r, sigma, T, E, level7);
+	interpolateGeneric("_7", coef, tsec, nb + 5, d, inx1, inx2, r, sigma, T, E, level7);
 
+	//Level8
+	Logger::WriteMessage("level8");
+	vector<string> level8 = { "2","3","_3","4","_4","5","_5","6", "_6", "7", "_7","8" };
+	interpolateGeneric("9", coef, tsec, na + 6, d, inx1, inx2, r, sigma, T, E, level8);
+	interpolateGeneric("_8", coef, tsec, nb + 6, d, inx1, inx2, r, sigma, T, E, level8);
+
+	//Level9
+	Logger::WriteMessage("level9");
+	vector<string> level9 = { "2","3","_3","4","_4","5","_5","6", "_6", "7", "_7","8", "_8","9" };
+	interpolateGeneric("10", coef, tsec, na + 6, d, inx1, inx2, r, sigma, T, E, level8);
+	interpolateGeneric("_9", coef, tsec, nb + 6, d, inx1, inx2, r, sigma, T, E, level8);
+
+	//Level10
+	Logger::WriteMessage("level10");
+	vector<string> level10 = { "2","3","_3","4","_4","5","_5","6", "_6", "7", "_7","8", "_8","9", "_9","10" };
+	interpolateGeneric("11", coef, tsec, na + 6, d, inx1, inx2, r, sigma, T, E, level8);
+	interpolateGeneric("_10", coef, tsec, nb + 6, d, inx1, inx2, r, sigma, T, E, level8);
+
+	Logger::WriteMessage("inter_test");
+	vector<vector<MatrixXd>> test2 = vInterpolation["2"];
+	VectorXd V_2 = inter_test(TX, test2[0], test2[1], test2[2], test2[3]);
+	vector<vector<MatrixXd>> test3 = vInterpolation["3"];
+	VectorXd V3 = inter_test(TX, test3[0], test3[1], test3[2], test3[3]);
+	vector<vector<MatrixXd>> test_3 = vInterpolation["_3"];
+	VectorXd V_3 = inter_test(TX, test3[0], test3[1], test3[2], test3[3]);
+	vector<vector<MatrixXd>> test4 = vInterpolation["4"];
+	VectorXd V4 = inter_test(TX, test4[0], test4[1], test4[2], test4[3]);
+	vector<vector<MatrixXd>> test_4 = vInterpolation["_4"];
+	VectorXd V_4 = inter_test(TX, test_4[0], test_4[1], test_4[2], test_4[3]);
+	vector<vector<MatrixXd>> test5 = vInterpolation["5"];
+	VectorXd V5 = inter_test(TX, test5[0], test5[1], test5[2], test5[3]);
+	vector<vector<MatrixXd>> test_5 = vInterpolation["_5"];
+	VectorXd V_5 = inter_test(TX, test_5[0], test_5[1], test_5[2], test_5[3]);
+	vector<vector<MatrixXd>> test6 = vInterpolation["6"];
+	VectorXd V6 = inter_test(TX, test6[0], test6[1], test6[2], test6[3]);
+	vector<vector<MatrixXd>> test_6 = vInterpolation["_6"];
+	VectorXd V_6 = inter_test(TX, test_6[0], test_6[1], test_6[2], test_6[3]);
+	vector<vector<MatrixXd>> test7 = vInterpolation["7"];
+	VectorXd V7 = inter_test(TX, test7[0], test7[1], test7[2], test7[3]);
+	vector<vector<MatrixXd>> test_7 = vInterpolation["_7"];
+	VectorXd V_7 = inter_test(TX, test_7[0], test_7[1], test_7[2], test_7[3]);
+	vector<vector<MatrixXd>> test8 = vInterpolation["8"];
+	VectorXd V8 = inter_test(TX, test8[0], test8[1], test8[2], test8[3]);
+	vector<vector<MatrixXd>> test_8 = vInterpolation["_8"];
+	VectorXd V_8 = inter_test(TX, test_8[0], test_8[1], test_8[2], test_8[3]);
+	vector<vector<MatrixXd>> test9 = vInterpolation["9"];
+	VectorXd V9 = inter_test(TX, test9[0], test9[1], test9[2], test9[3]);
+	vector<vector<MatrixXd>> test_9 = vInterpolation["_9"];
+	VectorXd V_9 = inter_test(TX, test_9[0], test_9[1], test_9[2], test_9[3]);
+	vector<vector<MatrixXd>> test10 = vInterpolation["10"];
+	VectorXd V10 = inter_test(TX, test10[0], test10[1], test10[2], test10[3]);
+	vector<vector<MatrixXd>> test_10 = vInterpolation["_10"];
+	VectorXd V_10 = inter_test(TX, test_10[0], test_10[1], test_10[2], test_10[3]);
+	vector<vector<MatrixXd>> test11 = vInterpolation["11"];
+	VectorXd V11 = inter_test(TX, test11[0], test11[1], test11[2], test11[3]);
+	Logger::WriteMessage("inter_test complete");
+
+	VectorXd U = V3 - V_2;
+	VectorXd U1 = V4 - V_3;
+	VectorXd U2 = V5 - V_4;
+	VectorXd U3 = V6 - V_5;
+	VectorXd U4 = V7 - V_6;
+	VectorXd U5 = V8 - V_7;
+	VectorXd U6 = V9 - V_8;
+	VectorXd U7 = V10 - V_9;
+	VectorXd U8 = V11 - V_10;
+
+	//[AP] = ECP(TX, r, sigma, T, E);
+	VectorXd AP = ECP(TX, r, sigma, T, E);
+	Logger::WriteMessage("MuSik addition");
+	int m = U.rows();
+	MatrixXd MuSIK = MatrixXd::Zero(m,9);
+	MuSIK.col(0) = U;
+	MuSIK.col(1) = U + U1;
+	MuSIK.col(2) = U + U1 + U2;
+	MuSIK.col(3) = U + U1 + U2 + U3;
+	MuSIK.col(4) = U + U1 + U2 + U3 + U4;
+	MuSIK.col(5) = U + U1 + U2 + U3 + U4 + U5;
+	MuSIK.col(6) = U + U1 + U2 + U3 + U4 + U5 + U6;
+	MuSIK.col(7) = U + U1 + U2 + U3 + U4 + U5 + U6 + U7;
+	MuSIK.col(8) = U + U1 + U2 + U3 + U4 + U5 + U6 + U7 + U8;
+
+	VectorXd RMS = VectorXd::Ones(9,1);
+	VectorXd Max = VectorXd::Ones(9, 1);
+
+	Logger::WriteMessage("RMS calcs");
+	for (int i = 0; i < 9; i++)
+	{
+		VectorXd v = MuSIK.col(i).array() - AP.array();
+		RMS[i] = RootMeanSquare(v);
+		VectorXd m = abs(MuSIK.col(i).array() - AP.array());
+		Max[i] = m.maxCoeff();
+	}
+
+	vector<VectorXd> result = { RMS, Max };
+	return result;
 }
+double SparseGridCollocation::RootMeanSquare(VectorXd v)
+{
+	double rms = sqrt((v.array() * v.array()).sum() / v.size() );
+	return rms;
+}
+
 void SparseGridCollocation::interpolateGeneric(string prefix, double coef, double tsec, int b, int d, double inx1, double inx2, double r, double sigma, double T, double E, vector<string> keys)
 {
 	vector<MatrixXd> Lamb;
@@ -954,8 +1154,10 @@ void SparseGridCollocation::interpolateGeneric(string prefix, double coef, doubl
 
 	MatrixXd N = primeNMatrix(b, d);
 
+
 	for (int i = 0; i < N.rows(); i++)
 	{
+
 		vector<MatrixXd> res = shapelambda2DGeneric(coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys);
 
 		Lamb.push_back(res[0]);
@@ -1032,8 +1234,9 @@ vector<MatrixXd> SparseGridCollocation::shapelambda2DGeneric(double coef, double
 			{
 				string k1 = keys[s];
 				string k2 = keys[s + 1];
-				sub += (inner_test(TX1(i, 0), TX1(i, 1), vInterpolation[k2][0], vInterpolation[k2][0], vInterpolation[k2][0], vInterpolation[k2][0])
-					- inner_test(TX1(i, 0), TX1(i, 1), vInterpolation[k1][0], vInterpolation[k1][0], vInterpolation[k1][0], vInterpolation[k1][0]));
+				double a = inner_test(TX1(i, 0), TX1(i, 1), vInterpolation[k2][0], vInterpolation[k2][1], vInterpolation[k2][2], vInterpolation[k2][3]);
+				double b = inner_test(TX1(i, 0), TX1(i, 1), vInterpolation[k1][0], vInterpolation[k1][1], vInterpolation[k1][2], vInterpolation[k1][3]);
+				sub += (a - b);
 			}
 
 			if (max > 0)
@@ -1050,8 +1253,11 @@ vector<MatrixXd> SparseGridCollocation::shapelambda2DGeneric(double coef, double
 			{
 				string k1 = keys[s];
 				string k2 = keys[s + 1];
-				sub += (inner_test(TX1(i, 0), TX1(i, 1), vInterpolation[k2][0], vInterpolation[k2][0], vInterpolation[k2][0], vInterpolation[k2][0])
-					- inner_test(TX1(i, 0), TX1(i, 1), vInterpolation[k1][0], vInterpolation[k1][0], vInterpolation[k1][0], vInterpolation[k1][0]));
+				double a = inner_test(TX1(i, 0), TX1(i, 1), vInterpolation[k2][0], vInterpolation[k2][1], vInterpolation[k2][2], vInterpolation[k2][3]);
+				double b = inner_test(TX1(i, 0), TX1(i, 1), vInterpolation[k1][0], vInterpolation[k1][1], vInterpolation[k1][2], vInterpolation[k1][3]);
+				/*sub += (inner_test(TX1(i, 0), TX1(i, 1), vInterpolation[k2][0], vInterpolation[k2][0], vInterpolation[k2][0], vInterpolation[k2][0])
+					- inner_test(TX1(i, 0), TX1(i, 1), vInterpolation[k1][0], vInterpolation[k1][0], vInterpolation[k1][0], vInterpolation[k1][0]));*/
+				sub += (a - b);
 			}
 			U(i) = PPP::Calculate(TX1.row(i)) - sub;
 		}
@@ -1064,7 +1270,8 @@ vector<MatrixXd> SparseGridCollocation::shapelambda2DGeneric(double coef, double
 	//Hack: to get around the fact that Eigen doesn't compute the permutation matrix p correctly
 	MatrixXd transform(15, 15);
 	transform << 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0;
-	MatrixXd Fa = transform * F;
+	//MatrixXd Fa = transform * F;
+	MatrixXd Fa = F;
 
 	//Eigen also seems to solve with different rounding, maybe a double arithmetic issue:
 	//Jlamda = F\U;
