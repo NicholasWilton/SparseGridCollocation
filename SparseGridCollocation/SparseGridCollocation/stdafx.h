@@ -17,7 +17,11 @@
 #include <C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\include\eigen-eigen-67e894c6cd8f\Eigen\Dense>
 #include <C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\include\eigen-eigen-67e894c6cd8f\Eigen\LU>
 #include "..\include\eigen-eigen-67e894c6cd8f\Eigen\StdVector"
-#include "CppUnitTest.h"
+
+#ifdef UNITTEST
+//#include "CppUnitTest.h"
+#endif // UNITTEST
+
 
 #define API _declspec(dllexport)
 

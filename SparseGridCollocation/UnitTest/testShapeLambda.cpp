@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "CppUnitTest.h"
 #include "SparseGridCollocation.h"
+#include "Interpolation.h"
 #include "windows.h"
 #include "testCommon.h"
 #include "Common.h"
@@ -39,7 +40,7 @@ namespace UnitTest
 
 		TEST_METHOD(TestShapeLambda2D)
 		{
-			SparseGridCollocation* test = new SparseGridCollocation();
+			Interpolation test;
 			int ch = 10000;
 			double inx1 = 0;
 			double inx2 = 300;
@@ -74,8 +75,10 @@ namespace UnitTest
 				double inx1 = 0;
 				double inx2 = 300;
 				
-				vector<MatrixXd> result = test->shapelambda2D(coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i));
-				
+				map< string, vector<vector<MatrixXd>>> vInterpolation;
+				vector<string> level2 = {};
+				test.shapelambda2DGeneric(0, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), level2, &vInterpolation);
+				vector<MatrixXd> result = {};// = test.getResult();
 				
 				MatrixXd l = result[0];
 				Assert::IsTrue(testCommon::checkMatrix(uLamb,  l, 1));

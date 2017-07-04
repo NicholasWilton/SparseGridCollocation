@@ -1,4 +1,5 @@
 #pragma once
+
 using namespace Eigen;
 using namespace std;
 
@@ -13,5 +14,8 @@ public:
 	static wstring Common::printMatrix(MatrixXd m);
 	static double Common::prod(vector<double> x);
 	static vector<double> Common::linspace(double a, double b, size_t N);
+	static void Logger(string message);
+	static bool checkMatrix(MatrixXd reference, MatrixXd actual);
+	static bool checkMatrix(MatrixXd reference, MatrixXd actual, double precision);
 };
 

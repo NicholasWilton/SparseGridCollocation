@@ -5,6 +5,10 @@
 #include <Eigen/Dense>
 #include "Math.h"
 #include "CppUnitTest.h"
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace Eigen;
@@ -17,6 +21,41 @@ testCommon::testCommon()
 
 testCommon::~testCommon()
 {
+}
+
+MatrixXd testCommon::LoadTX()
+{
+	ifstream infile("TX.txt");
+	vector<double> doubles;
+	int count = 0;
+	while (infile)
+	{
+		string s;
+		if (!getline(infile, s)) break;
+		
+		stringstream ss(s);
+		while (ss.good())
+		{
+			string substr;
+			getline(ss, substr, ',');
+			doubles.push_back(stod(substr));
+		}
+		
+		//doubles.push_back(stod(s));
+		count++;
+	}
+
+	MatrixXd U(doubles.size()/2, 2);
+	vector<double>::iterator it;
+	int i = 0;
+	for (it = doubles.begin(); it < doubles.end(); it++, i++) {
+		if (i % 2 == 0)
+			U(i/2,0) = doubles[i];
+		else
+			U(floor(i/2),1) = doubles[i];
+	}
+
+	return U;
 }
 
 bool testCommon::checkMatrix(MatrixXd expected, MatrixXd actual)

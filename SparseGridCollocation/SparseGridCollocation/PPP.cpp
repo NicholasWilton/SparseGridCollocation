@@ -12,7 +12,7 @@ using Eigen::RowVectorXd;
 using Eigen::UpLoType;
 using namespace std;
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+//using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 double PPP::Calculate(RowVectorXd X)
 {

@@ -4,13 +4,14 @@ using Eigen::MatrixXd;
 
 namespace UnitTest
 {
-	class testCommon
+	class API testCommon
 	{
 	public:
 		testCommon();
 		~testCommon();
-		static bool testCommon::checkMatrix(MatrixXd reference, MatrixXd actual);
-		static bool testCommon::checkMatrix(MatrixXd reference, MatrixXd actual, double precision);
+		static bool checkMatrix(MatrixXd reference, MatrixXd actual);
+		static bool checkMatrix(MatrixXd reference, MatrixXd actual, double precision);
+		static MatrixXd LoadTX();
 	};
 
 }

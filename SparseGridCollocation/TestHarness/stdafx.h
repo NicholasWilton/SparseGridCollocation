@@ -7,11 +7,10 @@
 
 #include "targetver.h"
 
-// Headers for CppUnitTest
-#include "CppUnitTest.h"
+#include <stdio.h>
+#include <tchar.h>
 
-// TODO: reference additional headers your program requires here
 
 #include "..\include\eigen-eigen-67e894c6cd8f\Eigen\StdVector"
-
-#define UNITTEST
+#include "..\SparseGridCollocation\SparseGridCollocation.h"
+// TODO: reference additional headers your program requires here
