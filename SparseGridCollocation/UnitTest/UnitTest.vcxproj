@@ -151,6 +151,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="testCommon.h" />
     <ClInclude Include="testInterpolate.h" />
+    <ClInclude Include="testPDE.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -163,6 +164,7 @@
     <ClCompile Include="testInterpolate.cpp" />
     <ClCompile Include="testMq.cpp" />
     <ClCompile Include="testMuSIKc.cpp" />
+    <ClCompile Include="testPDE.cpp" />
     <ClCompile Include="testShapeLambda.cpp" />
   </ItemGroup>
   <ItemGroup>

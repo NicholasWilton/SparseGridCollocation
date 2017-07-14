@@ -5,7 +5,7 @@ using Eigen::VectorXd;
 using Eigen::Map;
 using namespace std;
 
-class PDE
+class API PDE
 {
 public:
 	PDE();

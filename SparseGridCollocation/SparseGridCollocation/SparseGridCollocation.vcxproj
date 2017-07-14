@@ -154,6 +154,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common.h" />
+    <ClInclude Include="Double.h" />
+    <ClInclude Include="InterTest.h" />
+    <ClInclude Include="MatrixXdm.h" />
     <ClInclude Include="PDE.h" />
     <ClInclude Include="PPP.h" />
     <ClInclude Include="RBF.h" />
@@ -167,6 +170,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Common.cpp" />
+    <ClCompile Include="InterTest.cpp" />
     <ClCompile Include="PDE.cpp" />
     <ClCompile Include="PPP.cpp" />
     <ClCompile Include="RBF.cpp" />

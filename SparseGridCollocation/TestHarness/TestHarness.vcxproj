@@ -91,7 +91,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>c:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\VS\UnitTest\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\SparseGridCollocation;c:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\VS\UnitTest\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -144,6 +144,32 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <Text Include="..\Data\inner_testLamb2_1.txt" />
+    <Text Include="..\Data\inner_testLamb3_1.txt" />
+    <Text Include="..\Data\inner_testLamb3_2.txt" />
+    <Text Include="..\Data\inner_testLamb_3_1.txt" />
+    <Text Include="..\Data\inner_testLamb_3_2.txt" />
+    <Text Include="..\Data\lamb1.txt" />
+    <Text Include="..\Data\lamb2.txt" />
+    <Text Include="..\Data\lamb3.txt" />
+    <Text Include="..\Data\lamb4.txt" />
+    <Text Include="..\Data\lamb5.txt" />
+    <Text Include="..\Data\lamb6.txt" />
+    <Text Include="..\Data\lamb7.txt" />
+    <Text Include="..\Data\lamb8.txt" />
+    <Text Include="..\Data\lamb9.txt" />
+    <Text Include="..\Data\SmoothInitialU.txt" />
+    <Text Include="..\Data\SmoothInitialX.txt" />
+    <Text Include="..\Data\TX.txt" />
+    <Text Include="..\Data\TX1.txt" />
+    <Text Include="..\Data\TX2.txt" />
+    <Text Include="..\Data\TX3.txt" />
+    <Text Include="..\Data\TX4.txt" />
+    <Text Include="..\Data\TX5.txt" />
+    <Text Include="..\Data\TX6.txt" />
+    <Text Include="..\Data\TX7.txt" />
+    <Text Include="..\Data\TX8.txt" />
+    <Text Include="..\Data\TX9.txt" />
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
@@ -163,6 +189,13 @@
     <ProjectReference Include="..\SparseGridCollocation\SparseGridCollocation.vcxproj">
       <Project>{be8725fb-c8b4-4b68-8680-8d69df6f3a9c}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Data\inner_test_key.dat" />
+    <None Include="..\Data\inner_test_num.dat" />
+    <None Include="..\Data\inner_test_sub.dat" />
+    <None Include="..\Data\inner_test_thread.dat" />
+    <None Include="..\Data\inner_test_value.dat" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

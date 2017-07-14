@@ -4,7 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-
+#include <iomanip>
 
 
 using namespace Eigen;
@@ -31,24 +31,122 @@ void Common::Logger(string message)
 	cout << message << endl;
 }
 
+void Common::Logger(wstring message)
+{
+#if defined(UNITTEST)
+	Logger::WriteMessage(message);
+#endif // UNITTEST
+	wcout << message << endl;
+}
+
 wstring Common::printMatrix(MatrixXd m)
 {
 	int cols = m.cols();
 	int rows = m.rows();
-
-	const IOFormat fmt(2, DontAlignCols, "\t", " ", "", "", "", "");
-
+	
 	wstringstream ss;
-
+	ss << setprecision(25);
 	for (int i = 0; i < rows; i++)
 	{
 		for (int j = 0; j < cols; j++)
 		{
-			ss << m(i, j) << "\t";
+			double d = m(i, j);
+			ss << d << "\t";
 
 		}
 		ss << "\r\n";
 	}
+
+	return ss.str();
+}
+
+wstring Common::printMatrixHexW(MatrixXd m)
+{
+	int cols = m.cols();
+	int rows = m.rows();
+
+	wstringstream ss;
+	ss << setprecision(25);
+	for (int i = 0; i < rows; i++)
+	{
+		for (int j = 0; j < cols; j++)
+		{
+			double d = m(i, j);
+			ss << double2hexstrW(d) << "\t";
+
+		}
+		ss << "\r\n";
+	}
+
+	return ss.str();
+}
+
+string Common::printMatrixHexA(MatrixXd m)
+{
+	int cols = m.cols();
+	int rows = m.rows();
+
+	stringstream ss;
+	ss << setprecision(25);
+	for (int i = 0; i < rows; i++)
+	{
+		for (int j = 0; j < cols; j++)
+		{
+			double d = m(i, j);
+			ss << double2hexstrA(d) << "\t";
+
+		}
+		ss << "\r\n";
+	}
+
+	return ss.str();
+}
+
+std::wstring Common::double2hexstrW(double x) {
+
+	union
+	{
+		long long i;
+		double    d;
+	} value;
+
+	value.d = x;
+
+	std::wostringstream buf;
+	buf << std::hex << std::setfill(L'0') << std::setw(16) << value.i;
+
+	return buf.str();
+
+}
+
+std::string Common::double2hexstrA(double d) {
+
+	char buffer[25] = { 0 };
+
+	::snprintf(buffer, 25, "%A", d); // TODO Check for errors
+
+	return buffer;
+}
+
+double Common::hexastr2doubleA(const std::string& s) {
+
+	double d = 0.0;
+
+	::sscanf(s.c_str(), "%lA", &d); // TODO Check for errors
+
+	return d;
+}
+
+string Common::printMatrixA(MatrixXd m)
+{
+	int cols = m.cols();
+	int rows = m.rows();
+
+	IOFormat CleanFmt(FullPrecision, 0, ", ", "\n", "[", "]");
+
+	stringstream ss;
+
+	ss << m.format(CleanFmt);
 
 	return ss.str();
 }
@@ -118,7 +216,7 @@ bool Common::checkMatrix(MatrixXd expected, MatrixXd actual, double precision)
 
 				_swprintf(message, L"%g != %g index[%i,%i]", expected(i, j), actual(i, j), i, j);
 
-				cout << message << endl;
+				wcout << message << endl;
 
 				result = false;
 			}

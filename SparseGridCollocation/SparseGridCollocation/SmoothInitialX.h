@@ -8,5 +8,6 @@ class SmoothInitialX
 public:
 
 	static VectorXd X();
+	static VectorXd x;
 
 };

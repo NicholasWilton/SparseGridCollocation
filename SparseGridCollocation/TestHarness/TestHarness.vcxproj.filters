@@ -13,9 +13,90 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Data">
+      <UniqueIdentifier>{1b55d6b3-500c-416f-ad53-03f61491705e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
+    <Text Include="..\Data\inner_testLamb_3_1.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="..\Data\inner_testLamb_3_2.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="..\Data\inner_testLamb2_1.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="..\Data\inner_testLamb3_1.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="..\Data\inner_testLamb3_2.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="..\Data\lamb1.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="..\Data\lamb2.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="..\Data\lamb3.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="..\Data\lamb4.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="..\Data\lamb5.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="..\Data\lamb6.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="..\Data\lamb7.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="..\Data\lamb8.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="..\Data\lamb9.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="..\Data\SmoothInitialU.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="..\Data\SmoothInitialX.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="..\Data\TX.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="..\Data\TX1.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="..\Data\TX2.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="..\Data\TX3.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="..\Data\TX4.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="..\Data\TX5.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="..\Data\TX6.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="..\Data\TX7.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="..\Data\TX8.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="..\Data\TX9.txt">
+      <Filter>Data</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -32,5 +113,22 @@
     <ClCompile Include="TestHarness.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Data\inner_test_key.dat">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="..\Data\inner_test_num.dat">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="..\Data\inner_test_sub.dat">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="..\Data\inner_test_thread.dat">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="..\Data\inner_test_value.dat">
+      <Filter>Data</Filter>
+    </None>
   </ItemGroup>
 </Project>

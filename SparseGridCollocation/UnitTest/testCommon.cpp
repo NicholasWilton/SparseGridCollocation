@@ -9,6 +9,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <iomanip>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace Eigen;
@@ -72,11 +73,14 @@ bool testCommon::checkMatrix(MatrixXd expected, MatrixXd actual)
 
 			if (diff > DBL_EPSILON)
 			{
-				const IOFormat fmt(2, DontAlignCols, "\t", " ", "", "", "", "");
+				//const IOFormat fmt(2, DontAlignCols, "\t", " ", "", "", "", "");
+				wstringstream ss;
+				ss << setprecision(25);
+				ss << expected(i, j) << " != " << actual(i, j) << "index[" << i << "," << j << "]" << endl;
+				//_swprintf(message, L"%g != %g index[%i,%i]", expected(i, j), actual(i, j), i, j);
 
-				_swprintf(message, L"%g != %g index[%i,%i]", expected(i, j), actual(i, j), i, j);
 
-				Logger::WriteMessage(message);
+				Logger::WriteMessage(ss.str().c_str());
 
 				result = false;
 			}
@@ -98,11 +102,15 @@ bool testCommon::checkMatrix(MatrixXd expected, MatrixXd actual, double precisio
 			double diff = abs((expected(i, j) - actual(i, j)));
 			if (diff > precision)
 			{
-				const IOFormat fmt(2, DontAlignCols, "\t", " ", "", "", "", "");
+				//const IOFormat fmt(2, DontAlignCols, "\t", " ", "", "", "", "");
 
-				_swprintf(message, L"%g != %g index[%i,%i]", expected(i, j), actual(i, j), i, j);
+				//_swprintf(message, L"%e != %e index[%i,%i]", expected(i, j), actual(i, j), i, j);
 
-				Logger::WriteMessage(message);
+				wstringstream ss;
+				ss << setprecision(25);
+				ss << expected(i, j) << " != " << actual(i, j) << " index[" << i << "," << j << "]" << endl;
+
+				Logger::WriteMessage(ss.str().c_str());
 
 				result = false;
 			}

@@ -25,6 +25,12 @@ public:
 	//Interpolation(const Interpolation & obj);
 	//~Interpolation();
 	vector<vector<MatrixXd>> getResult();
+	MatrixXd getLambda(int id);
+	MatrixXd getTX(int id);
+	MatrixXd getC(int id);
+	MatrixXd getA(int id);
+	MatrixXd getU(int id);
+
 	MatrixXd subnumber(int b, int d);
 	MatrixXd primeNMatrix(int b, int d);
 	void interpolateGeneric(string prefix, double coef, double tsec, int b, int d, double inx1, double inx2, double r, double sigma, double T, double E, 

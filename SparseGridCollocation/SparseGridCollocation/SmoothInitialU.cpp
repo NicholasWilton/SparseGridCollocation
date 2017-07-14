@@ -13,27 +13,33 @@ using Eigen::RowVectorXd;
 using Eigen::UpLoType;
 using namespace std;
 
+VectorXd SmoothInitialU::u;
 
 VectorXd SmoothInitialU::U()
 {
-	ifstream infile("SmoothInitialU.txt");
-	vector<double> doubles;
-	int count = 0;
-	while (infile)
+	if (u.size() == 0)
 	{
-		string s;
-		if (!getline(infile, s)) break;
+		ifstream infile("SmoothInitialU.txt");
+		vector<double> doubles;
+		int count = 0;
+		while (infile)
+		{
+			string s;
+			if (!getline(infile, s)) break;
 
-		doubles.push_back(stod(s));
-		count++;
+			doubles.push_back(stod(s));
+			count++;
+		}
+
+		VectorXd U(doubles.size());
+		vector<double>::iterator it;
+		int i = 0;
+		for (it = doubles.begin(); it < doubles.end(); it++, i++) {
+			U(i) = doubles[i];
+		}
+
+		return U;
 	}
-
-	VectorXd U(doubles.size());
-	vector<double>::iterator it;
-	int i = 0;
-	for (it = doubles.begin(); it < doubles.end(); it++, i++) {
-		U(i) = doubles[i];
-	}
-
-	return U;
+	else
+		return u;
 }
