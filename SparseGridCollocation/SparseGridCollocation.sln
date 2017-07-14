@@ -15,6 +15,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTest", "UnitTest\UnitTe
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestHarness", "TestHarness\TestHarness.vcxproj", "{75C042CB-4DF5-4192-A2BB-ED4F6B4C286A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documents", "Documents", "{A83DC707-3CB8-46BA-8B2E-62B8625F3422}"
+	ProjectSection(SolutionItems) = preProject
+		Documents\OpenQuestions.txt = Documents\OpenQuestions.txt
+		Documents\Quick Start Guide SparseGridCollocation.docx = Documents\Quick Start Guide SparseGridCollocation.docx
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -50,5 +56,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A83DC707-3CB8-46BA-8B2E-62B8625F3422} = {4F30216C-C3F2-466C-917B-6B28B0335E88}
 	EndGlobalSection
 EndGlobal

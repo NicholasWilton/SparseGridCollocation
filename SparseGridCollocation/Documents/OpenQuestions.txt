@@ -1,2 +1,3 @@
 1. test_inner - what precision is required for this calculation, C++ and MatLaB seem to produce different results for this function probably due to rounding and floating point arith.
 2. Multi-level - level 10 uses 11 GB of ram which is beyond the scope of my gfx card ~4GB at max
+3. Is the original code correct? after level 4 it seems that test_inner() should be called many times. I've profiled this and it doesn't seem to be the case.
