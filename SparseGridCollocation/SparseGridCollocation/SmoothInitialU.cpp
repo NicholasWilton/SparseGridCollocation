@@ -38,8 +38,8 @@ VectorXd SmoothInitialU::U()
 			U(i) = doubles[i];
 		}
 
-		return U;
+		u = U;
 	}
-	else
-		return u;
+
+	return u;
 }

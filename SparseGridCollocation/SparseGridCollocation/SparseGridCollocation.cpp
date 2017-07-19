@@ -49,28 +49,17 @@ map<int,MatrixXd> SparseGridCollocation::GetU()
 
 MatrixXd SparseGridCollocation::ECP(MatrixXd X, double r, double sigma, double T, double E)
 {
-	// Analytical price for European call option
-	//t = X(:, 1);
 	VectorXd t= X.col(0);
-	//S = X(:, 2);
 	VectorXd S = X.col(1);
-	//M = T - t;
 	VectorXd M = T - t.array();
-	//[N, ~] = size(X);
 	int N = X.rows();
-	//P = ones(N, 1);
 	VectorXd P = VectorXd::Ones(N, 1);
-	//d1 = ones(N, 1);
 	VectorXd d1 = VectorXd::Ones(N, 1);
-	//d2 = ones(N, 1);
 	VectorXd d2 = VectorXd::Ones(N, 1);
 
-	//I0 = M == 0;
 	MatrixXd I0 = (M.array() == 0).select(M,0);
-	//I1 = M ~= 0;
 	MatrixXd I1 = (M.array() != 0).select(M,0);
 
-	//P(I0) = max(S(I0) - E, 0);
 	for (int i = 0; i < N; i++)
 	{
 		if (S(i) - E > 0)
@@ -78,12 +67,8 @@ MatrixXd SparseGridCollocation::ECP(MatrixXd X, double r, double sigma, double T
 		else
 			P(i) = 0;
 
-
-		//d1(I1) = (log(S(I1) . / E) + (r + sigma ^ 2 / 2).*M(I1)) . / (sigma.*sqrt(M(I1)));
 		d1(i) = (log(S(i) / E) + (r + sigma * sigma / 2)* M(i)) / (sigma * sqrt(M(i)));
-		//d2(I1) = (log(S(I1) . / E) + (r - sigma ^ 2 / 2).*M(I1)) . / (sigma.*sqrt(M(I1)));
 		d2(i) = (log(S(i) / E) + (r - sigma * sigma / 2)* M(i)) / (sigma * sqrt(M(i)));
-		//P(I1) = -E.*exp(-r.*M(I1)).*normcdf(d2(I1)) + S(I1).*normcdf(d1(I1));
 		P(i) = S(i) * normCDF(d1(i)) - E * exp(-r * M(i)) * normCDF(d2(i));
 	}
 	return P;
@@ -91,50 +76,7 @@ MatrixXd SparseGridCollocation::ECP(MatrixXd X, double r, double sigma, double T
 
 double SparseGridCollocation::normCDF(double value)
 {
-	//return 0.5 * erfc(-value * M_SQRT1_2);
 	return 0.5 * erfc(-value * (1/sqrt(2)));
-}
-
-double SparseGridCollocation::inner_test(double t, double x, vector<MatrixXd> lamb, vector<MatrixXd> TX, vector<MatrixXd> C, vector<MatrixXd> A )
-{
-	// This is used in the PDE system re - construct for initial and boundary conditions
-	int ch = TX.size();
-	vector<MatrixXd> V;
-	//for j = 1:ch
-	for (int j = 0; j < ch; j++)
-	{
-		//   multiquadric RBF......
-		//     V1 = sqrt(((t - TX{ j }(:, 1))). ^ 2 + (C{ j }(1, 1). / A{ j }(1, 1)). ^ 2);
-	//     V2 = sqrt(((x - TX{ j }(:, 2))). ^ 2 + (C{ j }(1, 2). / A{ j }(1, 2)). ^ 2);
-	//     VV = V1.*V2;
-	//     V(j) = VV'*lamb{j};
-		//   .....................
-		//   Gaussian RBF  .......
-		//FAI1 = exp(-(A{ j }(1, 1)*(t - TX{ j }(:, 1))). ^ 2 / C{ j }(1, 1) ^ 2);
-		MatrixXd square1 = (A[j](0, 0) * (t - (TX[j].col(0).array())).array()) * (A[j](0, 0) * (t - (TX[j].col(0).array())).array());
-		MatrixXd FAI1 = (- square1 / (C[j](0, 0) * C[j](0, 0))).array().exp();
-
-		//FAI2 = exp(-(A{ j }(1, 2)*(x - TX{ j }(:, 2))). ^ 2 / C{ j }(1, 2) ^ 2);
-		MatrixXd square2 = (A[j](0, 1) * (t - (TX[j].col(1).array())).array()) * (A[j](0, 1) * (t - (TX[j].col(1).array())).array());
-		MatrixXd FAI2 = (-square2 / (C[j](0, 1) * C[j](0, 1))).array().exp();
-		//D = FAI1.*FAI2;
-		VectorXd D = FAI1.cwiseProduct(FAI2).eval();
-		//V(j) = D'*lamb{j};
-		V.push_back(D.transpose() * lamb[j]);
-			//   .....................
-			//end
-	}
-
-		//output = sum(V);
-	double output = 0;
-	int i = 0;
-	for (vector<MatrixXd>::iterator it = V.begin(); it < V.end(); it++, i++)
-	{
-		output += V[i].sum();
-
-	}
-	
-	return output;
 }
 
 vector<MatrixXd> SparseGridCollocation::MuSIKGeneric(int upper, int lower)
@@ -158,23 +100,17 @@ vector<MatrixXd> SparseGridCollocation::MuSIKGeneric(int upper, int lower, map<s
 
 	int ch = 10000;
 
-	//t = linspace(0, tsec, N(1, 1));
 	VectorXd x = VectorXd::LinSpaced(ch, inx1, inx2);
 	VectorXd t = VectorXd::Zero(ch, 1);
 
-	//TX = [t x']; //% testing nodes
 	MatrixXd TX(ch, 2);
 	TX << t, x;
 
-	//% na, nb = level n + dimension d - 1
 	int na = 3;
 	int nb = 2;
-	//tic
-
 
 	// Level 2 ....lamb stands for \lambda the coefficients, TX stands for nodes
 	// C stands for shape parater, A stands for scale parameter
-	//map<string, vector<vector<MatrixXd>> > vInterpolation;
 	
 	if (upper >= 2 & lower <= 2)
 	{
@@ -216,7 +152,6 @@ vector<MatrixXd> SparseGridCollocation::MuSIKGeneric(int upper, int lower, map<s
 	}
 	if (upper >= 4 & lower <= 4)
 	{
-		//ttt(2) = toc;
 		//Level 4 ....higher level needs more information
 		//Logger::WriteMessage("level4");
 		Common::Logger("level4");
@@ -236,8 +171,6 @@ vector<MatrixXd> SparseGridCollocation::MuSIKGeneric(int upper, int lower, map<s
 	}
 	if (upper >= 5 & lower <= 5)
 	{
-		//ttt(3) = toc;
-
 		//Level 5
 		//Logger::WriteMessage("level5");
 		Common::Logger("level5");
@@ -257,8 +190,6 @@ vector<MatrixXd> SparseGridCollocation::MuSIKGeneric(int upper, int lower, map<s
 	}
 	if (upper >= 6 & lower <= 6)
 	{
-		//ttt(4) = toc;
-
 		//Level 6
 		//Logger::WriteMessage("level6");
 		Common::Logger("level6");
@@ -278,8 +209,6 @@ vector<MatrixXd> SparseGridCollocation::MuSIKGeneric(int upper, int lower, map<s
 	}
 	if (upper >= 7 & lower <= 7)
 	{
-		//ttt(5) = toc;
-
 		//Level7
 		//Logger::WriteMessage("level7");
 		Common::Logger("level7");

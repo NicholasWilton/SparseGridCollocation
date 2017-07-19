@@ -12,30 +12,13 @@ using Eigen::RowVectorXd;
 using Eigen::UpLoType;
 using namespace std;
 
-//using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
 double PPP::Calculate(RowVectorXd X)
 {
-	//Logger::WriteMessage(Common::printMatrix(X).c_str());
-	//A = load('Smoothinitial');
-
-	//x1 = A.X_ini;
 	VectorXd x1 = SmoothInitialX::X();
-	//Logger::WriteMessage(Common::printMatrix(x1).c_str());
-	//U1 = A.U_ini;
 	VectorXd U1 = SmoothInitialU::U();
-	//Logger::WriteMessage(Common::printMatrix(U1).c_str());
-
-
-	//I = X(1, 2) == x1;
-	//U = U1(I);
-
-	//If both SmoothInitial files have different numbers of lines then this code will fail
 	VectorXd u = (x1.array() == X(1)).select(U1, 0);
-	//Logger::WriteMessage(Common::printMatrix(u).c_str());
 	double U = u.sum();
 
-	//this is a bit of a hack to mimic the original behaviour:
 	if (U == 0)
 		U = U1.trace();
 

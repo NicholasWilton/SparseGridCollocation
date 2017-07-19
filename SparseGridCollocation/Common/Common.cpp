@@ -7,9 +7,12 @@
 #include <iomanip>
 #include <windows.h>
 #include <direct.h>
+#include <map>
+//#include "../include/boost_1_64_0/boost/multiprecision/cpp_dec_float.hpp"
 
 using namespace Eigen;
 using namespace std;
+//using namespace boost::multiprecision;
 
 #ifdef UNITTEST
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -309,11 +312,125 @@ MatrixXd Common::ReadBinary(string fileName, int rows, int cols)
 	return result;
 };
 
-
-//string Common::GetExePath()
+//typedef number<cpp_dec_float<14> > cpp_dec_float_14;
+//typedef number<cpp_dec_float<15> > cpp_dec_float_15;
+//typedef number<cpp_dec_float<16> > cpp_dec_float_16;
+//typedef number<cpp_dec_float<17> > cpp_dec_float_17;
+//typedef number<cpp_dec_float<18> > cpp_dec_float_18;
+//typedef number<cpp_dec_float<19> > cpp_dec_float_19;
+//typedef number<cpp_dec_float<20> > cpp_dec_float_20;
+//
+//MatrixXd Common::mult(MatrixXd &a, MatrixXd &b)
 //{
-//	//char result[MAX_PATH];
-//	LPWSTR result;
-//	GetModuleFileName(NULL, result, MAX_PATH);
-//	return std::string(result, );
-//}
+//	MatrixXd result(a.rows(), b.cols());
+//
+//	//assume a & b are compatible
+//	for (int i = 0; i < a.rows(); i++)
+//		for (int j = 0; j < b.cols(); j++)
+//		{
+//			cpp_dec_float_16 sum = 0;
+//			for (int x = 0; x < a.cols(); x++)
+//			{
+//				cpp_dec_float_16 l = a(i, x);
+//				cpp_dec_float_16 r = b(x, j);
+//				sum = sum + (l * r);
+//
+//
+//			}
+//			result(i, j) = (double)sum;
+//		}
+//	return result;
+//
+//};
+
+std::map<string, double> Common::LoadMock()
+{
+	int n = 500000;
+	//Data xx;
+	int *key = new int[n];
+	int *thread = new int[n];
+	int *num = new int[n];
+	int *sub = new int[n];
+	double *value = new double[n];
+
+	fstream kFile("C:\\Users\\User\\Source\\Repos\\SparseGridCollocation\\SparseGridCollocation\\x64\\Debug\\inner_test_key.dat", ios::in | ios::out | ios::binary);
+	kFile.seekg(0);
+	kFile.read((char*)key, sizeof(int) * n);
+
+	fstream tFile("C:\\Users\\User\\Source\\Repos\\SparseGridCollocation\\SparseGridCollocation\\x64\\Debug\\inner_test_thread.dat", ios::in | ios::out | ios::binary);
+	tFile.seekg(0);
+	tFile.read((char*)thread, sizeof(int) * n);
+
+	fstream nFile("C:\\Users\\User\\Source\\Repos\\SparseGridCollocation\\SparseGridCollocation\\x64\\Debug\\inner_test_num.dat", ios::in | ios::out | ios::binary);
+	nFile.seekg(0);
+	nFile.read((char*)num, sizeof(int) * n);
+
+	fstream sFile("C:\\Users\\User\\Source\\Repos\\SparseGridCollocation\\SparseGridCollocation\\x64\\Debug\\inner_test_sub.dat", ios::in | ios::out | ios::binary);
+	sFile.seekg(0);
+	sFile.read((char*)sub, sizeof(int) * n);
+
+	fstream vFile("C:\\Users\\User\\Source\\Repos\\SparseGridCollocation\\SparseGridCollocation\\x64\\Debug\\inner_test_value.dat", ios::in | ios::out | ios::binary);
+	vFile.seekg(0);
+	vFile.read((char*)value, sizeof(double) * n);
+
+	map<string, double> result;
+
+	for (int i = 0; i < n; i++)
+	{
+		stringstream ss;
+		ss << key[i] << '_' << thread[i] << '_' << num[i] << '_' << sub[i];
+		string s = ss.str();
+		result[s] = value[i];
+	}
+	return result;
+}
+
+map<string, double> Common::mock;
+
+double Common::innerMock(string key, int thread, int num, int sub)
+{
+	if (Common::mock.size() == 0)
+		Common::mock = LoadMock();
+	stringstream ss;
+	int k;
+	if (key == "4")
+		k = 1;
+	if (key == "_3")
+		k = 2;
+	if (key == "5")
+		k = 3;
+	if (key == "_4")
+		k = 4;
+	if (key == "6")
+		k = 5;
+	if (key == "_5")
+		k = 6;
+	if (key == "7")
+		k = 7;
+	if (key == "_6")
+		k = 8;
+	if (key == "8")
+		k = 9;
+	if (key == "_7")
+		k = 10;
+	if (key == "9")
+		k = 11;
+	if (key == "_8")
+		k = 12;
+	if (key == "10")
+		k = 13;
+	if (key == "_9")
+		k = 14;
+	if (key == "11")
+		k = 15;
+	if (key == "_10")
+		k = 16;
+	/*if (k >= 13)
+	ss << k << '_' << thread+1 << '_' << num+1 << '_' << sub + 1;
+	else*/
+	ss << k << '_' << thread + 1 << '_' << num + 1 << '_' << sub;
+
+	double r = mock[ss.str()];
+	return r;
+}
+

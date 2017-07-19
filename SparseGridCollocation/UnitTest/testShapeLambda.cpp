@@ -236,48 +236,48 @@ namespace UnitTest
 			}
 		}
 
-		TEST_METHOD(TestShapeLambda2D_1)
-		{
-			Interpolation test;
-			int ch = 10000;
+		//TEST_METHOD(TestShapeLambda2D_1)
+		//{
+		//	Interpolation test;
+		//	int ch = 10000;
 
-			double coef = 2;
-			double tsec = 0.8650L;
-			double r = 0.03;
-			double sigma = 0.15;
-			double T = 1;
-			double E = 100;
-			double inx1 = 0;
-			double inx2 = 300;
-			VectorXd x = VectorXd::LinSpaced(ch, inx1, inx2);
-			VectorXd t(ch);
-			t.fill(0);
+		//	double coef = 2;
+		//	double tsec = 0.8650L;
+		//	double r = 0.03;
+		//	double sigma = 0.15;
+		//	double T = 1;
+		//	double E = 100;
+		//	double inx1 = 0;
+		//	double inx2 = 300;
+		//	VectorXd x = VectorXd::LinSpaced(ch, inx1, inx2);
+		//	VectorXd t(ch);
+		//	t.fill(0);
 
-			MatrixXd N(1,2);
-			N << 3,9;
-			map< string, vector<vector<MatrixXd>>> vInterpolation;
-			vInterpolation["2"] = Get2();
-			vInterpolation["3"] = Get3();
+		//	MatrixXd N(1,2);
+		//	N << 3,9;
+		//	map< string, vector<vector<MatrixXd>>> vInterpolation;
+		//	vInterpolation["2"] = Get2();
+		//	vInterpolation["3"] = Get3();
 
-			vector<vector<MatrixXd>> _3 = Get_3();
+		//	vector<vector<MatrixXd>> _3 = Get_3();
 
-			//TODO: improve test to iterate more than once:
-			for (int i = 0; i < N.rows(); i++)
-				//for (int i = 0; i < 1; i++)
-			{
-				vector<string> level2 = {"2", "3"};
-				test.shapelambda2DGeneric("_3", 3, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), level2, &vInterpolation);
-				MatrixXd result = test.getLambda(3);
+		//	//TODO: improve test to iterate more than once:
+		//	for (int i = 0; i < N.rows(); i++)
+		//		//for (int i = 0; i < 1; i++)
+		//	{
+		//		vector<string> level2 = {"2", "3"};
+		//		test.shapelambda2DGeneric("_3", 3, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), level2, &vInterpolation);
+		//		MatrixXd result = test.getLambda(3);
 
-				Assert::IsTrue(testCommon::checkMatrix(_3[0][i], result, 1));
-				result = test.getTX(3);
-				Assert::IsTrue(testCommon::checkMatrix(_3[1][i], result));
-				result = test.getC(3);
-				Assert::IsTrue(testCommon::checkMatrix(_3[2][i], result));
-				result = test.getA(3);
-				Assert::IsTrue(testCommon::checkMatrix(_3[3][i], result));
-			}
-		}
+		//		Assert::IsTrue(testCommon::checkMatrix(_3[0][i], result, 1));
+		//		result = test.getTX(3);
+		//		Assert::IsTrue(testCommon::checkMatrix(_3[1][i], result));
+		//		result = test.getC(3);
+		//		Assert::IsTrue(testCommon::checkMatrix(_3[2][i], result));
+		//		result = test.getA(3);
+		//		Assert::IsTrue(testCommon::checkMatrix(_3[3][i], result));
+		//	}
+		//}
 
 		TEST_METHOD(TestPartialPivotLU)
 		{

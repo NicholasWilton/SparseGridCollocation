@@ -454,13 +454,13 @@ namespace UnitTest
 			a2 << 4, 2;
 			vector<MatrixXd> A3 = { a1,a2 };
 
-			double result = test.inner(0, 0,  lambda3, TX3, C3, A3);
+			double result = test.innerZ(0, 0,  lambda3, TX3, C3, A3);
 			//char buff[256];
 			//sprintf(buff, "%f", result);
 			string s = std::to_string(result);
 			Logger::WriteMessage( s.c_str() );
-			//Assert::AreEqual(expected, result, 0.000000000001);
-			Assert::AreEqual(expected, result);
+			Assert::AreEqual(expected, result, 0.0000000000001);
+			//Assert::AreEqual(expected, result);
 
 		}
 
@@ -508,32 +508,32 @@ namespace UnitTest
 		typedef number<cpp_dec_float<19> > cpp_dec_float_19;
 		typedef number<cpp_dec_float<20> > cpp_dec_float_20;
 
-		TEST_METHOD(TestVectorMultiplication1)
-		{
+		//TEST_METHOD(TestVectorMultiplication1)
+		//{
 
 
-			MatrixXd a = Common::ReadBinary("d_transpose.dat", 1, 15);
-			
-			MatrixXd b = Common::ReadBinary("lambj.dat", 15, 1);
-			
-			MatrixXd c = a * b;
-			MatrixXdM c1 = MatrixXdM(a) * MatrixXdM(b);
-			vector<cpp_dec_float_14> c2 = mult(MatrixXdM(a), MatrixXdM(b));
+		//	MatrixXd a = Common::ReadBinary("d_transpose.dat", 1, 15);
+		//	
+		//	MatrixXd b = Common::ReadBinary("lambj.dat", 15, 1);
+		//	
+		//	MatrixXd c = a * b;
+		//	MatrixXdM c1 = MatrixXdM(a) * MatrixXdM(b);
+		//	vector<cpp_dec_float_14> c2 = mult(MatrixXdM(a), MatrixXdM(b));
 
-			Logger::WriteMessage(Common::printMatrix(a).c_str());
-			Logger::WriteMessage(Common::printMatrix(b).c_str());
-			Logger::WriteMessage(Common::printMatrix(c).c_str());
-			Logger::WriteMessage(Common::printMatrix(c1.value()).c_str());
-			
-			for (auto i : c2)
-			{
-				Logger::WriteMessage(i.str().c_str());
+		//	Logger::WriteMessage(Common::printMatrix(a).c_str());
+		//	Logger::WriteMessage(Common::printMatrix(b).c_str());
+		//	Logger::WriteMessage(Common::printMatrix(c).c_str());
+		//	Logger::WriteMessage(Common::printMatrix(c1.value()).c_str());
+		//	
+		//	for (auto i : c2)
+		//	{
+		//		Logger::WriteMessage(i.str().c_str());
 
-			}
+		//	}
 
-			Assert::AreEqual(-3.0642e-14, c1.value()(0, 0), 0.000000000001);
+		//	Assert::AreEqual(-3.0642e-14, c1.value()(0, 0), 0.000000000001);
 
-		}
+		//}
 
 		vector<cpp_dec_float_14> mult(MatrixXdM &a, MatrixXdM &b)
 		{

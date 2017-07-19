@@ -37,8 +37,7 @@ VectorXd SmoothInitialX::X()
 			X(i) = doubles[i];
 		}
 
-		return X;
+		x = X;
 	}
-	else
-		return x;
+	return x;
 }
