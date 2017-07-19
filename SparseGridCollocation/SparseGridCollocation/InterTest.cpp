@@ -2,6 +2,7 @@
 #include "InterTest.h"
 #include "RBF.h"
 #include <thread>
+#include "Common.h"
 
 using Eigen::Matrix;
 using Eigen::MatrixXd;
@@ -11,6 +12,9 @@ using Eigen::UpLoType;
 using Eigen::Map;
 using namespace Eigen;
 using namespace std;
+
+//#include "CppUnitTest.h"
+//using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 InterTest::InterTest()
 {
@@ -100,7 +104,9 @@ VectorXd InterTest::serial(MatrixXd X, vector<MatrixXd> lamb, vector<MatrixXd> T
 		//end
 	}
 	//output = sum(V, 2);
+	//Logger::WriteMessage(Common::printMatrix(V).c_str());
 	VectorXd output = V.rowwise().sum();
+	//Logger::WriteMessage(Common::printMatrix(output).c_str());
 	return output;
 
 }

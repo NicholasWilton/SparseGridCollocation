@@ -30,16 +30,21 @@ using namespace std;
 #include <thread>
 
 
-
+//#include "CppUnitTest.h"
 //using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 SparseGridCollocation::SparseGridCollocation()
 {
 }
 
-map<string, vector<vector<MatrixXd>>> SparseGridCollocation::GetInterpolation()
+map<string, vector<vector<MatrixXd>>> SparseGridCollocation::GetInterpolationState()
 {
 	return vInterpolation;
+}
+
+map<int,MatrixXd> SparseGridCollocation::GetU()
+{
+	return uMatrix;
 }
 
 MatrixXd SparseGridCollocation::ECP(MatrixXd X, double r, double sigma, double T, double E)
@@ -132,7 +137,11 @@ double SparseGridCollocation::inner_test(double t, double x, vector<MatrixXd> la
 	return output;
 }
 
-vector<VectorXd> SparseGridCollocation::MuSIKGeneric(int level)
+vector<MatrixXd> SparseGridCollocation::MuSIKGeneric(int upper, int lower)
+{
+	return MuSIKGeneric(upper, lower, vInterpolation);
+}
+vector<MatrixXd> SparseGridCollocation::MuSIKGeneric(int upper, int lower, map<string, vector<vector<MatrixXd>>>& interpolation)
 {
 	double E = 100;// strike price
 
@@ -167,7 +176,7 @@ vector<VectorXd> SparseGridCollocation::MuSIKGeneric(int level)
 	// C stands for shape parater, A stands for scale parameter
 	//map<string, vector<vector<MatrixXd>> > vInterpolation;
 	
-	if (level >= 2)
+	if (upper >= 2 & lower <= 2)
 	{
 		//Logger::WriteMessage("level2");
 		Common::Logger("level2");
@@ -175,17 +184,17 @@ vector<VectorXd> SparseGridCollocation::MuSIKGeneric(int level)
 		{
 			string key = "3";
 			Interpolation i;
-			i.interpolateGeneric(key, coef, tsec, na, d, inx1, inx2, r, sigma, T, E, level2, &vInterpolation);
-			vInterpolation[key] = i.getResult();
+			i.interpolateGeneric(key, coef, tsec, na, d, inx1, inx2, r, sigma, T, E, level2, &interpolation);
+			interpolation[key] = i.getResult();
 		}
 		{
 			string key = "2";
 			Interpolation i;
-			i.interpolateGeneric(key, coef, tsec, nb, d, inx1, inx2, r, sigma, T, E, level2, &vInterpolation);
-			vInterpolation[key] = i.getResult();
+			i.interpolateGeneric(key, coef, tsec, nb, d, inx1, inx2, r, sigma, T, E, level2, &interpolation);
+			interpolation[key] = i.getResult();
 		}
 	}
-	if (level >= 3)
+	if (upper >= 3 & lower <= 3)
 	{
 		//Level 3 ....multilevel method has to use all previous information
 		//Logger::WriteMessage("level3");
@@ -195,17 +204,17 @@ vector<VectorXd> SparseGridCollocation::MuSIKGeneric(int level)
 		{
 			Interpolation i;
 			string key = "4";
-			i.interpolateGeneric(key, coef, tsec, na + 1, d, inx1, inx2, r, sigma, T, E, level3, &vInterpolation);
-			vInterpolation[key] = i.getResult();
+			i.interpolateGeneric(key, coef, tsec, na + 1, d, inx1, inx2, r, sigma, T, E, level3, &interpolation);
+			interpolation[key] = i.getResult();
 		}
 		{
 			Interpolation i;
 			string key = "_3";
-			i.interpolateGeneric(key, coef, tsec, nb + 1, d, inx1, inx2, r, sigma, T, E, level3, &vInterpolation);
-			vInterpolation[key] = i.getResult();
+			i.interpolateGeneric(key, coef, tsec, nb + 1, d, inx1, inx2, r, sigma, T, E, level3, &interpolation);
+			interpolation[key] = i.getResult();
 		}
 	}
-	if (level >= 4)
+	if (upper >= 4 & lower <= 4)
 	{
 		//ttt(2) = toc;
 		//Level 4 ....higher level needs more information
@@ -215,17 +224,17 @@ vector<VectorXd> SparseGridCollocation::MuSIKGeneric(int level)
 		{
 			Interpolation i;
 			string key = "5";
-			i.interpolateGeneric(key, coef, tsec, na + 2, d, inx1, inx2, r, sigma, T, E, level4, &vInterpolation);
-			vInterpolation[key] = i.getResult();
+			i.interpolateGeneric(key, coef, tsec, na + 2, d, inx1, inx2, r, sigma, T, E, level4, &interpolation);
+			interpolation[key] = i.getResult();
 		}
 		{
 			Interpolation i;
 			string key = "_4";
-			i.interpolateGeneric(key, coef, tsec, nb + 2, d, inx1, inx2, r, sigma, T, E, level4, &vInterpolation);
-			vInterpolation[key] = i.getResult();
+			i.interpolateGeneric(key, coef, tsec, nb + 2, d, inx1, inx2, r, sigma, T, E, level4, &interpolation);
+			interpolation[key] = i.getResult();
 		}
 	}
-	if (level >= 5)
+	if (upper >= 5 & lower <= 5)
 	{
 		//ttt(3) = toc;
 
@@ -236,17 +245,17 @@ vector<VectorXd> SparseGridCollocation::MuSIKGeneric(int level)
 		{
 			Interpolation i;
 			string key = "6";
-			i.interpolateGeneric(key, coef, tsec, na + 3, d, inx1, inx2, r, sigma, T, E, level5, &vInterpolation);
-			vInterpolation[key] = i.getResult();
+			i.interpolateGeneric(key, coef, tsec, na + 3, d, inx1, inx2, r, sigma, T, E, level5, &interpolation);
+			interpolation[key] = i.getResult();
 		}
 		{
 			Interpolation i;
 			string key = "_5";
-			i.interpolateGeneric(key, coef, tsec, nb + 3, d, inx1, inx2, r, sigma, T, E, level5, &vInterpolation);
-			vInterpolation[key] = i.getResult();
+			i.interpolateGeneric(key, coef, tsec, nb + 3, d, inx1, inx2, r, sigma, T, E, level5, &interpolation);
+			interpolation[key] = i.getResult();
 		}
 	}
-	if (level >= 6)
+	if (upper >= 6 & lower <= 6)
 	{
 		//ttt(4) = toc;
 
@@ -257,17 +266,17 @@ vector<VectorXd> SparseGridCollocation::MuSIKGeneric(int level)
 		{
 			Interpolation i;
 			string key = "7";
-			i.interpolateGeneric(key, coef, tsec, na + 4, d, inx1, inx2, r, sigma, T, E, level6, &vInterpolation);
-			vInterpolation[key] = i.getResult();
+			i.interpolateGeneric(key, coef, tsec, na + 4, d, inx1, inx2, r, sigma, T, E, level6, &interpolation);
+			interpolation[key] = i.getResult();
 		}
 		{
 			Interpolation i;
 			string key = "_6";
-			i.interpolateGeneric(key, coef, tsec, nb + 4, d, inx1, inx2, r, sigma, T, E, level6, &vInterpolation);
-			vInterpolation[key] = i.getResult();
+			i.interpolateGeneric(key, coef, tsec, nb + 4, d, inx1, inx2, r, sigma, T, E, level6, &interpolation);
+			interpolation[key] = i.getResult();
 		}
 	}
-	if (level >= 7)
+	if (upper >= 7 & lower <= 7)
 	{
 		//ttt(5) = toc;
 
@@ -278,17 +287,17 @@ vector<VectorXd> SparseGridCollocation::MuSIKGeneric(int level)
 		{
 			Interpolation i;
 			string key = "8";
-			i.interpolateGeneric(key, coef, tsec, na + 5, d, inx1, inx2, r, sigma, T, E, level7, &vInterpolation);
-			vInterpolation[key] = i.getResult();
+			i.interpolateGeneric(key, coef, tsec, na + 5, d, inx1, inx2, r, sigma, T, E, level7, &interpolation);
+			interpolation[key] = i.getResult();
 		}
 		{
 			Interpolation i;
 			string key = "_7";
-			i.interpolateGeneric(key, coef, tsec, nb + 5, d, inx1, inx2, r, sigma, T, E, level7, &vInterpolation);
-			vInterpolation[key] = i.getResult();
+			i.interpolateGeneric(key, coef, tsec, nb + 5, d, inx1, inx2, r, sigma, T, E, level7, &interpolation);
+			interpolation[key] = i.getResult();
 		}
 	}
-	if (level >= 8)
+	if (upper >= 8 & lower <= 8)
 	{
 		//Level8
 		//Logger::WriteMessage("level8");
@@ -297,17 +306,17 @@ vector<VectorXd> SparseGridCollocation::MuSIKGeneric(int level)
 		{
 			Interpolation i;
 			string key = "9";
-			i.interpolateGeneric(key, coef, tsec, na + 6, d, inx1, inx2, r, sigma, T, E, level8, &vInterpolation);
-			vInterpolation[key] = i.getResult();
+			i.interpolateGeneric(key, coef, tsec, na + 6, d, inx1, inx2, r, sigma, T, E, level8, &interpolation);
+			interpolation[key] = i.getResult();
 		}
 		{
 			Interpolation i;
 			string key = "_8";
-			i.interpolateGeneric(key, coef, tsec, nb + 6, d, inx1, inx2, r, sigma, T, E, level8, &vInterpolation);
-			vInterpolation[key] = i.getResult();
+			i.interpolateGeneric(key, coef, tsec, nb + 6, d, inx1, inx2, r, sigma, T, E, level8, &interpolation);
+			interpolation[key] = i.getResult();
 		}
 	}
-	if (level >= 9)
+	if (upper >= 9 & lower <= 9)
 	{
 		//Level9
 		//Logger::WriteMessage("level9");
@@ -316,17 +325,17 @@ vector<VectorXd> SparseGridCollocation::MuSIKGeneric(int level)
 		{
 			Interpolation i;
 			string key = "10";
-			i.interpolateGeneric(key, coef, tsec, na + 7, d, inx1, inx2, r, sigma, T, E, level9, &vInterpolation);
-			vInterpolation[key] = i.getResult();
+			i.interpolateGeneric(key, coef, tsec, na + 7, d, inx1, inx2, r, sigma, T, E, level9, &interpolation);
+			interpolation[key] = i.getResult();
 		}
 		{
 			Interpolation i;
 			string key = "_9";
-			i.interpolateGeneric(key, coef, tsec, nb + 7, d, inx1, inx2, r, sigma, T, E, level9, &vInterpolation);
-			vInterpolation[key] = i.getResult();
+			i.interpolateGeneric(key, coef, tsec, nb + 7, d, inx1, inx2, r, sigma, T, E, level9, &interpolation);
+			interpolation[key] = i.getResult();
 		}
 	}
-	if (level >= 10)
+	if (upper >= 10 & lower <= 10)
 	{
 		//Level10
 		//Logger::WriteMessage("level10");
@@ -335,14 +344,14 @@ vector<VectorXd> SparseGridCollocation::MuSIKGeneric(int level)
 		{
 			Interpolation i;
 			string key = "11";
-			i.interpolateGeneric(key, coef, tsec, na + 8, d, inx1, inx2, r, sigma, T, E, level10, &vInterpolation);
-			vInterpolation[key] = i.getResult();
+			i.interpolateGeneric(key, coef, tsec, na + 8, d, inx1, inx2, r, sigma, T, E, level10, &interpolation);
+			interpolation[key] = i.getResult();
 		}
 		{
 			Interpolation i;
 			string key = "_10";
-			i.interpolateGeneric("_10", coef, tsec, nb + 8, d, inx1, inx2, r, sigma, T, E, level10, &vInterpolation);
-			vInterpolation[key] = i.getResult();
+			i.interpolateGeneric("_10", coef, tsec, nb + 8, d, inx1, inx2, r, sigma, T, E, level10, &interpolation);
+			interpolation[key] = i.getResult();
 		}
 	}
 	//Logger::WriteMessage("inter_test");
@@ -352,86 +361,102 @@ vector<VectorXd> SparseGridCollocation::MuSIKGeneric(int level)
 	//interTest.Execute(vInterpolation, TX);
 	
 	VectorXd U = VectorXd::Zero(10000);
-	if (level >= 2)
+	if (upper >= 2 & lower <= 2)
 	{
-		vector<vector<MatrixXd>> test2 = vInterpolation["2"];
+		vector<vector<MatrixXd>> test2 = interpolation["2"];
 		VectorXd V_2 = interTest.serial(TX, test2[0], test2[1], test2[2], test2[3]);
-		vector<vector<MatrixXd>> test3 = vInterpolation["3"];
+		vector<vector<MatrixXd>> test3 = interpolation["3"];
 		VectorXd V3 = interTest.serial(TX, test3[0], test3[1], test3[2], test3[3]);
 		U = V3 - V_2;
+		uMatrix[0] = U;
 	}
 	VectorXd U1 = VectorXd::Zero(10000);
-	if (level >= 3)
+	if (upper >= 3 & lower <= 3)
 	{
-		vector<vector<MatrixXd>> test3 = vInterpolation["3"];
-		vector<vector<MatrixXd>> test_3 = vInterpolation["_3"];
-		VectorXd V_3 = interTest.serial(TX, test3[0], test3[1], test3[2], test3[3]);
-		vector<vector<MatrixXd>> test4 = vInterpolation["4"];
+		vector<vector<MatrixXd>> test_3 = interpolation["_3"];
+		VectorXd V_3 = interTest.serial(TX, test_3[0], test_3[1], test_3[2], test_3[3]);
+		vector<vector<MatrixXd>> test4 = interpolation["4"];
 		VectorXd V4 = interTest.serial(TX, test4[0], test4[1], test4[2], test4[3]);
 		U1 = V4 - V_3;
+		uMatrix[1] = U1;
 	}
 	VectorXd U2 = VectorXd::Zero(10000);
-	if (level >= 4)
+	if (upper >= 4 & lower <= 4)
 	{
-		vector<vector<MatrixXd>> test_4 = vInterpolation["_4"];
+		vector<vector<MatrixXd>> test_4 = interpolation["_4"];
 		VectorXd V_4 = interTest.serial(TX, test_4[0], test_4[1], test_4[2], test_4[3]);
-		vector<vector<MatrixXd>> test5 = vInterpolation["5"];
+		//Logger::WriteMessage(Common::printMatrix(test_4[0][0]).c_str());
+		//Logger::WriteMessage(Common::printMatrix(test_4[0][1]).c_str());
+		//Logger::WriteMessage(Common::printMatrix(test_4[0][2]).c_str());
+		//Logger::WriteMessage(Common::printMatrix(V_4).c_str());
+
+		vector<vector<MatrixXd>> test5 = interpolation["5"];
 		VectorXd V5 = interTest.serial(TX, test5[0], test5[1], test5[2], test5[3]);
+		//Logger::WriteMessage(Common::printMatrix(TX).c_str());
+		//Logger::WriteMessage(Common::printMatrix(V5).c_str());
 		U2 = V5 - V_4;
+		//Logger::WriteMessage(Common::printMatrix(U2).c_str());
+		uMatrix[2] = U2;
 	}
 	VectorXd U3 = VectorXd::Zero(10000);
-	if (level >= 5)
+	if (upper >= 5 & lower <= 5)
 	{
-		vector<vector<MatrixXd>> test_5 = vInterpolation["_5"];
+		vector<vector<MatrixXd>> test_5 = interpolation["_5"];
 		VectorXd V_5 = interTest.serial(TX, test_5[0], test_5[1], test_5[2], test_5[3]);
-		vector<vector<MatrixXd>> test6 = vInterpolation["6"];
+		vector<vector<MatrixXd>> test6 = interpolation["6"];
 		VectorXd V6 = interTest.serial(TX, test6[0], test6[1], test6[2], test6[3]);
 		U3 = V6 - V_5;
+		uMatrix[3] = U3;
 	}
 	VectorXd U4 = VectorXd::Zero(10000);
-	if (level >= 6)
+	if (upper >= 6 & lower <= 6)
 	{
-		vector<vector<MatrixXd>> test_6 = vInterpolation["_6"];
+		vector<vector<MatrixXd>> test_6 = interpolation["_6"];
 		VectorXd V_6 = interTest.serial(TX, test_6[0], test_6[1], test_6[2], test_6[3]);
-		vector<vector<MatrixXd>> test7 = vInterpolation["7"];
+		vector<vector<MatrixXd>> test7 = interpolation["7"];
 		VectorXd V7 = interTest.serial(TX, test7[0], test7[1], test7[2], test7[3]);
 		U4 = V7 - V_6;
+		uMatrix[4] = U4;
 	}
 	VectorXd U5 = VectorXd::Zero(10000);
-	if (level >= 7)
+	if (upper >= 7 & lower <= 7)
 	{
-		vector<vector<MatrixXd>> test_7 = vInterpolation["_7"];
+		vector<vector<MatrixXd>> test_7 = interpolation["_7"];
 		VectorXd V_7 = interTest.serial(TX, test_7[0], test_7[1], test_7[2], test_7[3]);
-		vector<vector<MatrixXd>> test8 = vInterpolation["8"];
+		vector<vector<MatrixXd>> test8 = interpolation["8"];
 		VectorXd V8 = interTest.serial(TX, test8[0], test8[1], test8[2], test8[3]);
 		U5 = V8 - V_7;
+		uMatrix[5] = U5;
 	}
 	VectorXd U6 = VectorXd::Zero(10000);
-	if (level >= 8)
+	if (upper >= 8 & lower <= 8)
 	{
-		vector<vector<MatrixXd>> test_8 = vInterpolation["_8"];
+		vector<vector<MatrixXd>> test_8 = interpolation["_8"];
 		VectorXd V_8 = interTest.serial(TX, test_8[0], test_8[1], test_8[2], test_8[3]);
-		vector<vector<MatrixXd>> test9 = vInterpolation["9"];
+		vector<vector<MatrixXd>> test9 = interpolation["9"];
 		VectorXd V9 = interTest.serial(TX, test9[0], test9[1], test9[2], test9[3]);
 		U6 = V9 - V_8;
+		uMatrix[6] = U6;
 	}
 	VectorXd U7 = VectorXd::Zero(10000);
-	if (level >= 9)
+	if (upper >= 9 & lower <= 9)
 	{
-		vector<vector<MatrixXd>> test_9 = vInterpolation["_9"];
+		vector<vector<MatrixXd>> test_9 = interpolation["_9"];
 		VectorXd V_9 = interTest.serial(TX, test_9[0], test_9[1], test_9[2], test_9[3]);
-		vector<vector<MatrixXd>> test10 = vInterpolation["10"];
+		vector<vector<MatrixXd>> test10 = interpolation["10"];
 		VectorXd V10 = interTest.serial(TX, test10[0], test10[1], test10[2], test10[3]);
 		U7 = V10 - V_9;
+		uMatrix[7] = U7;
 	}
 	VectorXd U8 = VectorXd::Zero(10000);
-	if (level >= 10)
+	if (upper >= 10 & lower <= 10)
 	{
-		vector<vector<MatrixXd>> test_10 = vInterpolation["_10"];
+		vector<vector<MatrixXd>> test_10 = interpolation["_10"];
 		VectorXd V_10 = interTest.serial(TX, test_10[0], test_10[1], test_10[2], test_10[3]);
-		vector<vector<MatrixXd>> test11 = vInterpolation["11"];
+		vector<vector<MatrixXd>> test11 = interpolation["11"];
 		VectorXd V11 = interTest.serial(TX, test11[0], test11[1], test11[2], test11[3]);
 		U8 = V11 - V_10;
+		uMatrix[8] = U8;
 	}
 	//Logger::WriteMessage("inter_test complete");
 	Common::Logger("inter_test complete");
@@ -452,15 +477,24 @@ vector<VectorXd> SparseGridCollocation::MuSIKGeneric(int level)
 	Common::Logger("MuSIK addition");
 	int m = U.rows();
 	MatrixXd MuSIK = MatrixXd::Zero(m,9);
-	MuSIK.col(0) = U;
-	MuSIK.col(1) = U + U1;
-	MuSIK.col(2) = U + U1 + U2;
-	MuSIK.col(3) = U + U1 + U2 + U3;
-	MuSIK.col(4) = U + U1 + U2 + U3 + U4;
-	MuSIK.col(5) = U + U1 + U2 + U3 + U4 + U5;
-	MuSIK.col(6) = U + U1 + U2 + U3 + U4 + U5 + U6;
-	MuSIK.col(7) = U + U1 + U2 + U3 + U4 + U5 + U6 + U7;
-	MuSIK.col(8) = U + U1 + U2 + U3 + U4 + U5 + U6 + U7 + U8;
+	if (upper >= 2 & lower <= 2)
+		MuSIK.col(0) = U;
+	if (upper >= 3 & lower <= 3)
+		MuSIK.col(1) = U + U1;
+	if (upper >= 4 & lower <= 4)
+		MuSIK.col(2) = U + U1 + U2;
+	if (upper >= 5 & lower <= 5)
+		MuSIK.col(3) = U + U1 + U2 + U3;
+	if (upper >= 6 & lower <= 6)
+		MuSIK.col(4) = U + U1 + U2 + U3 + U4;
+	if (upper >= 7 & lower <= 7)
+		MuSIK.col(5) = U + U1 + U2 + U3 + U4 + U5;
+	if (upper >= 8 & lower <= 8)
+		MuSIK.col(6) = U + U1 + U2 + U3 + U4 + U5 + U6;
+	if (upper >= 9 & lower <= 9)
+		MuSIK.col(7) = U + U1 + U2 + U3 + U4 + U5 + U6 + U7;
+	if (upper >= 10 & lower <= 10)
+		MuSIK.col(8) = U + U1 + U2 + U3 + U4 + U5 + U6 + U7 + U8;
 
 	VectorXd RMS = VectorXd::Ones(9,1);
 	VectorXd Max = VectorXd::Ones(9, 1);
@@ -475,7 +509,8 @@ vector<VectorXd> SparseGridCollocation::MuSIKGeneric(int level)
 		Max[i] = m.maxCoeff();
 	}
 
-	vector<VectorXd> result = { RMS, Max };
+	vInterpolation = interpolation;
+	vector<MatrixXd> result = { MuSIK, RMS, Max };
 	return result;
 }
 double SparseGridCollocation::RootMeanSquare(VectorXd v)

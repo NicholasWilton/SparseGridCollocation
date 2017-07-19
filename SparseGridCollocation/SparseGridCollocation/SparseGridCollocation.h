@@ -25,11 +25,14 @@ public:
 	double normCDF(double value);
 	double RootMeanSquare(VectorXd v);
 
-	vector<VectorXd> MuSIKGeneric(int level);
-	map<string, vector<vector<MatrixXd>>> GetInterpolation();
+	vector<MatrixXd> MuSIKGeneric(int upper, int lower);
+	vector<MatrixXd> MuSIKGeneric(int upper, int lower, map<string, vector<vector<MatrixXd>>>& interpolation);
+	map<string, vector<vector<MatrixXd>>> GetInterpolationState();
+	map<int, MatrixXd> GetU();
 
 private:
 	map<string, vector<vector<MatrixXd>>> vInterpolation;
+	map<int, MatrixXd> uMatrix;
 	//key - index from matlab code eg lamb3, TX3 etc -> '3'
 	//value - vector of items lamb, TX, C, A
 	//		- each in turn is a vector of Matrices

@@ -223,7 +223,7 @@ namespace UnitTest
 				
 				map< string, vector<vector<MatrixXd>>> vInterpolation;
 				vector<string> level2 = {};
-				test.shapelambda2DGeneric(3, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), level2, &vInterpolation);
+				test.shapelambda2DGeneric("2", 3, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), level2, &vInterpolation);
 				
 				MatrixXd result = test.getLambda(3);
 				Assert::IsTrue(testCommon::checkMatrix(uLamb3[i],  result, 1));
@@ -266,7 +266,7 @@ namespace UnitTest
 				//for (int i = 0; i < 1; i++)
 			{
 				vector<string> level2 = {"2", "3"};
-				test.shapelambda2DGeneric(3, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), level2, &vInterpolation);
+				test.shapelambda2DGeneric("_3", 3, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), level2, &vInterpolation);
 				MatrixXd result = test.getLambda(3);
 
 				Assert::IsTrue(testCommon::checkMatrix(_3[0][i], result, 1));

@@ -35,7 +35,7 @@ public:
 	MatrixXd primeNMatrix(int b, int d);
 	void interpolateGeneric(string prefix, double coef, double tsec, int b, int d, double inx1, double inx2, double r, double sigma, double T, double E, 
 		vector<string> keys, const  map<string, vector<vector<MatrixXd>> > * vInterpolation);
-	void shapelambda2DGeneric(int threadId, double coef, double tsec, double r, double sigma, double T, double E, double inx1, double inx2, MatrixXd N, 
+	void shapelambda2DGeneric(string prefix, int threadId, double coef, double tsec, double r, double sigma, double T, double E, double inx1, double inx2, MatrixXd N, 
 		vector<string> keys, const  map<string, vector<vector<MatrixXd>> > * vInterpolation);
 };
 

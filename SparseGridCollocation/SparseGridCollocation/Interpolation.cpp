@@ -53,8 +53,8 @@ void Interpolation::interpolateGeneric(string prefix, double coef, double tsec, 
 
 	for (int i = 0; i < N.rows(); i++)
 	{
-		threads.push_back(std::thread(&Interpolation::shapelambda2DGeneric, this, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
-		//shapelambda2DGeneric(i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
+		threads.push_back(std::thread(&Interpolation::shapelambda2DGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
+		//shapelambda2DGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
 	}
 
 	
@@ -161,7 +161,7 @@ MatrixXd Interpolation::subnumber(int b, int d)
 
 
 
-void Interpolation::shapelambda2DGeneric(int threadId, double coef, double tsec, double r, double sigma, double T, double E, double inx1, double inx2, MatrixXd N,
+void Interpolation::shapelambda2DGeneric(string prefix, int threadId, double coef, double tsec, double r, double sigma, double T, double E, double inx1, double inx2, MatrixXd N,
 	vector<string> keys, const map<string, vector<vector<MatrixXd>> > * state)
 {
 	map<string, vector<vector<MatrixXd>>> vInterpolation = * state;
@@ -225,9 +225,10 @@ void Interpolation::shapelambda2DGeneric(int threadId, double coef, double tsec,
 		u -= PDE::BlackScholes(TX1, r, sigma,
 			vInterpolation[k1][0], vInterpolation[k1][1], vInterpolation[k1][2], vInterpolation[k1][3],
 			vInterpolation[k2][0], vInterpolation[k2][1], vInterpolation[k2][2], vInterpolation[k2][3]);
+		//Logger::WriteMessage(Common::printMatrix(u).c_str());
 	}
 	//Logger::WriteMessage(Common::printMatrix(u).c_str());
-	//cout << Common::printMatrixA(u) << endl;
+	//wcout << Common::printMatrix(u) << endl;
 
 	for (int i = 0; i < num; i++)
 	{
@@ -242,11 +243,13 @@ void Interpolation::shapelambda2DGeneric(int threadId, double coef, double tsec,
 			{
 				string k1 = keys[s];
 				string k2 = keys[s + 1];
-				double a = Test::innerY(TX1(i, 0), TX1(i, 1), vInterpolation[k2][0], vInterpolation[k2][1], vInterpolation[k2][2], vInterpolation[k2][3]);
-				//double a = Test::innerMock(k2, threadId, i, s + 1);
-				double b = Test::innerY(TX1(i, 0), TX1(i, 1), vInterpolation[k1][0], vInterpolation[k1][1], vInterpolation[k1][2], vInterpolation[k1][3]);
-				//double b = Test::innerMock(k1, threadId, i, s + 2);
-				sub -= (a - b);
+				double a = Test::innerZ(TX1(i, 0), TX1(i, 1), vInterpolation[k2][0], vInterpolation[k2][1], vInterpolation[k2][2], vInterpolation[k2][3]);
+				//double a = Test::inner(TX1(i, 0), TX1(i, 1), vInterpolation[k2][0], vInterpolation[k2][1], vInterpolation[k2][2], vInterpolation[k2][3]);
+				//double a = Test::innerMock(prefix, threadId, i, s + 1);
+				double b = Test::innerZ(TX1(i, 0), TX1(i, 1), vInterpolation[k1][0], vInterpolation[k1][1], vInterpolation[k1][2], vInterpolation[k1][3]);
+				//double b = Test::innerMock(prefix, threadId, i, s + 2);
+				//double b = Test::inner(TX1(i, 0), TX1(i, 1), vInterpolation[k1][0], vInterpolation[k1][1], vInterpolation[k1][2], vInterpolation[k1][3]);
+				sub += (a - b);
 			}
 			
 			if (max > 0)
@@ -263,13 +266,15 @@ void Interpolation::shapelambda2DGeneric(int threadId, double coef, double tsec,
 			{
 				string k1 = keys[s];
 				string k2 = keys[s + 1];
-				double a = Test::innerY(TX1(i, 0), TX1(i, 1), vInterpolation[k2][0], vInterpolation[k2][1], vInterpolation[k2][2], vInterpolation[k2][3]);
-				//double a = Test::innerMock(k2, threadId, i, keys.size() + s + 1);
-				double b = Test::innerY(TX1(i, 0), TX1(i, 1), vInterpolation[k1][0], vInterpolation[k1][1], vInterpolation[k1][2], vInterpolation[k1][3]);
-				//double b = Test::innerMock(k1, threadId, i, keys.size() + s + 2);
+				//double a = Test::inner(TX1(i, 0), TX1(i, 1), vInterpolation[k2][0], vInterpolation[k2][1], vInterpolation[k2][2], vInterpolation[k2][3]);
+				double a = Test::innerZ(TX1(i, 0), TX1(i, 1), vInterpolation[k2][0], vInterpolation[k2][1], vInterpolation[k2][2], vInterpolation[k2][3]);
+				//double a = Test::innerMock(prefix, threadId, i, keys.size() + s + 1);
+				//double b = Test::inner(TX1(i, 0), TX1(i, 1), vInterpolation[k1][0], vInterpolation[k1][1], vInterpolation[k1][2], vInterpolation[k1][3]);
+				double b = Test::innerZ(TX1(i, 0), TX1(i, 1), vInterpolation[k1][0], vInterpolation[k1][1], vInterpolation[k1][2], vInterpolation[k1][3]);
+				//double b = Test::innerMock(prefix, threadId, i, keys.size() + s + 2);
 				/*sub += (inner_test(TX1(i, 0), TX1(i, 1), vInterpolation[k2][0], vInterpolation[k2][0], vInterpolation[k2][0], vInterpolation[k2][0])
 				- inner_test(TX1(i, 0), TX1(i, 1), vInterpolation[k1][0], vInterpolation[k1][0], vInterpolation[k1][0], vInterpolation[k1][0]));*/
-				sub -= (a - b);
+				sub += (a - b);
 			}
 			
 			double d = PPP::Calculate(TX1.row(i)) - sub;
@@ -298,16 +303,18 @@ void Interpolation::shapelambda2DGeneric(int threadId, double coef, double tsec,
 	//MatrixXd transform(15, 15);
 	//transform << 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0;
 	MatrixXd Fa = lu.permutationP().transpose() * F;
+	//wcout << Common::printMatrix(Fa) << endl;
 	//MatrixXd Fa = F;
 	//Logger::WriteMessage(Common::printMatrix(Fa).c_str());
 	//Eigen also seems to solve with different rounding, maybe a double arithmetic issue:
 	//Jlamda = F\U;
 	MatrixXd Jlamda = Fa.lu().solve(u);
+	//wcout << Common::printMatrix(Jlamda) << endl;
 	//Logger::WriteMessage(Common::printMatrix(Jlamda).c_str());
 	//lamb = J\Jlamda;
 	MatrixXd l = J.lu().solve(Jlamda);
 	//Logger::WriteMessage(Common::printMatrix(l).c_str());
-
+	//wcout << Common::printMatrix(l) << endl;
 	Lambda[threadId] = l;
 	TX[threadId] = tx;
 	C[threadId] = c;

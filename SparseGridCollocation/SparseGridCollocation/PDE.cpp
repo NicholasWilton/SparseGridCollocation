@@ -43,6 +43,7 @@ MatrixXd PDE::BlackScholes(MatrixXd node, double r, double sigma,
 		U2.col(j) = a + b + c - d;
 		//end
 	}
+	//Logger::WriteMessage(Common::printMatrix(U2).c_str());
 	//ch3 = length(TX3);
 	int ch3 = TX3.size();
 	//U3 = ones(N, ch3);
@@ -61,9 +62,14 @@ MatrixXd PDE::BlackScholes(MatrixXd node, double r, double sigma,
 		MatrixXd d = r * mqd[0] * lambda3[j];
 		U3.col(j) = a + b + c - d;
 	}
+	//Logger::WriteMessage(Common::printMatrix(U3).c_str());
 	//output is depending on the combination tech
 	//output = (sum(U3, 2) - sum(U2, 2));
-	MatrixXd output = U3.rowwise().sum() - U2.rowwise().sum();
+	MatrixXd s1 = U3.rowwise().sum();
+	//Logger::WriteMessage(Common::printMatrix(s1).c_str());
+	MatrixXd s2 = U2.rowwise().sum();
+	//Logger::WriteMessage(Common::printMatrix(s2).c_str());
+	MatrixXd output = s1 - s2;
 
 	return output;
 }

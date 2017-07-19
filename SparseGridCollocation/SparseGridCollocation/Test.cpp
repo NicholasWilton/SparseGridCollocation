@@ -14,7 +14,8 @@
 #include <string>
 #include <iomanip> 
 #include <fstream>
-
+#include "../include/boost_1_64_0/boost/multiprecision/cpp_dec_float.hpp"
+using namespace boost::multiprecision;
 //using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 map<string, double> Test::mock;
@@ -67,9 +68,9 @@ double Test::MatLabRounding(double d)
 
 map<string, double> Test::LoadMock()
 {
-	int n = 100000;
+	int n = 500000;
 	//Data xx;
-	char *key = new char[n];
+	int *key = new int[n];
 	int *thread = new int[n];
 	int *num = new int[n];
 	int *sub = new int[n];
@@ -77,7 +78,7 @@ map<string, double> Test::LoadMock()
 
 	fstream kFile("C:\\Users\\User\\Source\\Repos\\SparseGridCollocation\\SparseGridCollocation\\x64\\Debug\\inner_test_key.dat", ios::in | ios::out | ios::binary);
 	kFile.seekg(0);
-	kFile.read((char*)key, sizeof(char) * n);
+	kFile.read((char*)key, sizeof(int) * n);
 
 	fstream tFile("C:\\Users\\User\\Source\\Repos\\SparseGridCollocation\\SparseGridCollocation\\x64\\Debug\\inner_test_thread.dat", ios::in | ios::out | ios::binary);
 	tFile.seekg(0);
@@ -112,42 +113,46 @@ double Test::innerMock(string key, int thread, int num, int sub)
 	if (Test::mock.size() == 0)
 		Test::mock = LoadMock();
 	stringstream ss;
-	string k;
+	int k;
 	if (key == "4")
-		k = "\x1";
+		k = 1;
 	if (key == "_3")
-		k = "\x2";
+		k = 2;
 	if (key == "5")
-		k = "\x3";
+		k = 3;
 	if (key == "_4")
-		k = "\x4";
+		k = 4;
 	if (key == "6")
-		k = "\x5";
+		k = 5;
 	if (key == "_5")
-		k = "\x6";
+		k = 6;
 	if (key == "7")
-		k = "\x7";
+		k = 7;
 	if (key == "_6")
-		k = "\x8";
+		k = 8;
 	if (key == "8")
-		k = "\x9";
+		k = 9;
 	if (key == "_7")
-		k = "\x10";
+		k = 10;
 	if (key == "9")
-		k = "\x11";
+		k = 11;
 	if (key == "_8")
-		k = "\x12";
+		k = 12;
 	if (key == "10")
-		k = "\x13";
+		k = 13;
 	if (key == "_9")
-		k = "\x14";
+		k = 14;
 	if (key == "11")
-		k = "\x15";
+		k = 15;
 	if (key == "_10")
-		k = "\x16";
-	ss << k << '_' << thread << '_' << num << '_' << sub;
-	return Test::mock[ss.str()];
-	//return 0;
+		k = 16;
+	/*if (k >= 13)
+		ss << k << '_' << thread+1 << '_' << num+1 << '_' << sub + 1;
+	else*/
+		ss << k << '_' << thread + 1 << '_' << num + 1 << '_' << sub;
+
+	double r =  Test::mock[ss.str()];
+	return r;
 }
 
 double Test::inner(double t, double x, vector<MatrixXd> lamb, vector<MatrixXd> TX, vector<MatrixXd> C, vector<MatrixXd> A)
@@ -184,33 +189,34 @@ double Test::inner(double t, double x, vector<MatrixXd> lamb, vector<MatrixXd> T
 		//D = FAI1.*FAI2;
 		VectorXd D = FAI1.cwiseProduct(FAI2).eval();
 		//Logger::WriteMessage(Common::printMatrixA(D).c_str());
-		//Logger::WriteMessage(Common::printMatrixA(lamb[j]).c_str());
+		
 		//wcout << Common::printMatrix(D) << endl;
 		//wcout << Common::printMatrix(lamb[j]) << endl;
 		//V(j) = D'*lamb{j};
 		MatrixXd d = MatLabRounding(D.transpose());
 		//Logger::WriteMessage(Common::printMatrix(d).c_str());
+		//Logger::WriteMessage(Common::printMatrix(lamb[j]).c_str());
 		MatrixXd res = d * lamb[j];
 		//Logger::WriteMessage(Common::printMatrixA(res).c_str());
-		wcout << Common::printMatrix(lamb[j]).c_str() << endl;
-		wcout << Common::printMatrixHexW(lamb[j]).c_str() << endl;
-		cout << Common::printMatrixA(d).c_str() << endl;
-		wcout << Common::printMatrixHexW(d).c_str() << endl;
+		//wcout << Common::printMatrix(lamb[j]).c_str() << endl;
+		//wcout << Common::printMatrixHexW(lamb[j]).c_str() << endl;
+		//cout << Common::printMatrixA(d).c_str() << endl;
+		//wcout << Common::printMatrixHexW(d).c_str() << endl;
 		V.push_back(res(0,0));
-		cout << Common::printMatrixA(res).c_str() << endl;
-		wcout << Common::printMatrixHexA(res).c_str() << endl;
+		//cout << Common::printMatrixA(res).c_str() << endl;
+		//wcout << Common::printMatrixHexA(res).c_str() << endl;
 		MatrixXdM d1 (d);
 
 		MatrixXdM l1(lamb[j]);
 		//Logger::WriteMessage(Common::printMatrixA(l1.value()).c_str());
 		//Logger::WriteMessage(Common::printMatrix(d1.value()).c_str());
-		wcout << Common::printMatrixHexA(l1.value()).c_str() << endl;
-		wcout << Common::printMatrixHexA(d1.value()).c_str() << endl;
+		//wcout << Common::printMatrixHexA(l1.value()).c_str() << endl;
+		//wcout << Common::printMatrixHexA(d1.value()).c_str() << endl;
 
 		MatrixXd res1 = (d1 * l1).value();
 		//Logger::WriteMessage(Common::printMatrixA(res1).c_str());
-		cout << Common::printMatrixA(res1).c_str() << endl;
-		wcout << Common::printMatrixHexA(res1).c_str() << endl;
+		//cout << Common::printMatrixA(res1).c_str() << endl;
+		//wcout << Common::printMatrixHexA(res1).c_str() << endl;
 
 		//   .....................
 		//end
@@ -264,6 +270,7 @@ double Test::innerY(double t, double x, vector<MatrixXd> lamb, vector<MatrixXd> 
 		//Logger::WriteMessage(Common::printMatrix(lamb[j]).c_str());
 		MatrixXd res = d * lamb[j];
 		//Logger::WriteMessage(Common::printMatrix(res).c_str());
+		//cout << Common::printMatrixA(res).c_str() << endl;
 		
 		V.push_back(res(0, 0));
 		
@@ -279,11 +286,111 @@ double Test::innerY(double t, double x, vector<MatrixXd> lamb, vector<MatrixXd> 
 	{
 		//Logger::WriteMessage(Common::printMatrix(V[i]).c_str());
 		output += V[i];// .sum();
+		wcout << V[i] << endl;
 
 	}
-
+	wcout << output << endl;
 	return output;
 }
+
+double Test::innerZ(double t, double x, vector<MatrixXd> lamb, vector<MatrixXd> TX, vector<MatrixXd> C, vector<MatrixXd> A)
+{
+
+	int ch = TX.size();
+	vector<double> V;
+
+	for (int j = 0; j < ch; j++)
+	{
+
+		MatrixXd square1 = (A[j](0, 0) * (t - (TX[j].col(0).array())).array()) * (A[j](0, 0) * (t - (TX[j].col(0).array())).array());
+		//Logger::WriteMessage(Common::printMatrix(square1).c_str());
+		MatrixXd a = -square1 / (C[j](0, 0) * C[j](0, 0));
+		//Logger::WriteMessage(Common::printMatrix(a).c_str());
+		MatrixXd FAI1 = a.array().exp();
+		//Logger::WriteMessage(Common::printMatrix(FAI1).c_str());
+		//wcout << setprecision(30) << Common::printMatrix(FAI1) << endl;
+		double e = exp(1);
+
+		MatrixXd square2 = (A[j](0, 1) * (x - (TX[j].col(1).array())).array()) * (A[j](0, 1) * (x - (TX[j].col(1).array())).array());
+		
+		//wcout << setprecision(30) << Common::printMatrix(TX[j].col(1).array()) << endl;
+		//wcout << setprecision(30) << Common::printMatrix(square2) << endl;
+		//Logger::WriteMessage(Common::printMatrix(square2).c_str());
+		MatrixXd b = -square2 / (C[j](0, 1) * C[j](0, 1));
+		//wcout << setprecision(30) << Common::printMatrix(b) << endl;
+		//Logger::WriteMessage(Common::printMatrix(b).c_str());
+		MatrixXd FAI2 = b.array().exp();
+		//Logger::WriteMessage(Common::printMatrix(FAI2).c_str());
+		//wcout << setprecision(30) << Common::printMatrix(FAI2) << endl;
+
+
+		//D = FAI1.*FAI2;
+		VectorXd D = FAI1.cwiseProduct(FAI2).eval();
+		//Logger::WriteMessage(Common::printMatrix(D).c_str());
+
+		MatrixXd d = D.transpose();
+		//Logger::WriteMessage(Common::printMatrix(d).c_str());
+		//wcout << setprecision(30) << Common::printMatrix(d) << endl;
+		//wcout << setprecision(30) << Common::printMatrix(lamb[j]) << endl;
+
+		//Logger::WriteMessage(Common::printMatrix(lamb[j]).c_str());
+		//MatrixXd res = d * lamb[j];
+		MatrixXd res = mult(d, lamb[j]);
+		//wcout << setprecision(30) << Common::printMatrix(res) << endl;
+		//Logger::WriteMessage(Common::printMatrix(res).c_str());
+		//wcout << Common::printMatrix(res).c_str() << endl;
+
+		V.push_back(res(0, 0));
+
+
+		//   .....................
+		//end
+	}
+
+	//output = sum(V);
+	double output = 0;
+	int i = 0;
+	for (vector<double>::iterator it = V.begin(); it < V.end(); it++, i++)
+	{
+		//Logger::WriteMessage(Common::printMatrix(V[i]).c_str());
+		//wcout << V[i] << endl;
+		output += V[i];// .sum();
+
+	}
+	//wcout << output << endl;
+	return output;
+}
+
+typedef number<cpp_dec_float<14> > cpp_dec_float_14;
+typedef number<cpp_dec_float<15> > cpp_dec_float_15;
+typedef number<cpp_dec_float<16> > cpp_dec_float_16;
+typedef number<cpp_dec_float<17> > cpp_dec_float_17;
+typedef number<cpp_dec_float<18> > cpp_dec_float_18;
+typedef number<cpp_dec_float<19> > cpp_dec_float_19;
+typedef number<cpp_dec_float<20> > cpp_dec_float_20;
+
+MatrixXd Test::mult(MatrixXd &a, MatrixXd &b)
+{
+	MatrixXd result(a.rows(), b.cols());
+	
+	//assume a & b are compatible
+	for (int i = 0; i < a.rows(); i++)
+		for (int j = 0; j < b.cols(); j++)
+		{
+			cpp_dec_float_16 sum = 0;
+			for (int x = 0; x < a.cols(); x++)
+			{
+				cpp_dec_float_16 l = a(i, x);
+				cpp_dec_float_16 r = b(x, j);
+				sum = sum + (l * r);
+
+				
+			}
+			result(i, j) = (double)sum;
+		}
+	return result;
+
+};
 
 double Test::innerX(double t, double x, vector<MatrixXd> lamb, vector<MatrixXd> TX, vector<MatrixXd> C, vector<MatrixXd> A)
 {

@@ -7,16 +7,16 @@
 #include "Common.h"
 #include "Test.h"
 #include "MatrixXdm.h"
-
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
+#include "../include/boost_1_64_0/boost/multiprecision/cpp_dec_float.hpp"
 
 
 
 using Eigen::Matrix2d;
-
+using namespace boost::multiprecision;
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 
@@ -119,6 +119,129 @@ namespace UnitTest
 			vector<vector<MatrixXd>> third = { uLamb3, uTX, uC, uA };
 			return third;
 		}
+
+		vector<vector<MatrixXd>> Get4()
+		{
+			MatrixXd l1(27, 1);
+			Load("lamb4_1.txt", l1);
+			MatrixXd l2(25, 1);
+			Load("lamb4_2.txt", l2);
+			MatrixXd l3(27, 1);
+			Load("lamb4_3.txt", l3);
+			vector<MatrixXd> uLamb4{ l1,l2,l3 };
+
+			MatrixXd tx1(27, 2);
+			Load("TX4_1.txt", tx1);
+			MatrixXd tx2(25, 2);
+			Load("TX4_2.txt", tx2);
+			MatrixXd tx3(27, 2);
+			Load("TX4_3.txt", tx3);
+			vector<MatrixXd> uTX{ tx1,tx2, tx3 };
+
+			MatrixXd c1(1, 2);
+			c1 << 1.73000000000000, 600;
+			MatrixXd c2(1, 2);
+			c2 << 1.73000000000000, 600;
+			MatrixXd c3(1, 2);
+			c3 << 1.73000000000000, 600;
+			vector<MatrixXd> uC = { c1, c2, c3 };
+
+			MatrixXd a1(1, 2);
+			a1 << 2, 8;
+			MatrixXd a2(1, 2);
+			a2 << 4, 4;
+			MatrixXd a3(1, 2);
+			a3 << 8, 2;
+			vector<MatrixXd> uA = { a1, a2, a3 };
+
+
+			vector<vector<MatrixXd>> four = { uLamb4, uTX, uC, uA };
+			return four;
+		};
+
+		vector<vector<MatrixXd>> Get5()
+		{
+			MatrixXd l1(51, 1);
+			Load("lamb5_1.txt", l1);
+			MatrixXd l2(45, 1);
+			Load("lamb5_2.txt", l2);
+			MatrixXd l3(45, 1);
+			Load("lamb5_3.txt", l3);
+			MatrixXd l4(51, 1);
+			Load("lamb5_4.txt", l4);
+			vector<MatrixXd> uLamb5{ l1,l2,l3, l4 };
+
+			/*MatrixXd tx1(27, 2);
+			Load("TX4_1.txt", tx1);
+			MatrixXd tx2(25, 2);
+			Load("TX4_2.txt", tx2);
+			MatrixXd tx3(27, 2);
+			Load("TX4_3.txt", tx3);
+			vector<MatrixXd> uTX{ tx1,tx2 };
+
+			MatrixXd c1(1, 2);
+			c1 << 1.73000000000000, 600;
+			MatrixXd c2(1, 2);
+			c2 << 1.73000000000000, 600;
+			MatrixXd c3(1, 2);
+			c3 << 1.73000000000000, 600;
+			vector<MatrixXd> uC = { c1, c2, c3 };
+
+			MatrixXd a1(1, 2);
+			a1 << 2, 8;
+			MatrixXd a2(1, 2);
+			a2 << 4, 4;
+			MatrixXd a2(1, 2);
+			a3 << 8, 2;*/
+			//vector<MatrixXd> uA = { a1, a2, a3 };
+
+
+			vector<vector<MatrixXd>> five = { uLamb5 };// , uTX, uC, uA };
+			return five;
+		};
+
+		static void Load(string file, MatrixXd &matrix)
+		{
+			ifstream infile(file);
+			vector<double> doubles;
+			int count = 0;
+			while (infile)
+			{
+				string s;
+				if (!getline(infile, s)) break;
+
+				stringstream ss(s);
+				while (ss.good())
+				{
+					string substr;
+					getline(ss, substr, ',');
+					doubles.push_back(stod(substr));
+				}
+
+				count++;
+			}
+
+			int rows = matrix.rows();
+			int cols = matrix.cols();
+			vector<double>::iterator it;
+			int i = 0;
+			int rcount = 0;
+			int ccount = 0;
+
+			for (it = doubles.begin(); it < doubles.end(); it++, i++) {
+				if (ccount > cols - 1)
+				{
+					ccount = 0;
+					rcount++;
+				}
+
+				matrix(rcount, ccount) = doubles[i];
+
+				ccount++;
+
+			}
+
+		};
 
 	public:
 
@@ -231,6 +354,53 @@ namespace UnitTest
 
 		}
 
+		TEST_METHOD(TestInterpolate5)
+		{
+			Interpolation test;
+
+			map< string, vector<vector<MatrixXd>>> interpolation;
+
+			interpolation["2"] = Get2();
+			interpolation["3"] = Get3();
+			interpolation["_3"] = Get_3();
+			interpolation["4"] = Get4();
+
+			interpolation["5"] = Get5();
+
+			vector<string> level4 = { "2","3", "_3","4" };
+			test.interpolateGeneric("5", 2, 0.865, 5, 2, 0, 300, 0.03, 0.15, 1, 100, level4, &interpolation);
+			vector<vector<MatrixXd>> result = test.getResult();
+
+			auto uLamb5 = interpolation["5"][0];
+			vector<MatrixXd> l = result[0];
+			for (int i = 0; i < result[0].size(); i++)
+			{
+				Assert::IsTrue(testCommon::checkMatrix(uLamb5[i], l[i], 0.000000001));
+			}
+
+			/*auto uTX = _3[1];
+			vector<MatrixXd> tx = result[1];
+			for (int i = 0; i < result[1].size(); i++)
+			{
+				Assert::IsTrue(testCommon::checkMatrix(uTX[i], tx[i]));
+			}
+
+			auto uC = _3[2];
+			vector<MatrixXd> c = result[2];
+			for (int i = 0; i < result[2].size(); i++)
+			{
+				Assert::IsTrue(testCommon::checkMatrix(uC[i], c[i]));
+			}
+
+			auto uA = _3[3];
+			vector<MatrixXd> a = result[3];
+			for (int i = 0; i < result[3].size(); i++)
+			{
+				Assert::IsTrue(testCommon::checkMatrix(uA[i], a[i]));
+			}*/
+
+		}
+
 		TEST_METHOD(TestSubnumber)
 		{
 			Interpolation test;
@@ -294,6 +464,19 @@ namespace UnitTest
 
 		}
 
+		TEST_METHOD(TestInnerMock)
+		{
+			
+			Test test;
+
+			double result = test.innerMock("10", 0, 0, 0);
+
+			result = test.innerMock("_9", 7, 0, 1);
+
+			result = test.innerMock("_10", 0, 0, 1);
+			
+		}
+
 		TEST_METHOD(TestVectorMultiplication)
 		{
 			//MatrixXd a(1, 15);
@@ -316,6 +499,64 @@ namespace UnitTest
 			Assert::AreEqual(-3.0642e-14, c.value()(0, 0), 0.000000000001);
 
 		}
+
+		typedef number<cpp_dec_float<14> > cpp_dec_float_14;
+		typedef number<cpp_dec_float<15> > cpp_dec_float_15;
+		typedef number<cpp_dec_float<16> > cpp_dec_float_16;
+		typedef number<cpp_dec_float<17> > cpp_dec_float_17;
+		typedef number<cpp_dec_float<18> > cpp_dec_float_18;
+		typedef number<cpp_dec_float<19> > cpp_dec_float_19;
+		typedef number<cpp_dec_float<20> > cpp_dec_float_20;
+
+		TEST_METHOD(TestVectorMultiplication1)
+		{
+
+
+			MatrixXd a = Common::ReadBinary("d_transpose.dat", 1, 15);
+			
+			MatrixXd b = Common::ReadBinary("lambj.dat", 15, 1);
+			
+			MatrixXd c = a * b;
+			MatrixXdM c1 = MatrixXdM(a) * MatrixXdM(b);
+			vector<cpp_dec_float_14> c2 = mult(MatrixXdM(a), MatrixXdM(b));
+
+			Logger::WriteMessage(Common::printMatrix(a).c_str());
+			Logger::WriteMessage(Common::printMatrix(b).c_str());
+			Logger::WriteMessage(Common::printMatrix(c).c_str());
+			Logger::WriteMessage(Common::printMatrix(c1.value()).c_str());
+			
+			for (auto i : c2)
+			{
+				Logger::WriteMessage(i.str().c_str());
+
+			}
+
+			Assert::AreEqual(-3.0642e-14, c1.value()(0, 0), 0.000000000001);
+
+		}
+
+		vector<cpp_dec_float_14> mult(MatrixXdM &a, MatrixXdM &b)
+		{
+			//MatrixXd result(a.value().rows(), b.value().cols());
+			vector<cpp_dec_float_14> result;
+			//assume a & b are compatible
+			for (int i = 0; i < a.value().rows(); i++)
+				for (int j = 0; j < b.value().cols(); j++)
+				{
+					cpp_dec_float_14 sum = 0;
+					for (int x = 0; x < a.value().cols(); x++)
+					{
+						cpp_dec_float_14 l = a.value()(i, x);
+						cpp_dec_float_14 r = b.value()(x, j);
+						sum = sum + (l * r) ;
+
+						result.push_back(sum);
+					}
+					
+				}
+			return result;
+
+		};
 
 		MatrixXd LoadData(string fileName, int size, int rows, int columns)
 		{

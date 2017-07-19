@@ -43,10 +43,41 @@ namespace UnitTest
 			vector<MatrixXd> result = RBF::mqd2(TX, TX1, A, C);
 
 			Logger::WriteMessage(Common::printMatrix(result[0]).c_str());
-			Assert::IsTrue(testCommon::checkMatrix(uFAI, result[0], 0.0000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI, result[0], 0.000000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI, result[0], 0.0000000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI, result[0], 0.00000000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI, result[0], 0.000000000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI, result[0], 0.0000000000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI, result[0], 0.00000000000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI, result[0], 0.000000000000001));
 			Assert::IsTrue(testCommon::checkMatrix(uFAI_t, result[1], 0.0000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI_t, result[1], 0.00000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI_t, result[1], 0.000000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI_t, result[1], 0.0000000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI_t, result[1], 0.00000000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI_t, result[1], 0.000000000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI_t, result[1], 0.0000000000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI_t, result[1], 0.00000000000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI_t, result[1], 0.000000000000001));
 			Assert::IsTrue(testCommon::checkMatrix(uFAI_x, result[2], 0.0000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI_x, result[2], 0.00000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI_x, result[2], 0.000000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI_x, result[2], 0.0000000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI_x, result[2], 0.00000000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI_x, result[2], 0.000000000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI_x, result[2], 0.0000000000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI_x, result[2], 0.00000000000001));
+			//Assert::IsTrue(testCommon::checkMatrix(uFAI_x, result[2], 0.000000000000001));
 			Assert::IsTrue(testCommon::checkMatrix(uFAI_xx, result[3], 0.0000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI_xx, result[3], 0.00000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI_xx, result[3], 0.000000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI_xx, result[3], 0.0000000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI_xx, result[3], 0.00000000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI_xx, result[3], 0.000000000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI_xx, result[3], 0.0000000000001));
+			Assert::IsTrue(testCommon::checkMatrix(uFAI_xx, result[3], 0.00000000000001));
+			//Assert::IsTrue(testCommon::checkMatrix(uFAI_xx, result[3], 0.000000000000001));
+			
 		}
 
 

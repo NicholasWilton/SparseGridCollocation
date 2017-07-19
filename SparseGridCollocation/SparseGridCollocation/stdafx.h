@@ -12,7 +12,7 @@
 
 #include <vector>
 #include <map>
-#include <iostream>
+//#include <iostream>
 #include <iostream>
 #include <C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\include\eigen-eigen-67e894c6cd8f\Eigen\Dense>
 #include <C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\include\eigen-eigen-67e894c6cd8f\Eigen\LU>
