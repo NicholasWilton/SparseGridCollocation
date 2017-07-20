@@ -8,6 +8,7 @@
 #include "Test.h"
 #include <thread>
 
+
 //#include "CppUnitTest.h"
 //using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -130,7 +131,7 @@ MatrixXd Interpolation::subnumber(int b, int d)
 	return L;
 }
 
-
+typedef Eigen::SparseMatrix<double> SpMat;
 
 void Interpolation::shapelambda2DGeneric(string prefix, int threadId, double coef, double tsec, double r, double sigma, double T, double E, double inx1, double inx2, MatrixXd N,
 	vector<string> keys, const map<string, vector<vector<MatrixXd>> > * state)
@@ -219,14 +220,28 @@ void Interpolation::shapelambda2DGeneric(string prefix, int threadId, double coe
 		}
 	}
 	MatrixXd tx = TX1;
-		
+	
 	PartialPivLU<MatrixXd> lu = PartialPivLU<MatrixXd>(P);
+	
 	MatrixXd J = lu.matrixLU().triangularView<UpLoType::Upper>();
 	MatrixXd F = lu.matrixLU().triangularView<UpLoType::UnitLower>();
-	
 	MatrixXd Fa = lu.permutationP().transpose() * F;
+
+	/*SpMat Fa = lu.permutationP().transpose() * F.sparseView();
+	SparseLU<SparseMatrix<double, ColMajor>, COLAMDOrdering<int> > solver;
+	solver.analyzePattern(Fa);
+	solver.factorize(Fa);
+	*/
 	MatrixXd Jlamda = Fa.lu().solve(u);
+	//MatrixXd Jlamda = solver.solve(u);
+
+	//SpMat Ja = J.sparseView();
+	//solver.analyzePattern(Ja);
+	//solver.factorize(Ja);
+
 	MatrixXd l = J.lu().solve(Jlamda);
+	//MatrixXd l = solver.solve(Jlamda);
+
 	Lambda[threadId] = l;
 	TX[threadId] = tx;
 	C[threadId] = c;

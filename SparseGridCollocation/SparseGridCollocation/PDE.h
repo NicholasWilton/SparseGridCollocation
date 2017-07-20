@@ -10,8 +10,8 @@ class API PDE
 public:
 	PDE();
 	~PDE();
-	static MatrixXd BlackScholes(MatrixXd node, double r, double sigma,
-		vector<MatrixXd> lambda2, vector<MatrixXd> TX2, vector<MatrixXd> C2, vector<MatrixXd> A2,
-		vector<MatrixXd> lambda3, vector<MatrixXd> TX3, vector<MatrixXd> C3, vector<MatrixXd> A3);
+	static MatrixXd BlackScholes(const MatrixXd &node, double r, double sigma,
+		const vector<MatrixXd> &lambda2, const vector<MatrixXd> &TX2, const vector<MatrixXd> &C2, const vector<MatrixXd> &A2,
+		const vector<MatrixXd> &lambda3, const vector<MatrixXd> &TX3, const vector<MatrixXd> &C3, const vector<MatrixXd> A3);
 };
 

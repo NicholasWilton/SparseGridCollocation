@@ -25,7 +25,7 @@ Test::~Test()
 {
 }
 
-double Test::inner(double t, double x, vector<MatrixXd> lamb, vector<MatrixXd> TX, vector<MatrixXd> C, vector<MatrixXd> A)
+double Test::inner(double t, double x, const vector<MatrixXd> &lamb, const vector<MatrixXd> &TX, const vector<MatrixXd> &C, const vector<MatrixXd> &A)
 {
 
 	int ch = TX.size();

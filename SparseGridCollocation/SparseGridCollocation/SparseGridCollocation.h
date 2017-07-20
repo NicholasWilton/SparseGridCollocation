@@ -19,9 +19,8 @@ public:
 	SparseGridCollocation();
 
 	
-	MatrixXd ECP(MatrixXd X, double r, double sigma, double T, double E);
-	double inner_test(double t, double x, vector<MatrixXd> lamb, vector<MatrixXd> TX, vector<MatrixXd> C, vector<MatrixXd> A);
-
+	MatrixXd ECP(const MatrixXd &X, double r, double sigma, double T, double E);
+	
 	double normCDF(double value);
 	double RootMeanSquare(VectorXd v);
 

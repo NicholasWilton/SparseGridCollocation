@@ -7,7 +7,7 @@ class PPP
 {
 public:
 
-	static double Calculate(RowVectorXd X);
+	static double Calculate(const RowVectorXd &X);
 	//static VectorXd U();
 	//static VectorXd X();
 };

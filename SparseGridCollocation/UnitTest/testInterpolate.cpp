@@ -454,7 +454,7 @@ namespace UnitTest
 			a2 << 4, 2;
 			vector<MatrixXd> A3 = { a1,a2 };
 
-			double result = test.innerZ(0, 0,  lambda3, TX3, C3, A3);
+			double result = test.inner(0, 0,  lambda3, TX3, C3, A3);
 			//char buff[256];
 			//sprintf(buff, "%f", result);
 			string s = std::to_string(result);
@@ -469,11 +469,11 @@ namespace UnitTest
 			
 			Test test;
 
-			double result = test.innerMock("10", 0, 0, 0);
+			double result = Common::innerMock("10", 0, 0, 0);
 
-			result = test.innerMock("_9", 7, 0, 1);
+			result = Common::innerMock("_9", 7, 0, 1);
 
-			result = test.innerMock("_10", 0, 0, 1);
+			result = Common::innerMock("_10", 0, 0, 1);
 			
 		}
 

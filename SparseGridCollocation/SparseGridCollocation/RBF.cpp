@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "RBF.h"
+#include <math.h>
 
 
 RBF::RBF()
@@ -11,7 +12,17 @@ RBF::~RBF()
 {
 }
 
-vector<MatrixXd> RBF::mqd2(MatrixXd TP, MatrixXd CN, MatrixXd A, MatrixXd C)
+VectorXd RBF::exp(const VectorXd &v)
+{
+	VectorXd result(v.rows());
+	for (int i = 0; i < v.size(); i++)
+	{
+		result[i] = std::exp(v[i]);
+	}
+	return result;
+}
+
+vector<MatrixXd> RBF::mqd2(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C)
 {
 	vector<MatrixXd> result;
 	int Num = CN.rows();
@@ -31,11 +42,13 @@ vector<MatrixXd> RBF::mqd2(MatrixXd TP, MatrixXd CN, MatrixXd A, MatrixXd C)
 		VectorXd a1 = A(0, 0)*(TP.col(0).array() - CN(j, 0));
 		VectorXd b1 = -(a1.array() * a1.array()) / (C(0, 0) *C(0, 0));
 		VectorXd FAI1 = b1.array().exp();
+		//VectorXd FAI1 = RBF::exp(b1);
 
 		VectorXd a2 = A(0, 1)*(TP.col(1).array() - CN(j, 1));
 		VectorXd b2 = -(a2.array() * a2.array()) / (C(0, 1) *C(0, 1));
 
 		VectorXd FAI2 = b2.array().exp();
+		//VectorXd FAI2 = RBF::exp(b2);
 		D.col(j) = FAI1.array() * FAI2.array();
 
 		VectorXd a3 = -2 * (A(0, 0) / C(0, 0)) * (A(0, 0) / C(0, 0)) * (TP.col(0).array() - CN(j, 0));

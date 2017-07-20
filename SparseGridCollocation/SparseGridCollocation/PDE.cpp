@@ -17,9 +17,9 @@ PDE::~PDE()
 {
 }
 
-MatrixXd PDE::BlackScholes(MatrixXd node, double r, double sigma,
-	vector<MatrixXd> lambda2, vector<MatrixXd> TX2, vector<MatrixXd> C2, vector<MatrixXd> A2,
-	vector<MatrixXd> lambda3, vector<MatrixXd> TX3, vector<MatrixXd> C3, vector<MatrixXd> A3)
+MatrixXd PDE::BlackScholes(const MatrixXd &node, double r, double sigma,
+	const vector<MatrixXd> &lambda2, const vector<MatrixXd> &TX2, const vector<MatrixXd> &C2, const vector<MatrixXd> &A2,
+	const vector<MatrixXd> &lambda3, const vector<MatrixXd> &TX3, const vector<MatrixXd> &C3, const vector<MatrixXd> A3)
 {
 	int N = node.rows();
 	int ch2 = TX2.size();

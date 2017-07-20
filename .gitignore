@@ -250,3 +250,5 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
+/SparseGridCollocation/SparseGridCollocation.profile_ProfilerOutput/Jul-19-2017_22-59
+/SparseGridCollocation/SparseGridCollocation.profile_ProfilerOutput/Jul-19-2017_22-59/Jul-19-2017_22-59.cxlcpdb

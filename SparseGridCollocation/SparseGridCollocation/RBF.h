@@ -10,6 +10,7 @@ class API RBF
 public:
 	RBF();
 	~RBF();
-	static vector<MatrixXd> mqd2(MatrixXd TP, MatrixXd CN, MatrixXd A, MatrixXd C);
+	static VectorXd exp(const VectorXd &v);
+	static vector<MatrixXd> mqd2(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C);
 };
 

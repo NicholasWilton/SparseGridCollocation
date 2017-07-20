@@ -27,7 +27,7 @@ InterTest::~InterTest()
 
 VectorXd InterTest::GetResult(string id)
 {
-	return result[id];
+	return result->at(id);
 }
 
 void InterTest::Execute(map<string, vector<vector<MatrixXd>> > vInterpolation, MatrixXd TX)
@@ -50,7 +50,8 @@ void InterTest::Execute(map<string, vector<vector<MatrixXd>> > vInterpolation, M
 	}
 
 }
-void InterTest::parallel(string id, MatrixXd X, vector<MatrixXd> lamb, vector<MatrixXd> TX, vector<MatrixXd> C, vector<MatrixXd> A)
+
+void InterTest::parallel(string id, const MatrixXd &X, const vector<MatrixXd> &lamb,const vector<MatrixXd> &TX, const vector<MatrixXd> &C, const vector<MatrixXd> &A)
 {
 	// This is used to calculate values on final testing points
 	//ch = length(TX);
@@ -61,7 +62,6 @@ void InterTest::parallel(string id, MatrixXd X, vector<MatrixXd> lamb, vector<Ma
 	//V = ones(N, ch);
 	MatrixXd V = MatrixXd::Ones(N, ch);
 	//for j = 1:ch
-	vector<MatrixXd> res;
 
 	for (int j = 0; j < ch; j++)
 	{
@@ -75,7 +75,9 @@ void InterTest::parallel(string id, MatrixXd X, vector<MatrixXd> lamb, vector<Ma
 		//end
 	}
 	//output = sum(V, 2);
-	result[id] = V.rowwise().sum();
+	VectorXd res = V.rowwise().sum().eval();
+	auto r = map<string, VectorXd>::value_type(id, res);
+	result->insert(r);
 	
 }
 

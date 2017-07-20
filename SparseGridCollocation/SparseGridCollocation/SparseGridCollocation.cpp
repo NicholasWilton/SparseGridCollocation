@@ -47,7 +47,7 @@ map<int,MatrixXd> SparseGridCollocation::GetU()
 	return uMatrix;
 }
 
-MatrixXd SparseGridCollocation::ECP(MatrixXd X, double r, double sigma, double T, double E)
+MatrixXd SparseGridCollocation::ECP(const MatrixXd &X, double r, double sigma, double T, double E)
 {
 	VectorXd t= X.col(0);
 	VectorXd S = X.col(1);
@@ -286,119 +286,182 @@ vector<MatrixXd> SparseGridCollocation::MuSIKGeneric(int upper, int lower, map<s
 	//Logger::WriteMessage("inter_test");
 	Common::Logger("inter_test");
 
-	InterTest interTest;
-	//interTest.Execute(vInterpolation, TX);
 	
+	//interTest.Execute(vInterpolation, TX);
+	InterTest interTest;
+	vector<thread> threads;
+	vector<InterTest> interTests;
+		
 	VectorXd U = VectorXd::Zero(10000);
 	if (upper >= 2 & lower <= 2)
 	{
+		InterTest interTest2;
+		InterTest interTest3;
+		
 		vector<vector<MatrixXd>> test2 = interpolation["2"];
-		VectorXd V_2 = interTest.serial(TX, test2[0], test2[1], test2[2], test2[3]);
+		threads.push_back(std::thread(&InterTest::parallel, interTest2, "2", TX, test2[0], test2[1], test2[2], test2[3]));
+		//VectorXd V_2 = interTest.serial(TX, test2[0], test2[1], test2[2], test2[3]);
 		vector<vector<MatrixXd>> test3 = interpolation["3"];
-		VectorXd V3 = interTest.serial(TX, test3[0], test3[1], test3[2], test3[3]);
-		U = V3 - V_2;
-		uMatrix[0] = U;
+		threads.push_back(std::thread(&InterTest::parallel, interTest3, "3", TX, test3[0], test3[1], test3[2], test3[3]));
+		//VectorXd V3 = interTest.serial(TX, test3[0], test3[1], test3[2], test3[3]);
+		//U = V3 - V_2;
+		//uMatrix[0] = U;
+		interTests.push_back(interTest2);
+		interTests.push_back(interTest3);
 	}
 	VectorXd U1 = VectorXd::Zero(10000);
 	if (upper >= 3 & lower <= 3)
 	{
+		InterTest interTest_3;
+		InterTest interTest4;
 		vector<vector<MatrixXd>> test_3 = interpolation["_3"];
-		VectorXd V_3 = interTest.serial(TX, test_3[0], test_3[1], test_3[2], test_3[3]);
+		threads.push_back(std::thread(&InterTest::parallel, interTest_3, "_3", TX, test_3[0], test_3[1], test_3[2], test_3[3]));
+		//VectorXd V_3 = interTest.serial(TX, test_3[0], test_3[1], test_3[2], test_3[3]);
 		vector<vector<MatrixXd>> test4 = interpolation["4"];
-		VectorXd V4 = interTest.serial(TX, test4[0], test4[1], test4[2], test4[3]);
-		U1 = V4 - V_3;
-		uMatrix[1] = U1;
+		threads.push_back(std::thread(&InterTest::parallel, interTest4, "4", TX, test4[0], test4[1], test4[2], test4[3]));
+		//VectorXd V4 = interTest.serial(TX, test4[0], test4[1], test4[2], test4[3]);
+		//U1 = V4 - V_3;
+		//uMatrix[1] = U1;
+		interTests.push_back(interTest_3);
+		interTests.push_back(interTest4);
 	}
 	VectorXd U2 = VectorXd::Zero(10000);
 	if (upper >= 4 & lower <= 4)
 	{
+		InterTest interTest_4;
+		InterTest interTest5;
 		vector<vector<MatrixXd>> test_4 = interpolation["_4"];
-		VectorXd V_4 = interTest.serial(TX, test_4[0], test_4[1], test_4[2], test_4[3]);
-		//Logger::WriteMessage(Common::printMatrix(test_4[0][0]).c_str());
-		//Logger::WriteMessage(Common::printMatrix(test_4[0][1]).c_str());
-		//Logger::WriteMessage(Common::printMatrix(test_4[0][2]).c_str());
-		//Logger::WriteMessage(Common::printMatrix(V_4).c_str());
-
+		threads.push_back(std::thread(&InterTest::parallel, interTest_4, "_4", TX, test_4[0], test_4[1], test_4[2], test_4[3]));
+		//VectorXd V_4 = interTest.serial(TX, test_4[0], test_4[1], test_4[2], test_4[3]);
 		vector<vector<MatrixXd>> test5 = interpolation["5"];
-		VectorXd V5 = interTest.serial(TX, test5[0], test5[1], test5[2], test5[3]);
-		//Logger::WriteMessage(Common::printMatrix(TX).c_str());
-		//Logger::WriteMessage(Common::printMatrix(V5).c_str());
-		U2 = V5 - V_4;
-		//Logger::WriteMessage(Common::printMatrix(U2).c_str());
-		uMatrix[2] = U2;
+		threads.push_back(std::thread(&InterTest::parallel, interTest5, "5", TX, test5[0], test5[1], test5[2], test5[3]));
+		//VectorXd V5 = interTest.serial(TX, test5[0], test5[1], test5[2], test5[3]);
+		//U2 = V5 - V_4;
+		//uMatrix[2] = U2;
+		interTests.push_back(interTest_4);
+		interTests.push_back(interTest5);
 	}
 	VectorXd U3 = VectorXd::Zero(10000);
 	if (upper >= 5 & lower <= 5)
 	{
+		InterTest interTest_5;
+		InterTest interTest6;
 		vector<vector<MatrixXd>> test_5 = interpolation["_5"];
-		VectorXd V_5 = interTest.serial(TX, test_5[0], test_5[1], test_5[2], test_5[3]);
+		threads.push_back(std::thread(&InterTest::parallel, interTest_5, "_5", TX, test_5[0], test_5[1], test_5[2], test_5[3]));
+		//VectorXd V_5 = interTest.serial(TX, test_5[0], test_5[1], test_5[2], test_5[3]);
 		vector<vector<MatrixXd>> test6 = interpolation["6"];
-		VectorXd V6 = interTest.serial(TX, test6[0], test6[1], test6[2], test6[3]);
-		U3 = V6 - V_5;
-		uMatrix[3] = U3;
+		threads.push_back(std::thread(&InterTest::parallel, interTest6, "6", TX, test6[0], test6[1], test6[2], test6[3]));
+		//VectorXd V6 = interTest.serial(TX, test6[0], test6[1], test6[2], test6[3]);
+		//U3 = V6 - V_5;
+		//uMatrix[3] = U3;
+		interTests.push_back(interTest_5);
+		interTests.push_back(interTest6);
 	}
 	VectorXd U4 = VectorXd::Zero(10000);
 	if (upper >= 6 & lower <= 6)
 	{
+		InterTest interTest_6;
+		InterTest interTest7;
 		vector<vector<MatrixXd>> test_6 = interpolation["_6"];
-		VectorXd V_6 = interTest.serial(TX, test_6[0], test_6[1], test_6[2], test_6[3]);
+		threads.push_back(std::thread(&InterTest::parallel, interTest_6, "_6", TX, test_6[0], test_6[1], test_6[2], test_6[3]));
+		//VectorXd V_6 = interTest.serial(TX, test_6[0], test_6[1], test_6[2], test_6[3]);
 		vector<vector<MatrixXd>> test7 = interpolation["7"];
-		VectorXd V7 = interTest.serial(TX, test7[0], test7[1], test7[2], test7[3]);
-		U4 = V7 - V_6;
-		uMatrix[4] = U4;
+		threads.push_back(std::thread(&InterTest::parallel, interTest7, "7", TX, test7[0], test7[1], test7[2], test7[3]));
+		//VectorXd V7 = interTest.serial(TX, test7[0], test7[1], test7[2], test7[3]);
+		//U4 = V7 - V_6;
+		//uMatrix[4] = U4;
+		interTests.push_back(interTest_6);
+		interTests.push_back(interTest7);
 	}
 	VectorXd U5 = VectorXd::Zero(10000);
 	if (upper >= 7 & lower <= 7)
 	{
+		InterTest interTest_7;
+		InterTest interTest8;
 		vector<vector<MatrixXd>> test_7 = interpolation["_7"];
-		VectorXd V_7 = interTest.serial(TX, test_7[0], test_7[1], test_7[2], test_7[3]);
+		threads.push_back(std::thread(&InterTest::parallel, interTest_7, "_7", TX, test_7[0], test_7[1], test_7[2], test_7[3]));
+		//VectorXd V_7 = interTest.serial(TX, test_7[0], test_7[1], test_7[2], test_7[3]);
 		vector<vector<MatrixXd>> test8 = interpolation["8"];
-		VectorXd V8 = interTest.serial(TX, test8[0], test8[1], test8[2], test8[3]);
-		U5 = V8 - V_7;
-		uMatrix[5] = U5;
+		threads.push_back(std::thread(&InterTest::parallel, interTest8, "8", TX, test8[0], test8[1], test8[2], test8[3]));
+		//VectorXd V8 = interTest.serial(TX, test8[0], test8[1], test8[2], test8[3]);
+		//U5 = V8 - V_7;
+		//uMatrix[5] = U5;
+		interTests.push_back(interTest_7);
+		interTests.push_back(interTest8);
 	}
 	VectorXd U6 = VectorXd::Zero(10000);
 	if (upper >= 8 & lower <= 8)
 	{
+		InterTest interTest_8;
+		InterTest interTest9;
 		vector<vector<MatrixXd>> test_8 = interpolation["_8"];
-		VectorXd V_8 = interTest.serial(TX, test_8[0], test_8[1], test_8[2], test_8[3]);
+		threads.push_back(std::thread(&InterTest::parallel, interTest_8, "_8", TX, test_8[0], test_8[1], test_8[2], test_8[3]));
+		//VectorXd V_8 = interTest.serial(TX, test_8[0], test_8[1], test_8[2], test_8[3]);
 		vector<vector<MatrixXd>> test9 = interpolation["9"];
-		VectorXd V9 = interTest.serial(TX, test9[0], test9[1], test9[2], test9[3]);
-		U6 = V9 - V_8;
-		uMatrix[6] = U6;
+		threads.push_back(std::thread(&InterTest::parallel, interTest9, "9", TX, test9[0], test9[1], test9[2], test9[3]));
+		//VectorXd V9 = interTest.serial(TX, test9[0], test9[1], test9[2], test9[3]);
+		//U6 = V9 - V_8;
+		//uMatrix[6] = U6;
+		interTests.push_back(interTest_8);
+		interTests.push_back(interTest9);
 	}
 	VectorXd U7 = VectorXd::Zero(10000);
 	if (upper >= 9 & lower <= 9)
 	{
+		InterTest interTest_9;
+		InterTest interTest10;
 		vector<vector<MatrixXd>> test_9 = interpolation["_9"];
-		VectorXd V_9 = interTest.serial(TX, test_9[0], test_9[1], test_9[2], test_9[3]);
+		threads.push_back(std::thread(&InterTest::parallel, interTest_9, "_9", TX, test_9[0], test_9[1], test_9[2], test_9[3]));
+		//VectorXd V_9 = interTest.serial(TX, test_9[0], test_9[1], test_9[2], test_9[3]);
 		vector<vector<MatrixXd>> test10 = interpolation["10"];
-		VectorXd V10 = interTest.serial(TX, test10[0], test10[1], test10[2], test10[3]);
-		U7 = V10 - V_9;
-		uMatrix[7] = U7;
+		//VectorXd V10 = interTest.serial(TX, test10[0], test10[1], test10[2], test10[3]);
+		threads.push_back(std::thread(&InterTest::parallel, interTest10, "10", TX, test10[0], test10[1], test10[2], test10[3]));
+		//U7 = V10 - V_9;
+		//uMatrix[7] = U7;
+		interTests.push_back(interTest_9);
+		interTests.push_back(interTest10);
 	}
 	VectorXd U8 = VectorXd::Zero(10000);
 	if (upper >= 10 & lower <= 10)
 	{
+		InterTest interTest_10;
+		InterTest interTest11;
 		vector<vector<MatrixXd>> test_10 = interpolation["_10"];
-		VectorXd V_10 = interTest.serial(TX, test_10[0], test_10[1], test_10[2], test_10[3]);
+		threads.push_back(std::thread(&InterTest::parallel, interTest_10, "_10", TX, test_10[0], test_10[1], test_10[2], test_10[3]));
+		//VectorXd V_10 = interTest.serial(TX, test_10[0], test_10[1], test_10[2], test_10[3]);
 		vector<vector<MatrixXd>> test11 = interpolation["11"];
-		VectorXd V11 = interTest.serial(TX, test11[0], test11[1], test11[2], test11[3]);
-		U8 = V11 - V_10;
-		uMatrix[8] = U8;
+		threads.push_back(std::thread(&InterTest::parallel, interTest11, "11", TX, test11[0], test11[1], test11[2], test11[3]));
+		//VectorXd V11 = interTest.serial(TX, test11[0], test11[1], test11[2], test11[3]);
+		//U8 = V11 - V_10;
+		//uMatrix[8] = U8;
+		interTests.push_back(interTest_10);
+		interTests.push_back(interTest11);
 	}
+
+	for (int i = 0; i < threads.size(); i++)
+		threads.at(i).join();
+
 	//Logger::WriteMessage("inter_test complete");
 	Common::Logger("inter_test complete");
 
-	//VectorXd U = interTest.GetResult("3") - interTest.GetResult("2");
-	//VectorXd U1 = interTest.GetResult("4") - interTest.GetResult("_3");
-	//VectorXd U2 = interTest.GetResult("5") - interTest.GetResult("_4");
-	//VectorXd U3 = interTest.GetResult("6") - interTest.GetResult("_5");
-	//VectorXd U4 = interTest.GetResult("7") - interTest.GetResult("_6");
-	//VectorXd U5 = interTest.GetResult("8") - interTest.GetResult("_7");
-	//VectorXd U6 = interTest.GetResult("9") - interTest.GetResult("_8");
-	//VectorXd U7 = interTest.GetResult("10") - interTest.GetResult("_9");
-	//VectorXd U8 = interTest.GetResult("11") - interTest.GetResult("_10");
+	if (upper >= 2 & lower <= 2)
+		U = interTests.at(1).GetResult("3") - interTests.at(0).GetResult("2");
+	if (upper >= 3 & lower <= 3)
+		U1 = interTests.at(3).GetResult("4") - interTests.at(2).GetResult("_3");
+	if (upper >= 4 & lower <= 4)
+		U2 = interTests.at(5).GetResult("5") - interTests.at(4).GetResult("_4");
+	if (upper >= 5 & lower <= 5)
+		U3 = interTests.at(7).GetResult("6") - interTests.at(6).GetResult("_5");
+	if (upper >= 6 & lower <= 6)
+		U4 = interTests.at(9).GetResult("7") - interTests.at(8).GetResult("_6");
+	if (upper >= 7 & lower <= 7)
+		U5 = interTests.at(11).GetResult("8") - interTests.at(10).GetResult("_7");
+	if (upper >= 8 & lower <= 8)
+		U6 = interTests.at(13).GetResult("9") - interTests.at(12).GetResult("_8");
+	if (upper >= 9 & lower <= 9)
+		U7 = interTests.at(15).GetResult("10") - interTests.at(14).GetResult("_9");
+	if (upper >= 10 & lower <= 10)
+		U8 = interTests.at(17).GetResult("11") - interTests.at(16).GetResult("_10");
 
 	//[AP] = ECP(TX, r, sigma, T, E);
 	VectorXd AP = ECP(TX, r, sigma, T, E);

@@ -15,7 +15,9 @@
 //#include <iostream>
 #include <iostream>
 #include <C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\include\eigen-eigen-67e894c6cd8f\Eigen\Dense>
+#include <C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\include\eigen-eigen-67e894c6cd8f\Eigen\Sparse>
 #include <C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\include\eigen-eigen-67e894c6cd8f\Eigen\LU>
+#include <C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\include\eigen-eigen-67e894c6cd8f\Eigen\SparseLU>
 #include "..\include\eigen-eigen-67e894c6cd8f\Eigen\StdVector"
 
 #ifdef UNITTEST
