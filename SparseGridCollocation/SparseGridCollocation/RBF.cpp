@@ -73,6 +73,7 @@ vector<MatrixXd> RBF::mqd2(const MatrixXd &TP, const MatrixXd &CN, const MatrixX
 		VectorXd d5 = (TP.col(1).array() * TP.col(1).array()).array() * c5.array();
 		Dxx.col(j) = d5;
 	}
+
 	result.push_back(D);
 	result.push_back(Dt);
 	result.push_back(Dx);

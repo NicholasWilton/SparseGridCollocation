@@ -6,9 +6,12 @@
 #include "Math.h"
 #include "testCommon.h"
 #include "Common.h"
+#include <chrono>
+#include <sstream>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace Eigen;
+
 
 
 namespace UnitTest
@@ -17,6 +20,24 @@ namespace UnitTest
 	{
 	public:
 
+		TEST_METHOD(BenchMarkEigenMatrixMult)
+		{
+			MatrixXd TX = MatrixXd(15, 2);
+			TX << 0, 0, 0, 75, 0, 150, 0, 225, 0, 300, 0.4325, 0, 0.4325, 75, 0.4325, 150, 0.4325, 225, 0.4325, 300, 0.865, 0, 0.865, 75, 0.865, 150, 0.865, 225, 0.865, 300;
+			MatrixXd TX1 = MatrixXd(TX);
+
+			TX1.transposeInPlace();
+
+			auto start = std::chrono::high_resolution_clock::now();
+			MatrixXd res = TX * TX1;
+			auto finish = std::chrono::high_resolution_clock::now();
+			
+			auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(finish - start);
+			stringstream ss;
+			ss << microseconds.count() << "µs\n";
+			Logger::WriteMessage(ss.str().c_str());
+
+		}
 
 		TEST_METHOD(TestMq2d)
 		{
