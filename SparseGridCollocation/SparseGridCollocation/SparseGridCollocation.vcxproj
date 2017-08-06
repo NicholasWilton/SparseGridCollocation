@@ -107,13 +107,14 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\include\boost_1_64_0;C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files %28x86%29\IntelSWTools\compilers_and_libraries_2017.4.210\windows\mkl\include;C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\include\boost_1_64_0;C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\IntelSWTools\compilers_and_libraries_2017.4.210\windows\mkl\lib\intel64_win;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mkl_rt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -143,13 +144,15 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\include\boost_1_64_0;C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files %28x86%29\IntelSWTools\compilers_and_libraries_2017.4.210\windows\mkl\include;C:\Users\User\Source\Repos\SparseGridCollocation\CudaLib;C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\include\boost_1_64_0;C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Program Files %28x86%29\IntelSWTools\compilers_and_libraries_2017.4.210\windows\mkl\lib\intel64_win;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>mkl_rt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -159,6 +162,7 @@
     <ClInclude Include="Double.h" />
     <ClInclude Include="InterTest.h" />
     <ClInclude Include="MatrixXdm.h" />
+    <ClInclude Include="Params.h" />
     <ClInclude Include="PDE.h" />
     <ClInclude Include="PPP.h" />
     <ClInclude Include="RBF.h" />
@@ -172,6 +176,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="InterTest.cpp" />
+    <ClCompile Include="Params.cpp" />
     <ClCompile Include="PDE.cpp" />
     <ClCompile Include="PPP.cpp" />
     <ClCompile Include="RBF.cpp" />
@@ -188,6 +193,9 @@
     <ClCompile Include="Test.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\CudaLib\CudaLib.vcxproj">
+      <Project>{3397b60d-eedd-48de-8c0b-45ed96dcca57}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Common\Common.vcxproj">
       <Project>{87f0fd5e-85c9-4944-a7af-2bcae1ce165b}</Project>
     </ProjectReference>

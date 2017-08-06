@@ -1,7 +1,8 @@
 #include "stdafx.h"
 #include "RBF.h"
 #include <math.h>
-
+#include "Common.h"
+#include <iomanip>
 
 RBF::RBF()
 {
@@ -78,5 +79,36 @@ vector<MatrixXd> RBF::mqd2(const MatrixXd &TP, const MatrixXd &CN, const MatrixX
 	result.push_back(Dt);
 	result.push_back(Dx);
 	result.push_back(Dxx);
+	return result;
+}
+
+vector<MatrixXd> RBF::mqd1(const MatrixXd &x, double xc, const double c)
+{
+	//wcout << setprecision(25) << c << endl;
+	vector<MatrixXd> result;
+
+	MatrixXd r = x.array() - xc;
+	
+	MatrixXd phi = ((r.array()* r.array()) + (c * c)).sqrt();
+
+	MatrixXd phi1 = x.array() * r.array() / phi.array();
+	
+	//wcout << Common::printMatrix(x) << endl;
+	//wcout << Common::printMatrix(phi) << endl;
+	//wcout << setprecision(25) << c << endl;
+
+	MatrixXd phi2 = x.array() * x.array() * c * c / (phi.array() * phi.array() * phi.array());
+
+	MatrixXd phi3 = -3 * c * c * r.array() / (phi.array() * phi.array() * phi.array() * phi.array() * phi.array());
+	
+	//wcout << Common::printMatrix(phi) << endl;
+	result.push_back(phi);
+	//wcout << Common::printMatrix(phi1) << endl;
+	result.push_back(phi1);
+	//wcout << Common::printMatrix(phi2) << endl;
+	result.push_back(phi2);
+	//wcout << Common::printMatrix(phi3) << endl;
+	result.push_back(phi3);
+
 	return result;
 }

@@ -194,6 +194,9 @@
     <ClCompile Include="TestHarness.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\CudaLib\CudaLib.vcxproj">
+      <Project>{3397b60d-eedd-48de-8c0b-45ed96dcca57}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Common\Common.vcxproj">
       <Project>{87f0fd5e-85c9-4944-a7af-2bcae1ce165b}</Project>
     </ProjectReference>

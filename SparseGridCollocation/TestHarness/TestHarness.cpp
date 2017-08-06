@@ -2,6 +2,9 @@
 //
 
 #include "stdafx.h"
+#include "SmoothInitialU.h"
+#include "SmoothInitialX.h"
+#include "Params.h"
 
 using namespace Eigen;
 using namespace std;
@@ -331,23 +334,46 @@ void CompareInterpolation(map<string, vector<vector<MatrixXd>>> expected, map<st
 	}
 };
 
-int main()
-{
+int main(){
+	Params p;
+	p.T = 1.0;
+	p.Tdone = 0.0;
+	p.Tend = 0.2 * p.T;
+	p.dt = 1.0 / 1000.0;
+	p.K = 100.0;
+	p.r = 0.03;
+	p.sigma = 0.15;
+	p.theta = 0.5;
+	p.inx1 = -p.K;
+	p.inx2 = 6.0 * p.K;
+	
 	//map<string, vector<vector<MatrixXd>>> inter = Interpolation::GetInterpolation();
 
 	SparseGridCollocation* test = new SparseGridCollocation();
-	//vector<MatrixXd> result = test->MuSIKGeneric(11, 9, inter);
-	vector<MatrixXd> result = test->MuSIKGeneric(12, 0);
+	//vector<MatrixXd> result = test->MuSIKc(11, 9, inter);
+	vector<MatrixXd> result = test->MuSIKc(12, 0, p);
+
+	//vector<VectorXd> result = test->MethodOfLines(p);
+	//VectorXd uX = SmoothInitialX::X();
+	//VectorXd uU = SmoothInitialU::U();
+
+	//bool passed = Common::checkMatrix(uX.block(1,0, uX.rows() -2, 1), result[0].block(0, 0 ,result[0].rows() -2, 1), 0.0000001);
+	//cout << "SmoothInitialX=" << passed;
+	//passed = Common::checkMatrix(uU.block(1, 0, uU.rows() - 2, 1), result[0].block(0, 0, result[0].rows() - 2, 1), 0.0000001);
+	//cout << "SmoothInitialU=" << passed;
+
+	
+
 	/*map<string, vector<vector<MatrixXd>>> interpolation = test->GetInterpolationState();
 	CompareInterpolation(inter, interpolation);
 */
-	/*wcout << "MuSIK-c result:" << endl;
-	wcout << Common::printMatrix(result[0]) << endl;*/
+	wcout << "MuSIK-c result:" << endl;
+	wcout << Common::printMatrix(result[0]) << endl;
 	wcout << "MuSIK-c RMS error:" << endl;
 	wcout << Common::printMatrix(result[1]) << endl;
 	wcout << "MuSIK-c MAX error:" << endl;
 	wcout << Common::printMatrix(result[2]) << endl;
-	//wcout << getchar() << endl;
+	wcout << getchar() << endl;
 
 	int count = 0;
 	//for (auto r : result)

@@ -178,58 +178,13 @@ vector<double> Common::linspace(double a, double b, size_t N)
 
 bool Common::checkMatrix(MatrixXd expected, MatrixXd actual)
 {
-	bool result = true;
-	int cols = expected.cols();
-	int rows = expected.rows();
-	wchar_t message[20000];
 
-	for (int i = 0; i < rows; i++)
-		for (int j = 0; j < cols; j++)
-		{
-			double diff = abs((expected(i, j) - actual(i, j)));
-
-			if (diff > DBL_EPSILON)
-			{
-				//const IOFormat fmt(2, DontAlignCols, "\t", " ", "", "", "", "");
-
-				//_swprintf(message, L"%f != %f index[%i,%i]", expected(i, j), actual(i, j), i, j);
-				//wcout << message << endl;
-
-				wcout << setprecision(25) << expected(i, j) << " != " << actual(i, j) << " index[" << i, ',' << j << ']';
-				wcout << endl;
-
-				result = false;
-			}
-		}
-
-	return result;
+	return Common::checkMatrix(expected, actual, DBL_EPSILON, true);
 }
 
 bool Common::checkMatrix(MatrixXd expected, MatrixXd actual, double precision)
 {
-	bool result = true;
-	int cols = expected.cols();
-	int rows = expected.rows();
-	wchar_t message[20000];
-
-	for (int i = 0; i < rows; i++)
-		for (int j = 0; j < cols; j++)
-		{
-			double diff = abs((expected(i, j) - actual(i, j)));
-			if (diff > precision)
-			{
-				//const IOFormat fmt(2, DontAlignCols, "\t", " ", "", "", "", "");
-
-				//_swprintf(message, L"%f != %f index[%i,%i]", expected(i, j), actual(i, j), i, j);
-
-				wcout << setprecision(25) << expected(i, j) << " != " << actual(i, j) << " index[" << i, ',' << j << ']';
-				wcout << endl;
-
-				result = false;
-			}
-		}
-
-	return result;
+	return Common::checkMatrix(expected, actual, precision, true);
 }
 
 bool Common::checkMatrix(MatrixXd expected, MatrixXd actual, double precision, bool print)
@@ -238,7 +193,7 @@ bool Common::checkMatrix(MatrixXd expected, MatrixXd actual, double precision, b
 	int cols = expected.cols();
 	int rows = expected.rows();
 	wchar_t message[20000];
-
+	double rms = 0.0;
 	for (int i = 0; i < rows; i++)
 		for (int j = 0; j < cols; j++)
 		{
@@ -254,9 +209,13 @@ bool Common::checkMatrix(MatrixXd expected, MatrixXd actual, double precision, b
 					wcout << setprecision(25) << expected(i, j) << " != " << actual(i, j) << " index[" << i, ',' << j << ']';
 					wcout << endl;
 				}
+				rms += (diff * diff);
 				result = false;
 			}
 		}
+	rms = rms / (rows * cols);
+	rms = sqrt(rms);
+	wcout << setprecision(25) << "RMS=" << rms << endl;
 
 	return result;
 }
@@ -281,6 +240,48 @@ void Common::WriteToBinary(string fileName, MatrixXd matrix)
 	fout.close();
 };
 
+void Common::WriteToString(string fileName, MatrixXd matrix)
+{
+	char cCurrentPath[FILENAME_MAX];
+	string path = _getcwd(cCurrentPath, sizeof(cCurrentPath));
+	stringstream ss;
+	ofstream fout;
+	ss << path << "\\" << fileName;
+	fout.open(ss.str(), ios::scientific);
+	cout << "Writing: " << ss.str() << endl;
+	for (int i = 0; i < matrix.rows(); i++)
+	{
+		for (int j = 0; j < matrix.cols(); j++)
+		{
+			double d = matrix(i, j);
+			//fout.write((char *)(&d), sizeof(d));
+			fout << d << ",";
+		}
+		fout << endl;
+	}
+	fout.close();
+};
+
+bool Common::saveArray(MatrixXd A, const std::string& file_path)
+{
+	//size_t length = rows * cols;
+	std::ofstream os(file_path.c_str());
+	if (!os.is_open())
+		return false;
+	//os.write(reinterpret_cast<const char*>(pdata), std::streamsize(length * sizeof(double)));
+	for (int i = 0; i < A.rows(); i++)
+	{
+		for (int j = 0; j < A.cols(); j++)
+		{
+			os << setprecision(16) << A(i, j) << ",";
+		}
+		os << endl;
+	}
+	os.close();
+
+	return true;
+}
+
 MatrixXd Common::ReadBinary(string fileName, int rows, int cols)
 {
 
@@ -288,6 +289,36 @@ MatrixXd Common::ReadBinary(string fileName, int rows, int cols)
 	vector<double> read;
 	char cCurrentPath[FILENAME_MAX];
 	string path = _getcwd(cCurrentPath, sizeof(cCurrentPath));
+	stringstream ss;
+	ss << path << "\\" << fileName;
+	cout << "Reading: " << ss.str() << endl;
+	fstream kFile(ss.str(), ios::in | ios::out | ios::binary);
+	kFile.seekg(0);
+
+	while (EOF != kFile.peek())
+	{
+		kFile.read((char*)&value, sizeof(double));
+		read.push_back(value);
+	}
+
+	MatrixXd result = MatrixXd::Zero(rows, cols);
+
+	for (int i = 0; i < rows; i++)
+	{
+		for (int j = 0; j < cols; j++)
+		{
+			result(i, j) = read[(i * result.cols()) + j];
+		}
+	}
+	return result;
+};
+
+MatrixXd Common::ReadBinary(string path, string fileName, int rows, int cols)
+{
+
+	double value;
+	vector<double> read;
+	char cCurrentPath[FILENAME_MAX];
 	stringstream ss;
 	ss << path << "\\" << fileName;
 	cout << "Reading: " << ss.str() << endl;

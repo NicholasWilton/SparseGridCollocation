@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.13
+VisualStudioVersion = 15.0.26430.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SparseGridCollocation", "SparseGridCollocation\SparseGridCollocation.vcxproj", "{BE8725FB-C8B4-4B68-8680-8D69DF6F3A9C}"
 EndProject
@@ -24,6 +24,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestData", "TestData\TestData.vcxproj", "{E407DF11-34D1-4EC2-9493-5BFFA9AE9764}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common", "Common\Common.vcxproj", "{87F0FD5E-85C9-4944-A7AF-2BCAE1CE165B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CudaLib", "..\CudaLib\CudaLib.vcxproj", "{3397B60D-EEDD-48DE-8C0B-45ED96DCCA57}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -73,6 +75,14 @@ Global
 		{87F0FD5E-85C9-4944-A7AF-2BCAE1CE165B}.Release|x64.Build.0 = Release|x64
 		{87F0FD5E-85C9-4944-A7AF-2BCAE1CE165B}.Release|x86.ActiveCfg = Release|Win32
 		{87F0FD5E-85C9-4944-A7AF-2BCAE1CE165B}.Release|x86.Build.0 = Release|Win32
+		{3397B60D-EEDD-48DE-8C0B-45ED96DCCA57}.Debug|x64.ActiveCfg = Debug|x64
+		{3397B60D-EEDD-48DE-8C0B-45ED96DCCA57}.Debug|x64.Build.0 = Debug|x64
+		{3397B60D-EEDD-48DE-8C0B-45ED96DCCA57}.Debug|x86.ActiveCfg = Debug|Win32
+		{3397B60D-EEDD-48DE-8C0B-45ED96DCCA57}.Debug|x86.Build.0 = Debug|Win32
+		{3397B60D-EEDD-48DE-8C0B-45ED96DCCA57}.Release|x64.ActiveCfg = Release|x64
+		{3397B60D-EEDD-48DE-8C0B-45ED96DCCA57}.Release|x64.Build.0 = Release|x64
+		{3397B60D-EEDD-48DE-8C0B-45ED96DCCA57}.Release|x86.ActiveCfg = Release|Win32
+		{3397B60D-EEDD-48DE-8C0B-45ED96DCCA57}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

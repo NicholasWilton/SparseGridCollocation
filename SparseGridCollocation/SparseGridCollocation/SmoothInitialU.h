@@ -3,7 +3,7 @@
 
 using Eigen::VectorXd;
 
-class SmoothInitialU
+class API SmoothInitialU
 {
 public:
 

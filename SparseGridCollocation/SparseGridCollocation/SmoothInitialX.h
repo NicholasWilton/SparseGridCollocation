@@ -3,7 +3,7 @@
 
 using Eigen::VectorXd;
 
-class SmoothInitialX
+class API SmoothInitialX
 {
 public:
 

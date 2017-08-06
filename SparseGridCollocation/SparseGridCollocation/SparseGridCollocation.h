@@ -1,6 +1,7 @@
 #pragma once
 
 #include "stdafx.h"
+#include "Params.h"
 
 using Eigen::Matrix;
 using Eigen::MatrixXd;
@@ -24,10 +25,16 @@ public:
 	double normCDF(double value);
 	double RootMeanSquare(VectorXd v);
 
-	vector<MatrixXd> MuSIKGeneric(int upper, int lower);
-	vector<MatrixXd> MuSIKGeneric(int upper, int lower, map<string, vector<vector<MatrixXd>>>& interpolation);
+	vector<MatrixXd> MuSIKc(int upper, int lower, Params p);
+	vector<MatrixXd> MuSIKc(int upper, int lower, Params p, map<string, vector<vector<MatrixXd>>>& interpolation);
 	map<string, vector<vector<MatrixXd>>> GetInterpolationState();
 	map<int, MatrixXd> GetU();
+	
+	vector<VectorXd> MethodOfLines(Params p);
+	vector<VectorXd> MethodOfLines(double T, double Tdone, double Tend, double dt, double K, double r, double sigma, double theta, double inx1, double inx2);
+	vector<VectorXd> EuroCallOption1D(double T, double Tdone, double Tend, double dt, double K, double r, double sigma, double theta, double inx1, double inx2);
+	
+	VectorXd Select(VectorXd A, double notEqual);
 
 private:
 	map<string, vector<vector<MatrixXd>>> vInterpolation;

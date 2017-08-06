@@ -53,5 +53,8 @@
     <ClCompile Include="testPDE.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="testMethodOfLines.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
