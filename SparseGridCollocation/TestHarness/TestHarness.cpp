@@ -367,14 +367,14 @@ int main(){
 	/*map<string, vector<vector<MatrixXd>>> interpolation = test->GetInterpolationState();
 	CompareInterpolation(inter, interpolation);
 */
-	wcout << "MuSIK-c result:" << endl;
-	wcout << Common::printMatrix(result[0]) << endl;
+	//wcout << "MuSIK-c result:" << endl;
+	//wcout << Common::printMatrix(result[0]) << endl;
 	wcout << "MuSIK-c RMS error:" << endl;
 	wcout << Common::printMatrix(result[1]) << endl;
 	wcout << "MuSIK-c MAX error:" << endl;
 	wcout << Common::printMatrix(result[2]) << endl;
 	wcout << getchar() << endl;
-
+		
 	int count = 0;
 	//for (auto r : result)
 	//{

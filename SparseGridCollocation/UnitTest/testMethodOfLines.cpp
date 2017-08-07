@@ -7,6 +7,7 @@
 #include "Math.h"
 #include "testCommon.h"
 #include "Common.h"
+#include "MoL.h"
 #include "InterTest.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -22,7 +23,7 @@ namespace UnitTest
 
 		TEST_METHOD(testMoL)
 		{
-			SparseGridCollocation* test = new SparseGridCollocation();
+			
 			
 			double T = 1.0;
 			double Tdone = 0.0;
@@ -35,7 +36,7 @@ namespace UnitTest
 			double inx1 = -K;
 			double inx2 = 6.0 * K;
 
-			vector<VectorXd> result = test->MethodOfLines(T, Tdone, Tend, dt, K, r, sigma, theta, inx1, inx2);
+			vector<VectorXd> result = MoL::MethodOfLines(T, Tdone, Tend, dt, K, r, sigma, theta, inx1, inx2);
 
 			VectorXd uX = SmoothInitialX::X();
 			VectorXd uU = SmoothInitialU::U();

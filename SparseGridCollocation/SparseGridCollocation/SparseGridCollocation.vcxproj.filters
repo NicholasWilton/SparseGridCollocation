@@ -60,6 +60,12 @@
     <ClInclude Include="Params.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="EuropeanCallOption.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MoL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -93,6 +99,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Params.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EuropeanCallOption.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MoL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
