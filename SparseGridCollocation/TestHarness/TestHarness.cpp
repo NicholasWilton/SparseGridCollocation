@@ -335,6 +335,7 @@ void CompareInterpolation(map<string, vector<vector<MatrixXd>>> expected, map<st
 };
 
 int main(){
+	
 	Params p;
 	p.T = 1.0;
 	p.Tdone = 0.0;
@@ -346,43 +347,37 @@ int main(){
 	p.theta = 0.5;
 	p.inx1 = -p.K;
 	p.inx2 = 6.0 * p.K;
-	
-	//map<string, vector<vector<MatrixXd>>> inter = Interpolation::GetInterpolation();
 
 	SparseGridCollocation* test = new SparseGridCollocation();
-	//vector<MatrixXd> result = test->MuSIKc(11, 9, inter);
-	vector<MatrixXd> result = test->MuSIKc(12, 0, p);
 
-	//vector<VectorXd> result = test->MethodOfLines(p);
-	//VectorXd uX = SmoothInitialX::X();
-	//VectorXd uU = SmoothInitialU::U();
+	vector<MatrixXd> MuSiKc = test->MuSIKc(12, 0, p);
+	vector<MatrixXd> SiKc = test->SIKc(12, 0, p);
 
-	//bool passed = Common::checkMatrix(uX.block(1,0, uX.rows() -2, 1), result[0].block(0, 0 ,result[0].rows() -2, 1), 0.0000001);
-	//cout << "SmoothInitialX=" << passed;
-	//passed = Common::checkMatrix(uU.block(1, 0, uU.rows() - 2, 1), result[0].block(0, 0, result[0].rows() - 2, 1), 0.0000001);
-	//cout << "SmoothInitialU=" << passed;
-
-	
-
-	/*map<string, vector<vector<MatrixXd>>> interpolation = test->GetInterpolationState();
-	CompareInterpolation(inter, interpolation);
-*/
 	//wcout << "MuSIK-c result:" << endl;
 	//wcout << Common::printMatrix(result[0]) << endl;
 	wcout << "MuSIK-c RMS error:" << endl;
-	wcout << Common::printMatrix(result[1]) << endl;
+	wcout << Common::printMatrix(MuSiKc[1]) << endl;
 	wcout << "MuSIK-c MAX error:" << endl;
-	wcout << Common::printMatrix(result[2]) << endl;
+	wcout << Common::printMatrix(MuSiKc[2]) << endl;
+
+	wcout << "SIK-c RMS error:" << endl;
+	wcout << Common::printMatrix(SiKc[1]) << endl;
+	wcout << "SIK-c MAX error:" << endl;
+	wcout << Common::printMatrix(SiKc[2]) << endl;
+
 	wcout << getchar() << endl;
-		
-	int count = 0;
-	//for (auto r : result)
-	//{
-	//	stringstream ss;
-	//	ss << "result_" << count << ".dat";
-	//	Common::WriteToBinary(ss.str(), r);
-	//	count++;
-	//}
+
+
+/*
+	//bulk interpolation comparison
+
+	map<string, vector<vector<MatrixXd>>> inter = Interpolation::GetInterpolation();
+	vector<MatrixXd> result = test->MuSIKc(11, 9, inter);
+
+	map<string, vector<vector<MatrixXd>>> interpolation = test->GetInterpolationState();
+	CompareInterpolation(inter, interpolation);
+*/
+
 
 	////uncomment below to test each interpolation level:
 

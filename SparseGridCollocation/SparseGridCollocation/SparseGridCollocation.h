@@ -22,6 +22,8 @@ public:
 
 	double RootMeanSquare(VectorXd v);
 
+	vector<MatrixXd> SIKc(int upper, int lower, Params p);
+	vector<MatrixXd> SIKc(int upper, int lower, Params p, map<string, vector<vector<MatrixXd>>>& interpolation);
 	vector<MatrixXd> MuSIKc(int upper, int lower, Params p);
 	vector<MatrixXd> MuSIKc(int upper, int lower, Params p, map<string, vector<vector<MatrixXd>>>& interpolation);
 	map<string, vector<vector<MatrixXd>>> GetInterpolationState();
