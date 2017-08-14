@@ -30,6 +30,11 @@ VectorXd InterTest::GetResult(string id)
 	return result->at(id);
 }
 
+map<string, VectorXd> InterTest::GetResults()
+{
+	return *result;
+}
+
 void InterTest::Execute(map<string, vector<vector<MatrixXd>> > vInterpolation, MatrixXd TX)
 {
 	vector<VectorXd> V;
@@ -68,7 +73,11 @@ void InterTest::parallel(string id, const MatrixXd &X, const vector<MatrixXd> &l
 		RBF r;
 		//[D] = mq2d(X, TX{ j }, A{ j }, C{ j });
 		vector<MatrixXd> D = r.mqd2(X, TX[j], A[j], C[j]);
-
+		Common::saveArray(X, "Musikc_X.txt");
+		Common::saveArray(TX[j], "Musikc_TX.txt");
+		Common::saveArray(A[j], "Musikc_A.txt");
+		Common::saveArray(C[j], "Musikc_C.txt");
+		Common::saveArray(D[0], "Musikc_D.txt");
 		//V(:, j) = D*lamb{ j };
 		VectorXd v = D[0] * lamb[j];
 		V.col(j) = v;
@@ -98,7 +107,12 @@ void InterTest::parallelND(string id, const MatrixXd &X, const vector<MatrixXd> 
 		RBF r;
 		//[D] = mq2d(X, TX{ j }, A{ j }, C{ j });
 		vector<MatrixXd> D = r.mqNd(X, TX[j], A[j], C[j]);
-
+		//vector<MatrixXd> D = r.mqd2(X, TX[j], A[j], C[j]);
+		Common::saveArray(X, "MusikcND_X.txt");
+		Common::saveArray(TX[j], "MusikcND_TX.txt");
+		Common::saveArray(A[j], "MusikcND_A.txt");
+		Common::saveArray(C[j], "MusikcND_C.txt");
+		Common::saveArray(D[0], "MusikcND_D.txt");
 		//V(:, j) = D*lamb{ j };
 		VectorXd v = D[0] * lamb[j];
 		V.col(j) = v;

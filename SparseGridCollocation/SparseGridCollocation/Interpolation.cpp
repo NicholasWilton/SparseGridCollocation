@@ -96,7 +96,7 @@ void Interpolation::interpolateGenericND(string prefix, double coef, double tsec
 	for (int i = 0; i < N.rows(); i++)
 	{
 		threads.push_back(std::thread(&Interpolation::shapelambdaNDGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
-		shapelambdaNDGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
+		//shapelambdaNDGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
 	}
 
 	
@@ -389,14 +389,22 @@ void Interpolation::shapelambdaNDGeneric(string prefix, int threadId, double coe
 
 	for (int i = 0; i < num; i++)
 	{
-		double product = 0.0;
+		double lower = 0.0;
+		double upper = 0.0;
 		for (int j = 1; j < TXYZ.cols(); j ++ ) //if ANY node is on a spatial dimensional boundary then our product should be zero
 		{
-			double diff = abs(TXYZ(i, j) - inx1(0, j));
-			product *= diff;
+			double diff1 = abs(TXYZ(i, j) - inx1(0, j));
+			double diff2 = abs(TXYZ(i, j) - inx2(0, j));
+			if (j == 1)
+			{
+				lower = diff1;
+				upper = diff2;
+			}
+			lower *= diff1;
+			upper *= diff2;
 		}
 		//do the boundary update for spatial dimensions
-		if (product < DBL_EPSILON)
+		if (lower < DBL_EPSILON || upper < DBL_EPSILON)
 		{
 			
 			P.row(i) = mqd[0].row(i);
