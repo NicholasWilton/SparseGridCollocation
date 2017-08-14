@@ -9,6 +9,8 @@
 #include "EuropeanCallOption.h"
 #include "windows.h"
 #include "Common.h"
+#include "Option.h"
+#include "BasketOption.h"
 #include "VectorUtil.h"
 #include "Interpolation.h"
 #include "RBF.h"
@@ -208,8 +210,10 @@ vector<MatrixXd> SparseGridCollocation::SIKc(int upper, int lower, Params p, map
 		SiK.col(count) = V - V_;
 	}
 
-	VectorXd AP = EuropeanCallOption::Price(TX, r, sigma, T, E);
-	
+	Option *option = new EuropeanCallOption(E, T);
+	VectorXd AP = option->Price(TX, r, sigma);
+	delete option;
+
 	VectorXd RMS = VectorXd::Ones(9, 1);
 	VectorXd Max = VectorXd::Ones(9, 1);
 
@@ -226,7 +230,6 @@ vector<MatrixXd> SparseGridCollocation::SIKc(int upper, int lower, Params p, map
 	vector<MatrixXd> result = { SiK, RMS, Max };
 	return result;
 }
-
 
 vector<MatrixXd> SparseGridCollocation::MuSIKc(int upper, int lower, Params p)
 {
@@ -296,7 +299,7 @@ vector<MatrixXd> SparseGridCollocation::MuSIKc(int upper, int lower, Params p, m
 			interpolation[key] = i.getResult();
 		}
 		{
-			
+
 			Interpolation i;
 			i.interpolateGeneric(_key, coef, tsec, nb, d, inx1, inx2, r, sigma, T, E, level, &interpolation);
 			interpolation[_key] = i.getResult();
@@ -329,7 +332,7 @@ vector<MatrixXd> SparseGridCollocation::MuSIKc(int upper, int lower, Params p, m
 		level.push_back(_key);
 		level.push_back(key);
 	}
-	
+
 	Common::Logger("inter_test");
 
 	InterTest interTest;
@@ -340,7 +343,7 @@ vector<MatrixXd> SparseGridCollocation::MuSIKc(int upper, int lower, Params p, m
 	{
 		InterTest interTest2;
 		InterTest interTest3;
-		
+
 		vector<vector<MatrixXd>> test2 = interpolation["2"];
 		threads.push_back(std::thread(&InterTest::parallel, interTest2, "2", TX, test2[0], test2[1], test2[2], test2[3]));
 		vector<vector<MatrixXd>> test3 = interpolation["3"];
@@ -391,7 +394,236 @@ vector<MatrixXd> SparseGridCollocation::MuSIKc(int upper, int lower, Params p, m
 		Us[count - 2] = V - V_;
 	}
 
-	VectorXd AP = EuropeanCallOption::Price(TX, r, sigma, T, E);
+	EuropeanCallOption option(E, T);
+	VectorXd AP = option.Price(TX, r, sigma);
+	Common::Logger("MuSIK addition");
+	int m = Us[0].rows();
+	MatrixXd MuSIK = MatrixXd::Zero(m, 9);
+	VectorXd sum = VectorXd::Zero(Us[0].rows());
+	for (int count = 2; count <= 10; count++)
+	{
+		sum = sum + Us[count - 2];
+		if (upper >= count & lower <= count)
+		{
+			MuSIK.col(count - 2) = sum;
+		}
+	}
+
+	VectorXd RMS = VectorXd::Ones(9, 1);
+	VectorXd Max = VectorXd::Ones(9, 1);
+
+	Common::Logger("Error calculations");
+	for (int i = 0; i < MuSIK.cols(); i++)
+	{
+		VectorXd v = MuSIK.col(i).array() - AP.array();
+		RMS[i] = RootMeanSquare(v);
+		VectorXd m = abs(MuSIK.col(i).array() - AP.array());
+		Max[i] = m.maxCoeff();
+	}
+
+	InterpolationState = interpolation;
+	vector<MatrixXd> result = { MuSIK, RMS, Max };
+	return result;
+}
+
+vector<MatrixXd> SparseGridCollocation::MuSIKcND(int upper, int lower, BasketOption option, Params p)
+{
+	InterpolationState.clear();
+
+	cout << "MuSiK-c with levels " << lower << " to " << upper << endl;
+	cout << "Parameters:" << endl;
+	cout << setprecision(16) << "T=" << p.T << endl;
+	cout << setprecision(16) << "Tdone=" << p.Tdone << endl;
+	cout << setprecision(16) << "Tend=" << p.Tend << endl;
+	cout << setprecision(16) << "dt=" << p.dt << endl;
+	cout << setprecision(16) << "K=" << p.K << endl;
+	cout << setprecision(16) << "r=" << p.r << endl;
+	cout << setprecision(16) << "sigma=" << p.sigma << endl;
+	cout << setprecision(16) << "theta=" << p.theta << endl;
+	cout << setprecision(16) << "inx1=" << p.inx1 << endl;
+	cout << setprecision(16) << "inx2=" << p.inx2 << endl;
+
+	vector<VectorXd> smoothinitial = MoL::MethodOfLines(p);
+	SmoothInitialX::x = smoothinitial[0].head(smoothinitial[0].rows());
+	SmoothInitialU::u = smoothinitial[1].head(smoothinitial[1].rows());
+
+	p.Tdone = 0.1350;
+	p.inx1 = 0;
+	p.inx2 = 3.0 * p.K;
+
+	return MuSIKcND(upper, lower, option, p, InterpolationState);
+}
+
+vector<MatrixXd> SparseGridCollocation::MuSIKcND(int upper, int lower, BasketOption option, Params p, map<string, vector<vector<MatrixXd>>>& interpolation)
+{
+	cout << "Starting MuSiK-c" << endl;
+
+	int dimensions = option.Underlying + 1; // 1 per asset + time
+	double E = p.K;// strike price
+	double r = p.r; // interest rate
+	double sigma = p.sigma;
+	double T = p.T; // Maturity
+	MatrixXd inx1(1, dimensions);
+	inx1.fill(p.inx1);
+	
+	MatrixXd inx2(1, dimensions);
+	inx2.fill(p.inx2);
+
+	double Tdone = p.Tdone;
+	double tsec = T - Tdone; // Initial time boundary for sparse grid
+	int d = 2; // dimension
+	double coef = 2; // coef stands for the connection constant number
+
+	int ch = 10000; //in 4d heat this is set to 22
+
+	MatrixXd TestGrid(ch, dimensions);
+	for (int d = 0; d < dimensions; d++)
+		TestGrid.col(d) = VectorXd::LinSpaced(ch, inx1(0, d), inx2(0, d));
+
+	int lvl = dimensions;
+
+	// Level 2 ....lamb stands for \lambda the coefficients, TX stands for nodes
+	// C stands for shape parater, A stands for scale parameter
+	vector<string> level = {};
+	if (upper >= lvl & lower <= lvl)
+	{
+		vector<string> newKeys = {};
+		Common::Logger("level-4");
+		stringstream ss;
+		ss << 1 + lvl;
+		int n = lvl + option.Underlying;
+		string key = ss.str();
+		{
+			Interpolation i;
+			i.interpolateGenericND(key, coef, tsec, n, d, inx1, inx2, r, sigma, T, E, level, &interpolation);
+			interpolation[key] = i.getResult();
+		}
+		newKeys.push_back(key);
+		
+		for (int dimension = 1; dimension <= option.Underlying; dimension++)
+		{
+			n = lvl + option.Underlying - dimension;
+			stringstream ss;
+			ss << 1 + lvl << "_" << n;
+			string key = ss.str();
+			{
+				Interpolation i;
+				i.interpolateGenericND(key, coef, tsec, n, d, inx1, inx2, r, sigma, T, E, level, &interpolation);
+				interpolation[key] = i.getResult();
+			}
+			newKeys.push_back(key);
+		}
+		for (auto key : newKeys)
+			level.push_back(key);
+	}
+	lvl++;
+
+	//Multi level interpolation requires successive reuse of results from prior levels
+	int sequence = 1;
+	for (lvl; lvl <= 10; lvl++)
+	{
+		vector<string> newKeys = {};
+		stringstream ss;
+		ss << "level-" << lvl;
+		Common::Logger(ss.str());
+
+		stringstream ss1;
+		ss1 << 1 + lvl;
+		int n = lvl + option.Underlying;
+		string key = ss1.str();
+		{
+			Interpolation i;
+			i.interpolateGenericND(key, coef, tsec, n, d, inx1, inx2, r, sigma, T, E, level, &interpolation);
+			interpolation[key] = i.getResult();
+		}
+		newKeys.push_back(key);
+		for (int dimension = 1; dimension <= option.Underlying; dimension++)
+		{
+			n = lvl + option.Underlying - dimension;
+			stringstream ss2;
+			ss2 << 1 + lvl << "_" << n;
+			string key = ss2.str();
+			{
+				Interpolation i;
+				i.interpolateGenericND(key, coef, tsec, n, d, inx1, inx2, r, sigma, T, E, level, &interpolation);
+				interpolation[key] = i.getResult();
+			}
+			newKeys.push_back(key);
+		}
+		for (auto key : newKeys)
+			level.push_back(key);
+
+		sequence++;
+	}
+	
+	Common::Logger("inter_test");
+
+	InterTest interTest;
+	vector<thread> threads;
+	vector<InterTest> interTests;
+
+	for (int count = 0; count <= 10; count++)
+	{
+		if (upper >= count & lower <= count)
+		{
+			int lvl = 4 + count;
+			int n = lvl + option.Underlying;
+			InterTest interTest;
+			stringstream ss1;
+			ss1 << n;
+			vector<vector<MatrixXd>> test_ = interpolation[ss1.str()];
+			threads.push_back(std::thread(&InterTest::parallelND, interTest, ss1.str(), TestGrid, test_[0], test_[1], test_[2], test_[3]));
+			interTests.push_back(interTest);
+			
+			for (int dimension = 1 ; dimension <= option.Underlying; dimension++)
+			{
+				InterTest interTest_;
+				stringstream ss2;
+				ss2 << n << "_" << n - dimension;
+				vector<vector<MatrixXd>> test = interpolation[ss2.str()];
+				threads.push_back(std::thread(&InterTest::parallelND, interTest_, ss2.str(), TestGrid, test[0], test[1], test[2], test[3]));
+				interTests.push_back(interTest_);
+				dimension++;
+			}
+			
+			
+		}
+	}
+
+	for (int i = 0; i < threads.size(); i++)
+		threads.at(i).join();
+
+	Common::Logger("inter_test complete");
+	vector<VectorXd> Us = { VectorXd::Zero(10000) ,VectorXd::Zero(10000) ,VectorXd::Zero(10000) ,VectorXd::Zero(10000) ,VectorXd::Zero(10000) ,VectorXd::Zero(10000) ,VectorXd::Zero(10000) ,VectorXd::Zero(10000),VectorXd::Zero(10000) };
+
+	//TODO: calculate upper limit from portfolio size and level choice
+	
+	for (int count = 0; count <= 10; count+= option.Underlying + 1)
+	{
+		int lvl = 4 + count;
+		int n = lvl + option.Underlying;
+		vector<MatrixXd> elements;
+		stringstream ss;
+		ss << n;
+		MatrixXd U = interTests.at(count).GetResult(ss.str());
+		int coeff = Common::BinomialCoefficient(option.Underlying + 1, 0);
+		U = U * coeff;
+		int index = 1;
+		for (int dimension =1; dimension <= option.Underlying; dimension ++)
+		{
+			stringstream ss1;
+			ss1 << count + 1;
+			MatrixXd V = interTests.at(count + index).GetResult(ss1.str());
+			coeff = (index % 2 == 0) ? Common::BinomialCoefficient(option.Underlying + 1, count) : -Common::BinomialCoefficient(option.Underlying + 1, count);
+			U = U + (coeff * V);
+			index++;
+		}
+		Us[count] = U;
+	}
+	
+	//TODO: basket option analytic price.
+	MatrixXd AP = option.Price(TestGrid.col(0), r, sigma);
+	
 	Common::Logger("MuSIK addition");
 	int m = Us[0].rows();
 	MatrixXd MuSIK = MatrixXd::Zero(m,9);
@@ -409,18 +641,20 @@ vector<MatrixXd> SparseGridCollocation::MuSIKc(int upper, int lower, Params p, m
 	VectorXd Max = VectorXd::Ones(9, 1);
 
 	Common::Logger("Error calculations");
-	for (int i = 0; i < MuSIK.cols(); i++)
-	{
-		VectorXd v = MuSIK.col(i).array() - AP.array();
-		RMS[i] = RootMeanSquare(v);
-		VectorXd m = abs(MuSIK.col(i).array() - AP.array());
-		Max[i] = m.maxCoeff();
-	}
+	//for (int i = 0; i < MuSIK.cols(); i++)
+	//{
+	//	VectorXd v = MuSIK.col(i).array() - AP.array();
+	//	RMS[i] = RootMeanSquare(v);
+	//	VectorXd m = abs(MuSIK.col(i).array() - AP.array());
+	//	Max[i] = m.maxCoeff();
+	//}
 
 	InterpolationState = interpolation;
 	vector<MatrixXd> result = { MuSIK, RMS, Max };
 	return result;
 }
+
+
 
 double SparseGridCollocation::RootMeanSquare(VectorXd v)
 {

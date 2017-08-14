@@ -38,6 +38,8 @@ public:
 	//static MatrixXd mult(MatrixXd &a, MatrixXd &b);
 	static map<string, double> LoadMock();
 	static double innerMock(string key, int thread, int num, int sub);
+	static int BinomialCoefficient(int n, int i);
+	static int Factorial(int n);
 private:
 	static map<string, double> mock;
 };

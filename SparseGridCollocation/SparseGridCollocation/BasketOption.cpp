@@ -1,31 +1,35 @@
 #include "stdafx.h"
-#include "EuropeanCallOption.h"
+#include "BasketOption.h"
 #include "Distributions.h"
 
-EuropeanCallOption::EuropeanCallOption()
+
+BasketOption::BasketOption()
 {
 }
 
-EuropeanCallOption::EuropeanCallOption(double strike, double maturity)
+BasketOption::BasketOption(double strike, double maturity, int dimensions)
 {
 	this->Strike = strike;
 	this->Maturity = maturity;
+	this->Underlying = dimensions;
 }
 
 
-EuropeanCallOption::~EuropeanCallOption()
+BasketOption::~BasketOption()
 {
 }
 
 
-VectorXd EuropeanCallOption::PayOffFunction(VectorXd S)
+VectorXd BasketOption::PayOffFunction(MatrixXd S)
 {
-	VectorXd delta = S.array() - this->Strike;
+
+	VectorXd delta = S.rowwise().mean().array() - this->Strike;
+	
 	VectorXd result = (delta.array() > 0).select(delta, 0);
 	return result;
 }
 
-MatrixXd EuropeanCallOption::Price(const MatrixXd &X, double r, double sigma)
+MatrixXd BasketOption::Price(const MatrixXd &X, double r, double sigma)
 {
 	double strike = this->Strike;
 	double maturity = this->Maturity;
@@ -42,7 +46,7 @@ MatrixXd EuropeanCallOption::Price(const MatrixXd &X, double r, double sigma)
 
 	for (int i = 0; i < N; i++)
 	{
-		if (S(i) -  strike> 0)
+		if (S(i) - strike> 0)
 			P(i) = S(i) - strike;
 		else
 			P(i) = 0;

@@ -5,6 +5,7 @@
 #include "SmoothInitialU.h"
 #include "SmoothInitialX.h"
 #include "Params.h"
+#include "BasketOption.h"
 
 using namespace Eigen;
 using namespace std;
@@ -348,10 +349,15 @@ int main(){
 	p.inx1 = -p.K;
 	p.inx2 = 6.0 * p.K;
 
+	vector<Option> portfolio = { EuropeanCallOption(100.0, 1), EuropeanCallOption(200.0, 1) };
+	BasketOption option(100.0,1,1);
 	SparseGridCollocation* test = new SparseGridCollocation();
 
+	vector<MatrixXd> MuSiKcBasket = test->MuSIKcND(12, 0, option, p);
 	vector<MatrixXd> MuSiKc = test->MuSIKc(12, 0, p);
-	vector<MatrixXd> SiKc = test->SIKc(12, 0, p);
+	
+
+	//vector<MatrixXd> SiKc = test->SIKc(12, 0, p);
 
 	//wcout << "MuSIK-c result:" << endl;
 	//wcout << Common::printMatrix(result[0]) << endl;
@@ -360,10 +366,13 @@ int main(){
 	wcout << "MuSIK-c MAX error:" << endl;
 	wcout << Common::printMatrix(MuSiKc[2]) << endl;
 
-	wcout << "SIK-c RMS error:" << endl;
-	wcout << Common::printMatrix(SiKc[1]) << endl;
-	wcout << "SIK-c MAX error:" << endl;
-	wcout << Common::printMatrix(SiKc[2]) << endl;
+	wcout << "MuSIK-c vs MuSIK-c basket:" << endl;
+	Common::checkMatrix(MuSiKc[0], MuSiKcBasket[0]);
+
+	//wcout << "SIK-c RMS error:" << endl;
+	//wcout << Common::printMatrix(SiKc[1]) << endl;
+	//wcout << "SIK-c MAX error:" << endl;
+	//wcout << Common::printMatrix(SiKc[2]) << endl;
 
 	wcout << getchar() << endl;
 

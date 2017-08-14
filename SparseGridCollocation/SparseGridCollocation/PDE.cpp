@@ -52,3 +52,41 @@ MatrixXd PDE::BlackScholes(const MatrixXd &node, double r, double sigma,
 	return output;
 }
 
+MatrixXd PDE::BlackScholesNd(const MatrixXd &node, double r, double sigma, vector<string> keys, const map<string, vector<vector<MatrixXd>> > * state)
+{
+	int N = node.rows();
+	vector<MatrixXd> Us;
+	for (auto key : keys)
+	{
+		vector<vector<MatrixXd>> item = state->at(key); //0-lambda, 1-TX, 2-C, 3-A, 4-U
+		int ch2 = item[1].size();
+		MatrixXd U = MatrixXd::Ones(N, ch2);
+
+		for (int j = 0; j < ch2; j++)
+		{
+			vector<MatrixXd> mqd = RBF::mqNd(node, item[1][j], item[3][j], item[2][j]);
+			MatrixXd a = mqd[1] * item[0][j]; // lambda * dV/dt
+			MatrixXd b = (pow(sigma, 2) / 2) * mqd[3] * item[0][j]; // 1/2 sum-i sum-j sigma^2 rho-ij Si Sj d2V/dSi dSj
+			MatrixXd c = r * mqd[2] * item[0][j]; // sum-i (r - q-i) Si dV/dSi
+			MatrixXd d = r * mqd[0] * item[0][j]; //rV
+			U.col(j) = a + b + c - d;
+		}
+		Us.push_back(U);
+	}
+
+	int n = Us.size();
+	MatrixXd output(Us[0].rows(), 1);;
+	for (int i = 0; i < Us.size(); i++)
+	{
+		int coeff = Common::BinomialCoefficient(n-1, i);
+		MatrixXd U = Us[i];
+		VectorXd sum = U.rowwise().sum();
+		if (i % 2 == 0)
+			output.col(0).array() -= (coeff * sum).array();
+		else
+			output.col(0).array() += (coeff * sum).array();
+	}
+
+	return output;
+}
+

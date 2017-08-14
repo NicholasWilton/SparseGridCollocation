@@ -65,6 +65,41 @@ double Test::inner(double t, double x, const vector<MatrixXd> &lamb, const vecto
 	return output;
 }
 
+//TXYZ should be a row vector for the N dimension matrix
+double Test::innerND(MatrixXd TXYZ, const vector<MatrixXd> &lamb, const vector<MatrixXd> &TX, const vector<MatrixXd> &C, const vector<MatrixXd> &A)
+{
+
+	int ch = TX.size();
+	vector<double> V;
+
+	for (int j = 0; j < ch; j++)
+	{
+		MatrixXd VV = MatrixXd::Ones(TX[j].rows(),1);
+		for (int i = 0; i < TX[j].cols(); i++)
+		{
+			MatrixXd square = (A[j](0, i) * (TXYZ(0, i) - (TX[j].col(i).array())).array()) * (A[j](0, i) * (TXYZ(0, i) - (TX[j].col(i).array())).array());
+			MatrixXd a = -square / (C[j](0, i) * C[j](0, i));
+			MatrixXd FAI = a.array().exp();
+			VV.array() = VV.array() * FAI.array();
+		}
+		
+		VV.transposeInPlace();
+		MatrixXd res = VV * lamb[j];
+		V.push_back(res(0, 0));
+	}
+
+
+	double output = 0;
+	int i = 0;
+	for (vector<double>::iterator it = V.begin(); it < V.end(); it++, i++)
+	{
+		output += V[i];// .sum();
+
+	}
+
+	return output;
+}
+
 
 VectorXd Test::inter(MatrixXd X, vector<MatrixXd> lamb, vector<MatrixXd> TX, vector<MatrixXd> C, vector<MatrixXd> A)
 {

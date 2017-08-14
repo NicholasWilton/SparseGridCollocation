@@ -26,6 +26,8 @@
 #include "Common.h"
 #include "data.h"
 #include "Interpolation.h"
+#include "Option.h"
+#include "EuropeanCallOption.h"
 
 // Header declarations / definitions
 

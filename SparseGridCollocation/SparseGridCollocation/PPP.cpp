@@ -16,6 +16,8 @@ double PPP::Calculate(const RowVectorXd &X)
 {
 	VectorXd x1 = SmoothInitialX::X();
 	VectorXd U1 = SmoothInitialU::U();
+
+	//TODO: X(1) should this be X(0) or X(last)?
 	VectorXd u = (x1.array() == X(1)).select(U1, 0);
 	double U = u.sum();
 

@@ -1,9 +1,11 @@
 #include "stdafx.h"
 #include "MoL.h"
+#include "Common.h"
 #include "EuropeanCallOption.h"
 #include "VectorUtil.h"
 #include "RBF.h"
 #include <iomanip>
+#include <fstream>
 
 using namespace Eigen;
 using namespace std;
@@ -21,7 +23,34 @@ MoL::~MoL()
 
 vector<VectorXd> MoL::MethodOfLines(Params p)
 {
-	return MethodOfLines(p.T, p.Tdone, p.Tend, p.dt, p.K, p.r, p.sigma, p.theta, p.inx1, p.inx2);
+	stringstream ssX;
+	ssX << setprecision(16) << "SmoothInitial_EuroCall_" << p.T << "_" << p.Tdone << "_" << p.Tend << "_" << p.dt << "_" << p.K << "_" << p.r << "_" << p.sigma << "_" << p.theta << "_" << p.inx1 << "_" << p.inx2 << "_X.dat";
+	stringstream ssU;
+	ssU << setprecision(16) << "SmoothInitial_EuroCall_" << p.T << "_" << p.Tdone << "_" << p.Tend << "_" << p.dt << "_" << p.K << "_" << p.r << "_" << p.sigma << "_" << p.theta << "_" << p.inx1 << "_" << p.inx2 << "_U.dat";
+
+	string fileX = ssX.str();
+	ifstream x(fileX.c_str());
+	string fileU = ssU.str();
+	ifstream u(fileU.c_str());
+
+	if (x.good() & u.good())
+	{
+		x.close();
+		MatrixXd mX = Common::ReadBinary(fileX, 32769, 1);
+		VectorXd X(Map<VectorXd>(mX.data(), mX.cols()*mX.rows()));
+		u.close();
+		MatrixXd mU = Common::ReadBinary(fileU, 32769, 1);
+		VectorXd U(Map<VectorXd>(mU.data(), mU.cols()*mU.rows()));
+		return { X, U };
+	}
+	else
+	{
+		vector<VectorXd> smoothInitial = MethodOfLines(p.T, p.Tdone, p.Tend, p.dt, p.K, p.r, p.sigma, p.theta, p.inx1, p.inx2);
+		Common::WriteToBinary(fileX, smoothInitial[0]);
+		Common::WriteToBinary(fileU, smoothInitial[1]);
+		return smoothInitial;
+	}
+
 }
 
 vector<VectorXd> MoL::MethodOfLines(double T, double Tdone, double Tend, double dt, double K, double r, double sigma, double theta, double inx1, double inx2)
@@ -52,11 +81,12 @@ vector<VectorXd> MoL::MethodOfLines(double T, double Tdone, double Tend, double 
 
 vector<VectorXd> MoL::EuroCallOption1D(double T, double Tdone, double Tend, double dt, double K, double r, double sigma, double theta, double inx1, double inx2)
 {
-
+	Option *option = new EuropeanCallOption(K, T);
 	int N_uniform = 5000;
 	VectorXd x = VectorXd::LinSpaced(N_uniform, inx1, inx2);
 
-	VectorXd u0 = EuropeanCallOption::PayOffFunction(x, K);
+	VectorXd u0 = option->PayOffFunction(x);
+	delete option;
 
 	VectorXd dx = VectorUtil::Diff(x);
 	const double inf = numeric_limits<double>::infinity();
@@ -130,7 +160,8 @@ vector<VectorXd> MoL::EuroCallOption1D(double T, double Tdone, double Tend, doub
 		Tdone += dt;
 		MatrixXd g = G* lamb;
 
-		VectorXd fff = VectorUtil::PushAndQueue(0, g, inx2 - exp(-r*Tdone)*K);
+		//VectorXd fff = VectorUtil::PushAndQueue(0, (VectorXd)g.col(0), inx2 - exp(-r*Tdone)*K);
+		VectorXd fff = VectorUtil::PushAndQueue(0, Map<VectorXd>(g.data(), g.cols() * g.rows()), inx2 - exp(-r*Tdone)*K);
 
 		MatrixXd HH(A1.cols(), A1.cols());
 		HH.row(0) = A1;

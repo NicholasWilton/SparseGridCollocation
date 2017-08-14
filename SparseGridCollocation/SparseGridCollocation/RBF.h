@@ -11,7 +11,8 @@ public:
 	RBF();
 	~RBF();
 	static VectorXd exp(const VectorXd &v);
+	static vector<MatrixXd> mqNd(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C);
 	static vector<MatrixXd> mqd2(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C);
-	static vector<MatrixXd> RBF::mqd1(const MatrixXd &xx, double x, double c);
+	static vector<MatrixXd> mqd1(const MatrixXd &xx, double x, double c);
 };
 

@@ -159,9 +159,11 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BasketOption.h" />
     <ClInclude Include="Double.h" />
     <ClInclude Include="EuropeanCallOption.h" />
     <ClInclude Include="InterTest.h" />
+    <ClInclude Include="Option.h" />
     <ClInclude Include="MatrixXdm.h" />
     <ClInclude Include="MoL.h" />
     <ClInclude Include="Params.h" />
@@ -177,8 +179,10 @@
     <ClInclude Include="Test.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BasketOption.cpp" />
     <ClCompile Include="EuropeanCallOption.cpp" />
     <ClCompile Include="InterTest.cpp" />
+    <ClCompile Include="Option.cpp" />
     <ClCompile Include="MoL.cpp" />
     <ClCompile Include="Params.cpp" />
     <ClCompile Include="PDE.cpp" />

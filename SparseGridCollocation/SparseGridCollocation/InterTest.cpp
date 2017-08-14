@@ -81,6 +81,36 @@ void InterTest::parallel(string id, const MatrixXd &X, const vector<MatrixXd> &l
 	
 }
 
+void InterTest::parallelND(string id, const MatrixXd &X, const vector<MatrixXd> &lamb, const vector<MatrixXd> &TX, const vector<MatrixXd> &C, const vector<MatrixXd> &A)
+{
+	// This is used to calculate values on final testing points
+	//ch = length(TX);
+	int ch = TX.size();
+
+	//[N, ~] = size(X);
+	int N = X.rows();
+	//V = ones(N, ch);
+	MatrixXd V = MatrixXd::Ones(N, ch);
+	//for j = 1:ch
+
+	for (int j = 0; j < ch; j++)
+	{
+		RBF r;
+		//[D] = mq2d(X, TX{ j }, A{ j }, C{ j });
+		vector<MatrixXd> D = r.mqNd(X, TX[j], A[j], C[j]);
+
+		//V(:, j) = D*lamb{ j };
+		VectorXd v = D[0] * lamb[j];
+		V.col(j) = v;
+		//end
+	}
+	//output = sum(V, 2);
+	VectorXd res = V.rowwise().sum().eval();
+	auto r = map<string, VectorXd>::value_type(id, res);
+	result->insert(r);
+
+}
+
 VectorXd InterTest::serial(MatrixXd X, vector<MatrixXd> lamb, vector<MatrixXd> TX, vector<MatrixXd> C, vector<MatrixXd> A)
 {
 	// This is used to calculate values on final testing points

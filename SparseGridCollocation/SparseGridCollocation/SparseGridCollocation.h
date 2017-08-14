@@ -2,6 +2,8 @@
 
 #include "stdafx.h"
 #include "Params.h"
+#include "Option.h"
+#include "BasketOption.h"
 
 using Eigen::Matrix;
 using Eigen::MatrixXd;
@@ -21,12 +23,18 @@ public:
 	SparseGridCollocation();
 
 	double RootMeanSquare(VectorXd v);
-
+	
 	vector<MatrixXd> SIKc(int upper, int lower, Params p);
 	vector<MatrixXd> SIKc(int upper, int lower, Params p, map<string, vector<vector<MatrixXd>>>& interpolation);
+	
 	vector<MatrixXd> MuSIKc(int upper, int lower, Params p);
 	vector<MatrixXd> MuSIKc(int upper, int lower, Params p, map<string, vector<vector<MatrixXd>>>& interpolation);
+	
+	vector<MatrixXd> MuSIKcND(int upper, int lower, BasketOption option, Params p);
+	vector<MatrixXd> MuSIKcND(int upper, int lower, BasketOption option, Params p, map<string, vector<vector<MatrixXd>>>& interpolation);
+
 	map<string, vector<vector<MatrixXd>>> GetInterpolationState();
+
 
 private:
 

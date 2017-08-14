@@ -254,8 +254,9 @@ void Common::WriteToString(string fileName, MatrixXd matrix)
 		for (int j = 0; j < matrix.cols(); j++)
 		{
 			double d = matrix(i, j);
-			//fout.write((char *)(&d), sizeof(d));
-			fout << d << ",";
+			fout.write((char *)(&d), sizeof(d));
+			//fout << d << ",";
+			fout.write((char *)("\t"), sizeof(d));
 		}
 		fout << endl;
 	}
@@ -273,8 +274,10 @@ bool Common::saveArray(MatrixXd A, const std::string& file_path)
 	{
 		for (int j = 0; j < A.cols(); j++)
 		{
-			os << setprecision(16) << A(i, j) << ",";
+			//cout << setprecision(16) << A(i, j) << "\t";
+			os << setprecision(16) << A(i, j) << "\t";
 		}
+		//cout << endl;
 		os << endl;
 	}
 	os.close();
@@ -463,5 +466,24 @@ double Common::innerMock(string key, int thread, int num, int sub)
 
 	double r = mock[ss.str()];
 	return r;
+}
+
+//n Choose i or nCi
+int Common::BinomialCoefficient(int n, int i)
+{
+	return Factorial(n) / (Factorial(n - i) * Factorial(i));
+}
+
+int Common::Factorial(int n)
+{
+	if (n == 0)
+		return 1;
+
+	int result = n;
+
+	for (int count = n - 1; count > 1; count--)
+		result *= count;
+
+	return result;
 }
 

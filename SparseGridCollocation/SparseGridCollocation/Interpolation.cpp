@@ -39,7 +39,7 @@ MatrixXd Interpolation::getU(int id)
 	return U[id];
 }
 
-void Interpolation::interpolateGeneric(string prefix, double coef, double tsec, int b, int d, double inx1, double inx2, double r, double sigma, double T, double E, 
+void Interpolation::interpolateGeneric(string prefix, double coef, double tsec, int b, int d, double inx1, double inx2, double r, double sigma, double T, double E,
 	vector<string> keys, const map<string, vector<vector<MatrixXd>> > *vInterpolation)
 {
 	Lambda.clear();
@@ -56,6 +56,47 @@ void Interpolation::interpolateGeneric(string prefix, double coef, double tsec, 
 	{
 		threads.push_back(std::thread(&Interpolation::shapelambda2DGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
 		//shapelambda2DGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
+	}
+
+
+	for (int i = 0; i < threads.size(); i++)
+		threads.at(i).join();
+
+	vector<MatrixXd> l;
+	vector<MatrixXd> tx;
+	vector<MatrixXd> a;
+	vector<MatrixXd> c;
+	vector<MatrixXd> u;
+
+	for (int i = 0; i < N.rows(); i++)
+	{
+		l.push_back(Lambda[i]);
+		tx.push_back(TX[i]);
+		c.push_back(C[i]);
+		a.push_back(A[i]);
+		u.push_back(U[i]);
+	}
+	result = { l, tx, c, a, u };
+
+}
+
+void Interpolation::interpolateGenericND(string prefix, double coef, double tsec, int b, int d, MatrixXd inx1, MatrixXd inx2, double r, double sigma, double T, double E,
+	vector<string> keys, const map<string, vector<vector<MatrixXd>> > *vInterpolation)
+{
+	Lambda.clear();
+	TX.clear();
+	A.clear();
+	C.clear();
+	U.clear();
+
+	MatrixXd N = primeNMatrix(b, d);
+	//wcout << Common::printMatrix(N).c_str() << endl;
+	vector<thread> threads;
+
+	for (int i = 0; i < N.rows(); i++)
+	{
+		threads.push_back(std::thread(&Interpolation::shapelambdaNDGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
+		shapelambdaNDGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
 	}
 
 	
@@ -133,10 +174,45 @@ MatrixXd Interpolation::subnumber(int b, int d)
 
 typedef Eigen::SparseMatrix<double> SpMat;
 
+///Copy v into result successfively until result is filled i.e. v =[1,2] totalength = 4 => result = [1,2,1,2]
+VectorXd Interpolation::Replicate(VectorXd v, int totalLength)
+{
+	VectorXd Result(totalLength);
+	for (int i = 0; i < totalLength; i += v.size())
+	{
+		for (int j = 0; j < v.size(); j++)
+		{
+			Result[i + j] = v[j];
+		}
+	}
+	return Result;
+}
+VectorXd Interpolation::Replicate(VectorXd v, int totalLength, int dup)
+{
+	VectorXd Result(totalLength);
+	
+	for (int i = 0; i < totalLength; i += (v.size() * dup) )
+	{
+		for (int j = 0; j < v.size(); j++)
+		{
+			for (int duplicated = 0; duplicated < dup; duplicated++)
+			{
+				int idx = i + (j * dup) + duplicated;
+				if (idx < totalLength)
+				{
+					Result[idx] = v[j];
+					//cout << "idx="<< idx << " v[j]=" << v[j] << endl;
+				}
+			
+			}
+		}
+	}
+	return Result;
+}
 void Interpolation::shapelambda2DGeneric(string prefix, int threadId, double coef, double tsec, double r, double sigma, double T, double E, double inx1, double inx2, MatrixXd N,
 	vector<string> keys, const map<string, vector<vector<MatrixXd>> > * state)
 {
-	map<string, vector<vector<MatrixXd>>> vInterpolation = * state;
+	map<string, vector<vector<MatrixXd>>> vInterpolation = *state;
 
 	double num = N.prod();
 
@@ -151,10 +227,14 @@ void Interpolation::shapelambda2DGeneric(string prefix, int threadId, double coe
 
 	MatrixXd XXX = t.replicate(1, x.rows());
 	MatrixXd YYY = x.replicate(1, t.rows());
-
+	//wcout << Common::printMatrix(YYY) << endl;
+	//wcout << Common::printMatrix(XXX) << endl;
 	XXX.transposeInPlace();
+	//wcout << Common::printMatrix(XXX) << endl;
 	VectorXd xxx(Map<VectorXd>(XXX.data(), XXX.cols()*XXX.rows()));
 	VectorXd yyy(Map<VectorXd>(YYY.data(), YYY.cols()*YYY.rows()));
+	//wcout << Common::printMatrix(xxx) << endl;
+	//wcout << Common::printMatrix(yyy) << endl;
 
 	MatrixXd TX1(XXX.rows() * XXX.cols(), 2);
 	TX1 << xxx, yyy;
@@ -165,9 +245,9 @@ void Interpolation::shapelambda2DGeneric(string prefix, int threadId, double coe
 	MatrixXd FAI_x = mqd[2];
 	MatrixXd FAI_xx = mqd[3];
 
-	MatrixXd pa = (sigma * sigma * FAI_xx.array() / 2);
-	MatrixXd pb = r*FAI_x.array() - r*FAI.array();
-	MatrixXd P = FAI_t.array() + pa.array() + pb.array();
+	MatrixXd pa = (sigma * sigma * FAI_xx.array() / 2); //sigma^2/2 d^2V/dV^2
+	MatrixXd pb = r*FAI_x.array() - r*FAI.array();// r dV/dx - rV
+	MatrixXd P = FAI_t.array() + pa.array() + pb.array(); //dV/dt + ... + ...
 
 	VectorXd u = MatrixXd::Zero(num, 1);
 	for (int s = 0; s < keys.size(); s += 2)
@@ -184,7 +264,8 @@ void Interpolation::shapelambda2DGeneric(string prefix, int threadId, double coe
 		if (abs(TX1(i, 1) - inx1) < DBL_EPSILON || abs(TX1(i, 1) - inx2) < DBL_EPSILON)
 		{
 			P.row(i) = FAI.row(i);
-			double max = ( Double(TX1(i, 1)) - Double(E) * Double(exp(-r * (T - TX1(i, 0)))) ).value();
+			//double max = (Double(TX1(i, 1)) - Double(E) * Double(exp(-r * (T - TX1(i, 0))))).value();
+			double max = (Double(TX1(i, 1)) - Double(E) * Double(exp(-r * (T - TX1(i, 0))))).value();
 			u(i) = 0;
 			double sub = 0;
 			for (int s = 0; s < keys.size(); s += 2)
@@ -195,7 +276,7 @@ void Interpolation::shapelambda2DGeneric(string prefix, int threadId, double coe
 				double b = Test::inner(TX1(i, 0), TX1(i, 1), vInterpolation[k1][0], vInterpolation[k1][1], vInterpolation[k1][2], vInterpolation[k1][3]);
 				sub += (a - b);
 			}
-			
+
 			if (max > 0)
 				u(i) = max - sub;
 			else
@@ -214,12 +295,154 @@ void Interpolation::shapelambda2DGeneric(string prefix, int threadId, double coe
 				double b = Test::inner(TX1(i, 0), TX1(i, 1), vInterpolation[k1][0], vInterpolation[k1][1], vInterpolation[k1][2], vInterpolation[k1][3]);
 				sub += (a - b);
 			}
-			
+
 			double d = PPP::Calculate(TX1.row(i)) - sub;
 			u(i) = d;
 		}
 	}
 	MatrixXd tx = TX1;
+
+	PartialPivLU<MatrixXd> lu = PartialPivLU<MatrixXd>(P);
+
+	MatrixXd J = lu.matrixLU().triangularView<UpLoType::Upper>();
+	MatrixXd F = lu.matrixLU().triangularView<UpLoType::UnitLower>();
+	MatrixXd Fa = lu.permutationP().transpose() * F;
+
+	/*SpMat Fa = lu.permutationP().transpose() * F.sparseView();
+	SparseLU<SparseMatrix<double, ColMajor>, COLAMDOrdering<int> > solver;
+	solver.analyzePattern(Fa);
+	solver.factorize(Fa);
+	*/
+	MatrixXd Jlamda = Fa.lu().solve(u);
+	//MatrixXd Jlamda = solver.solve(u);
+
+	//SpMat Ja = J.sparseView();
+	//solver.analyzePattern(Ja);
+	//solver.factorize(Ja);
+
+	MatrixXd l = J.lu().solve(Jlamda);
+	//MatrixXd l = solver.solve(Jlamda);
+
+	Lambda[threadId] = l;
+	TX[threadId] = tx;
+	C[threadId] = c;
+	A[threadId] = a;
+	U[threadId] = u;
+
+}
+void Interpolation::shapelambdaNDGeneric(string prefix, int threadId, double coef, double tsec, double r, double sigma, double T, double E, MatrixXd inx1, MatrixXd inx2, MatrixXd N,
+	vector<string> keys, const map<string, vector<vector<MatrixXd>> > * state)
+{
+	map<string, vector<vector<MatrixXd>>> vInterpolation = * state;
+
+	double num = N.prod();
+
+	vector<VectorXd> linearGrid;
+	int product = 1;
+	//wcout << Common::printMatrix(inx1) << endl;
+	//wcout << Common::printMatrix(inx2) << endl;
+	for (int n = 0; n < N.cols(); n++) //N.Cols() is #dimensions
+	{
+		int i = N(0, n);
+		product *= i;
+		//VectorXd linearDimension = VectorXd::LinSpaced(product, inx1(0,n), inx2(0,n));
+		VectorXd linearDimension;
+		if(n == 0)
+			linearDimension = VectorXd::LinSpaced(i, 0, tsec);
+		else
+			linearDimension = VectorXd::LinSpaced(i, inx1(0, n), inx2(0, n));
+
+		//wcout << Common::printMatrix(linearDimension) << endl;
+		linearGrid.push_back(linearDimension);
+	}
+
+	
+	MatrixXd cha = inx2 - inx1;
+	MatrixXd c = coef * cha;
+	c(0, 0) = coef * tsec;
+	MatrixXd a = N.array() - 1;
+		
+	MatrixXd TXYZ(product, N.cols());
+	int dimension = 0;
+	
+	//TODO: this is a cartesian product, for which ordering doesn't seem to matter in the matlab heat 4-d or B-S slns:
+	for (auto linearVector : linearGrid)
+	{
+		int dups = 1;
+		if (linearGrid.size() > dimension + 1)
+			dups = linearGrid[dimension + 1].size();
+		TXYZ.col(dimension) = Replicate(linearVector, product, dups);
+		dimension++;
+	}
+
+	vector<MatrixXd> mqd = RBF::mqNd(TXYZ, TXYZ, a, c);
+	
+	MatrixXd P = mqd[1] + (sigma * sigma) * mqd[3] / 2 + r * mqd[2] - r * mqd[0];
+
+	VectorXd u = MatrixXd::Zero(num, 1);
+	for (int s = 0; s < keys.size(); s += 2)
+	{
+		string k1 = keys[s];
+		string k2 = keys[s + 1];
+		u -= PDE::BlackScholesNd(TXYZ, r, sigma, keys, state);
+	}
+
+	for (int i = 0; i < num; i++)
+	{
+		double product = 0.0;
+		for (int j = 1; j < TXYZ.cols(); j ++ ) //if ANY node is on a spatial dimensional boundary then our product should be zero
+		{
+			double diff = abs(TXYZ(i, j) - inx1(0, j));
+			product *= diff;
+		}
+		//do the boundary update for spatial dimensions
+		if (product < DBL_EPSILON)
+		{
+			
+			P.row(i) = mqd[0].row(i);
+
+			//calculate the price using the payoff function at the spatial boundary, i.e underlying asset = 0 or the max defined in inx2
+			double mean = (TXYZ.row(i).sum() - TXYZ(i, 0)) / (TXYZ.cols() - 1); //ignoring time dimension
+			double max = mean - E * exp(-r * (T - TXYZ(i, 0)) );
+			u(i) = 0;
+			double sub = 0;
+			for (int s = 0; s < keys.size(); s ++)
+			{
+				string k1 = keys[s];
+				double a = Test::innerND(TXYZ.row(i), vInterpolation[k1][0], vInterpolation[k1][1], vInterpolation[k1][2], vInterpolation[k1][3]);
+				double factor = Common::BinomialCoefficient(keys.size(), s);
+				if ((s + 1) % 2 == 0)
+					sub -= factor * a;
+				else
+					sub += factor * a;
+			}
+			
+			if (max > 0)
+				u(i) = max - sub;
+			else
+				u(i) = 0 - sub;
+		}
+		//do the boundary update for time dimension
+		if (abs(TXYZ(i, 0) - tsec) < DBL_EPSILON)
+		{
+			P.row(i) = mqd[0].row(i);
+			double sub = 0;
+			for (int s = 0; s < keys.size(); s += 2)
+			{
+				string k1 = keys[s];
+				double a = Test::innerND(TXYZ.row(i), vInterpolation[k1][0], vInterpolation[k1][1], vInterpolation[k1][2], vInterpolation[k1][3]);
+				double factor = Common::BinomialCoefficient(keys.size(), s);
+				if ((s + 1) % 2 == 0)
+					sub -= factor * a;
+				else
+					sub += factor * a;
+			}
+			
+			double d = PPP::Calculate(TXYZ.row(i)) - sub;
+			u(i) = d;
+		}
+	}
+	MatrixXd tx = TXYZ;
 	
 	PartialPivLU<MatrixXd> lu = PartialPivLU<MatrixXd>(P);
 	
