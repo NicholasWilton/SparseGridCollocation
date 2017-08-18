@@ -51,11 +51,11 @@ void Interpolation::interpolateGeneric(string prefix, double coef, double tsec, 
 	MatrixXd N = primeNMatrix(b, d);
 
 	vector<thread> threads;
-
+	//cout << "N.rows()=" << N.rows() << endl;
 	for (int i = 0; i < N.rows(); i++)
 	{
-		threads.push_back(std::thread(&Interpolation::shapelambda2DGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
-		//shapelambda2DGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
+		//threads.push_back(std::thread(&Interpolation::shapelambda2DGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
+		shapelambda2DGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
 	}
 
 
@@ -92,16 +92,16 @@ void Interpolation::interpolateGenericND(string prefix, double coef, double tsec
 	MatrixXd N = primeNMatrix(b, d);
 	//wcout << Common::printMatrix(N).c_str() << endl;
 	vector<thread> threads;
-
+	//cout << "N.rows()=" << N.rows() << endl;
 	for (int i = 0; i < N.rows(); i++)
 	{
-		threads.push_back(std::thread(&Interpolation::shapelambdaNDGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
-		//shapelambdaNDGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
+		//threads.push_back(std::thread(&Interpolation::shapelambdaNDGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
+		shapelambdaNDGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
 	}
 
 	
-	for (int i = 0; i < threads.size(); i++)
-		threads.at(i).join();
+	//for (int i = 0; i < threads.size(); i++)
+	//	threads.at(i).join();
 
 	vector<MatrixXd> l;
 	vector<MatrixXd> tx;
@@ -250,10 +250,13 @@ void Interpolation::shapelambda2DGeneric(string prefix, int threadId, double coe
 	MatrixXd P = FAI_t.array() + pa.array() + pb.array(); //dV/dt + ... + ...
 
 	VectorXd u = MatrixXd::Zero(num, 1);
+	//cout << "keys.size=" << keys.size() << endl;
 	for (int s = 0; s < keys.size(); s += 2)
 	{
 		string k1 = keys[s];
 		string k2 = keys[s + 1];
+		//cout << "key:" << k1 << endl;
+		//cout << "key:" << k2 << endl;
 		u -= PDE::BlackScholes(TX1, r, sigma,
 			vInterpolation[k1][0], vInterpolation[k1][1], vInterpolation[k1][2], vInterpolation[k1][3],
 			vInterpolation[k2][0], vInterpolation[k2][1], vInterpolation[k2][2], vInterpolation[k2][3]);
@@ -341,6 +344,7 @@ void Interpolation::shapelambdaNDGeneric(string prefix, int threadId, double coe
 	int product = 1;
 	//wcout << Common::printMatrix(inx1) << endl;
 	//wcout << Common::printMatrix(inx2) << endl;
+	//wcout << Common::printMatrix(N) << endl;
 	for (int n = 0; n < N.cols(); n++) //N.Cols() is #dimensions
 	{
 		int i = N(0, n);
@@ -380,12 +384,18 @@ void Interpolation::shapelambdaNDGeneric(string prefix, int threadId, double coe
 	MatrixXd P = mqd[1] + (sigma * sigma) * mqd[3] / 2 + r * mqd[2] - r * mqd[0];
 
 	VectorXd u = MatrixXd::Zero(num, 1);
-	for (int s = 0; s < keys.size(); s += 2)
+	
+	for (int s = 0; s < keys.size(); s += TXYZ.cols())
 	{
-		string k1 = keys[s];
-		string k2 = keys[s + 1];
-		u -= PDE::BlackScholesNd(TXYZ, r, sigma, keys, state);
+		vector<string> k;
+		for(int c =0; c < TXYZ.cols(); c++)
+			k.push_back( keys[s+c] );
+		
+		u -= PDE::BlackScholesNd(TXYZ, r, sigma, k, state);
 	}
+
+	if (prefix.compare("5") == 0)
+		Common::saveArray(u, "u.txt");
 
 	for (int i = 0; i < num; i++)
 	{
@@ -406,50 +416,60 @@ void Interpolation::shapelambdaNDGeneric(string prefix, int threadId, double coe
 		//do the boundary update for spatial dimensions
 		if (lower < DBL_EPSILON || upper < DBL_EPSILON)
 		{
-			
+			//wcout << Common::printMatrix(TXYZ) << endl;
 			P.row(i) = mqd[0].row(i);
 
 			//calculate the price using the payoff function at the spatial boundary, i.e underlying asset = 0 or the max defined in inx2
 			double mean = (TXYZ.row(i).sum() - TXYZ(i, 0)) / (TXYZ.cols() - 1); //ignoring time dimension
 			double max = mean - E * exp(-r * (T - TXYZ(i, 0)) );
 			u(i) = 0;
-			double sub = 0;
-			for (int s = 0; s < keys.size(); s ++)
+			if (max < 0)
+				max = 0;
+
+			for (int s = 0; s < keys.size(); s++)
 			{
 				string k1 = keys[s];
 				double a = Test::innerND(TXYZ.row(i), vInterpolation[k1][0], vInterpolation[k1][1], vInterpolation[k1][2], vInterpolation[k1][3]);
-				double factor = Common::BinomialCoefficient(keys.size(), s);
-				if ((s + 1) % 2 == 0)
-					sub -= factor * a;
+				//double factor = Common::BinomialCoefficient(keys.size()-1, s);
+				double factor = 1;
+				if (s % 2 == 0)
+					max -= factor * a;
 				else
-					sub += factor * a;
+					max += factor * a;
 			}
-			
-			if (max > 0)
-				u(i) = max - sub;
-			else
-				u(i) = 0 - sub;
+			u(i) = max;
+			//if (max > 0)
+			//	u(i) = max - sub;
+			//else
+			//	u(i) = 0 - sub;
 		}
 		//do the boundary update for time dimension
 		if (abs(TXYZ(i, 0) - tsec) < DBL_EPSILON)
 		{
 			P.row(i) = mqd[0].row(i);
-			double sub = 0;
-			for (int s = 0; s < keys.size(); s += 2)
+			//double sub = 0;
+			double ppp = PPP::Calculate(TXYZ.row(i));
+			for (int s = 0; s < keys.size(); s++)
 			{
 				string k1 = keys[s];
 				double a = Test::innerND(TXYZ.row(i), vInterpolation[k1][0], vInterpolation[k1][1], vInterpolation[k1][2], vInterpolation[k1][3]);
-				double factor = Common::BinomialCoefficient(keys.size(), s);
-				if ((s + 1) % 2 == 0)
-					sub -= factor * a;
+				//double factor = Common::BinomialCoefficient(keys.size()-1, s);
+				double factor = 1;
+
+				if (s % 2 == 0)
+					ppp -= factor * a;
 				else
-					sub += factor * a;
+					ppp += factor * a;
 			}
-			
-			double d = PPP::Calculate(TXYZ.row(i)) - sub;
-			u(i) = d;
+
+			//double d = ppp - sub;
+			u(i) = ppp;
 		}
 	}
+
+	if (prefix.compare("5") == 0)
+		Common::saveArray(u, "u.txt");
+
 	MatrixXd tx = TXYZ;
 	
 	PartialPivLU<MatrixXd> lu = PartialPivLU<MatrixXd>(P);
@@ -472,7 +492,7 @@ void Interpolation::shapelambdaNDGeneric(string prefix, int threadId, double coe
 
 	MatrixXd l = J.lu().solve(Jlamda);
 	//MatrixXd l = solver.solve(Jlamda);
-
+	//wcout << Common::printMatrix(l) << endl;
 	Lambda[threadId] = l;
 	TX[threadId] = tx;
 	C[threadId] = c;

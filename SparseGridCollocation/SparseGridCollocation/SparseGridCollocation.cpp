@@ -351,6 +351,7 @@ vector<MatrixXd> SparseGridCollocation::MuSIKc(int upper, int lower, Params p, m
 	//			stringstream ssk;
 	//			ssk << ssj.str() << "." << countk << ".txt";
 	//			Common::saveArray(k, ssk.str());
+	//			countk++;
 	//		}
 	//		countj++;
 	//	}
@@ -390,6 +391,8 @@ vector<MatrixXd> SparseGridCollocation::MuSIKc(int upper, int lower, Params p, m
 			threads.push_back(std::thread(&InterTest::parallel, interTest, ss2.str(), TX, test[0], test[1], test[2], test[3]));
 			interTests.push_back(interTest_);
 			interTests.push_back(interTest);
+			//cout << "key:" << ss1.str() << endl;
+			//cout << "key:" << ss2.str() << endl;
 		}
 	}
 
@@ -631,6 +634,7 @@ vector<MatrixXd> SparseGridCollocation::MuSIKcND(int upper, int lower, BasketOpt
 	//			stringstream ssk;
 	//			ssk << ssj.str() << "." << countk << ".txt";
 	//			Common::saveArray(k, ssk.str());
+	//			countk++;
 	//		}
 	//		countj++;
 	//	}
@@ -643,7 +647,7 @@ vector<MatrixXd> SparseGridCollocation::MuSIKcND(int upper, int lower, BasketOpt
 
 	for (int count = dimensions; count <= 10 + dimensions; count++)
 	{
-		if (upper >= count & lower <= count)
+		if (upper > count & lower <= count)
 		{
 			int lvl = count;
 			int n = lvl + option.Underlying;
@@ -651,7 +655,9 @@ vector<MatrixXd> SparseGridCollocation::MuSIKcND(int upper, int lower, BasketOpt
 			stringstream ss1;
 			ss1 << n;
 			vector<vector<MatrixXd>> test_ = interpolation[ss1.str()];
-			threads.push_back(std::thread(&InterTest::parallelND, interTest, ss1.str(), TestGrid, test_[0], test_[1], test_[2], test_[3]));
+			//threads.push_back(std::thread(&InterTest::parallelND, interTest, ss1.str(), TestGrid, test_[0], test_[1], test_[2], test_[3]));
+			interTest.parallelND(ss1.str(), TestGrid, test_[0], test_[1], test_[2], test_[3]);
+			//cout << "key:" << ss1.str() << endl;
 			interTests.push_back(interTest);
 			
 			for (int dimension = 1 ; dimension <= option.Underlying; dimension++)
@@ -660,8 +666,11 @@ vector<MatrixXd> SparseGridCollocation::MuSIKcND(int upper, int lower, BasketOpt
 				stringstream ss2;
 				ss2 << n << "_" << n - dimension;
 				vector<vector<MatrixXd>> test = interpolation[ss2.str()];
-				threads.push_back(std::thread(&InterTest::parallelND, interTest_, ss2.str(), TestGrid, test[0], test[1], test[2], test[3]));
+				//threads.push_back(std::thread(&InterTest::parallelND, interTest_, ss2.str(), TestGrid, test[0], test[1], test[2], test[3]));
+				
+				interTest_.parallelND(ss2.str(), TestGrid, test[0], test[1], test[2], test[3]);
 				interTests.push_back(interTest_);
+				//cout << "key:" << ss2.str() << endl;
 				dimension++;
 			}
 			
@@ -695,30 +704,35 @@ vector<MatrixXd> SparseGridCollocation::MuSIKcND(int upper, int lower, BasketOpt
 
 	//TODO: calculate upper limit from portfolio size and level choice
 	
-	for (int count = dimensions; count <= 10 + dimensions; count+= option.Underlying + 1)
+	int n = dimensions;
+	int udx = 0;
+	for (int count = 0; count < interTests.size(); count+= dimensions, udx++)
+	//for (int count = dimensions; count <= 10 + dimensions; count ++)
 	{
-		if (upper >= count & lower <= count)
+		int idx = count;
+		if (upper >= idx & lower <= idx )
 		{
-			int lvl = count;
-			int n = lvl + option.Underlying;
+			
+			n++;
 			vector<MatrixXd> elements;
 			stringstream ss;
 			ss << n;
-			int idx = count - dimensions;
+			
 			MatrixXd U = interTests.at(idx).GetResult(ss.str());
-			int coeff = Common::BinomialCoefficient(option.Underlying + 1, 0);
+			int coeff = Common::BinomialCoefficient(option.Underlying, 0);
 			U = U * coeff;
 			int index = 1;
 			for (int dimension = 1; dimension <= option.Underlying; dimension++)
 			{
 				ss.str(string());
-				ss << n << "_" << count + 1 - dimension;
+				ss << n << "_" << n - dimension;
 				MatrixXd V = interTests.at(idx + index).GetResult(ss.str());
-				coeff = (index % 2 == 0) ? Common::BinomialCoefficient(option.Underlying + 1, count) : -Common::BinomialCoefficient(option.Underlying + 1, count);
+				coeff = (index % 2 == 0) ? Common::BinomialCoefficient(option.Underlying, dimension) : -Common::BinomialCoefficient(option.Underlying, dimension);
 				U = U + (coeff * V);
 				index++;
+
 			}
-			Us[count-dimensions] = U;
+			Us[udx] = U;
 		}
 	}
 
@@ -741,7 +755,7 @@ vector<MatrixXd> SparseGridCollocation::MuSIKcND(int upper, int lower, BasketOpt
 	for (int count = 2; count <= 10; count++)
 	{
 		sum = sum + Us[count - 2];
-		if (upper >= count & lower <= count)
+		if (upper > count & lower <= count)
 		{
 			MuSIK.col(count - 2) = sum;
 		}
@@ -751,13 +765,13 @@ vector<MatrixXd> SparseGridCollocation::MuSIKcND(int upper, int lower, BasketOpt
 	VectorXd Max = VectorXd::Ones(9, 1);
 
 	Common::Logger("Error calculations");
-	//for (int i = 0; i < MuSIK.cols(); i++)
-	//{
-	//	VectorXd v = MuSIK.col(i).array() - AP.array();
-	//	RMS[i] = RootMeanSquare(v);
-	//	VectorXd m = abs(MuSIK.col(i).array() - AP.array());
-	//	Max[i] = m.maxCoeff();
-	//}
+	for (int i = 0; i < MuSIK.cols(); i++)
+	{
+		VectorXd v = MuSIK.col(i).array() - AP.array();
+		RMS[i] = RootMeanSquare(v);
+		VectorXd m = abs(MuSIK.col(i).array() - AP.array());
+		Max[i] = m.maxCoeff();
+	}
 
 	InterpolationState = interpolation;
 	vector<MatrixXd> result = { MuSIK, RMS, Max };
