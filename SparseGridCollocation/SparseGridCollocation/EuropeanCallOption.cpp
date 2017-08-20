@@ -2,30 +2,30 @@
 #include "EuropeanCallOption.h"
 #include "Distributions.h"
 
-EuropeanCallOption::EuropeanCallOption()
+Leicester::EuropeanCallOption::EuropeanCallOption()
 {
 }
 
-EuropeanCallOption::EuropeanCallOption(double strike, double maturity)
+Leicester::EuropeanCallOption::EuropeanCallOption(double strike, double maturity)
 {
 	this->Strike = strike;
 	this->Maturity = maturity;
 }
 
 
-EuropeanCallOption::~EuropeanCallOption()
+Leicester::EuropeanCallOption::~EuropeanCallOption()
 {
 }
 
 
-VectorXd EuropeanCallOption::PayOffFunction(VectorXd S)
+VectorXd Leicester::EuropeanCallOption::PayOffFunction(VectorXd S)
 {
 	VectorXd delta = S.array() - this->Strike;
 	VectorXd result = (delta.array() > 0).select(delta, 0);
 	return result;
 }
 
-MatrixXd EuropeanCallOption::Price(const MatrixXd &X, double r, double sigma)
+MatrixXd Leicester::EuropeanCallOption::Price(const MatrixXd &X, double r, double sigma)
 {
 	double strike = this->Strike;
 	double maturity = this->Maturity;

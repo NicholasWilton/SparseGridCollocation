@@ -2,11 +2,11 @@
 #include "Params.h"
 
 
-Params::Params()
+Leicester::Params::Params()
 {
 }
 
 
-Params::~Params()
+Leicester::Params::~Params()
 {
 }

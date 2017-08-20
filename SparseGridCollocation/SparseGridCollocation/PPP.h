@@ -3,11 +3,14 @@
 
 using Eigen::RowVectorXd;
 
-class PPP
+namespace Leicester
 {
-public:
+	class PPP
+	{
+	public:
 
-	static double Calculate(const RowVectorXd &X);
-	//static VectorXd U();
-	//static VectorXd X();
-};
+		static double Calculate(const RowVectorXd &X);
+		//static VectorXd U();
+		//static VectorXd X();
+	};
+}

@@ -14,6 +14,7 @@
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace Eigen;
 using namespace UnitTest;
+using namespace Leicester;
 
 testCommon::testCommon()
 {

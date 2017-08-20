@@ -2,12 +2,14 @@
 #include "stdafx.h"
 
 using Eigen::VectorXd;
-
-class API SmoothInitialU
+namespace Leicester
 {
-public:
+	class API SmoothInitialU
+	{
+	public:
 
-	static VectorXd U();
-	static VectorXd u;
-	
-};
+		static VectorXd U();
+		static VectorXd u;
+
+	};
+}

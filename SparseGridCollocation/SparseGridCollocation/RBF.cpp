@@ -4,16 +4,16 @@
 #include "Common.h"
 #include <iomanip>
 
-RBF::RBF()
+Leicester::RBF::RBF()
 {
 }
 
 
-RBF::~RBF()
+Leicester::RBF::~RBF()
 {
 }
 
-VectorXd RBF::exp(const VectorXd &v)
+VectorXd Leicester::RBF::exp(const VectorXd &v)
 {
 	VectorXd result(v.rows());
 	for (int i = 0; i < v.size(); i++)
@@ -23,7 +23,7 @@ VectorXd RBF::exp(const VectorXd &v)
 	return result;
 }
 
-vector<MatrixXd> RBF::mqd2(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C)
+vector<MatrixXd> Leicester::RBF::mqd2(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C)
 {
 	vector<MatrixXd> result;
 	int Num = CN.rows();
@@ -82,7 +82,7 @@ vector<MatrixXd> RBF::mqd2(const MatrixXd &TP, const MatrixXd &CN, const MatrixX
 	return result;
 }
 
-vector<MatrixXd> RBF::mqNd(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C)
+vector<MatrixXd> Leicester::RBF::mqNd(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C)
 {
 	vector<MatrixXd> result;// V, Vt, Vx Vxy
 	int Num = CN.rows();
@@ -174,7 +174,7 @@ vector<MatrixXd> RBF::mqNd(const MatrixXd &TP, const MatrixXd &CN, const MatrixX
 	return Derivatives;
 }
 
-vector<MatrixXd> RBF::mqd1(const MatrixXd &x, double xc, const double c)
+vector<MatrixXd> Leicester::RBF::mqd1(const MatrixXd &x, double xc, const double c)
 {
 	//wcout << setprecision(25) << c << endl;
 	vector<MatrixXd> result;

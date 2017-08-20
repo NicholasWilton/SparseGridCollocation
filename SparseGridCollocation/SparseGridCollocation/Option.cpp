@@ -1,21 +1,21 @@
 #include "stdafx.h"
 #include "Option.h"
 
-Option::Option()
+Leicester::Option::Option()
 {
 }
 
-Option::Option(double strike, double maturity)
+Leicester::Option::Option(double strike, double maturity)
 {
 	this->Strike = strike;
 	this->Maturity = maturity;
 }
 
 
-Option::~Option()
+Leicester::Option::~Option()
 {
 }
 
 
-VectorXd Option::PayOffFunction(VectorXd S) { return VectorXd(); }
-MatrixXd Option::Price(const MatrixXd &X, double r, double sigma) { return MatrixXd(); }
+VectorXd Leicester::Option::PayOffFunction(VectorXd S) { return VectorXd(); }
+MatrixXd Leicester::Option::Price(const MatrixXd &X, double r, double sigma) { return MatrixXd(); }

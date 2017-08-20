@@ -3,11 +3,11 @@
 #include "Distributions.h"
 
 
-BasketOption::BasketOption()
+Leicester::BasketOption::BasketOption()
 {
 }
 
-BasketOption::BasketOption(double strike, double maturity, int dimensions)
+Leicester::BasketOption::BasketOption(double strike, double maturity, int dimensions)
 {
 	this->Strike = strike;
 	this->Maturity = maturity;
@@ -15,12 +15,12 @@ BasketOption::BasketOption(double strike, double maturity, int dimensions)
 }
 
 
-BasketOption::~BasketOption()
+Leicester::BasketOption::~BasketOption()
 {
 }
 
 
-VectorXd BasketOption::PayOffFunction(MatrixXd S)
+VectorXd Leicester::BasketOption::PayOffFunction(MatrixXd S)
 {
 
 	VectorXd delta = S.rowwise().mean().array() - this->Strike;
@@ -29,7 +29,7 @@ VectorXd BasketOption::PayOffFunction(MatrixXd S)
 	return result;
 }
 
-MatrixXd BasketOption::Price(const MatrixXd &X, double r, double sigma)
+MatrixXd Leicester::BasketOption::Price(const MatrixXd &X, double r, double sigma)
 {
 	double strike = this->Strike;
 	double maturity = this->Maturity;

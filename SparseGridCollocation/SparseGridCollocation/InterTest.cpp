@@ -16,26 +16,26 @@ using namespace std;
 //#include "CppUnitTest.h"
 //using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-InterTest::InterTest()
+Leicester::InterTest::InterTest()
 {
 }
 
 
-InterTest::~InterTest()
+Leicester::InterTest::~InterTest()
 {
 }
 
-VectorXd InterTest::GetResult(string id)
+VectorXd Leicester::InterTest::GetResult(string id)
 {
 	return result->at(id);
 }
 
-map<string, VectorXd> InterTest::GetResults()
+map<string, VectorXd> Leicester::InterTest::GetResults()
 {
 	return *result;
 }
 
-void InterTest::Execute(map<string, vector<vector<MatrixXd>> > vInterpolation, MatrixXd TX)
+void Leicester::InterTest::Execute(map<string, vector<vector<MatrixXd>> > vInterpolation, MatrixXd TX)
 {
 	vector<VectorXd> V;
 	vector<thread> threads;
@@ -56,7 +56,7 @@ void InterTest::Execute(map<string, vector<vector<MatrixXd>> > vInterpolation, M
 
 }
 
-void InterTest::parallel(string id, const MatrixXd &X, const vector<MatrixXd> &lamb,const vector<MatrixXd> &TX, const vector<MatrixXd> &C, const vector<MatrixXd> &A)
+void Leicester::InterTest::parallel(string id, const MatrixXd &X, const vector<MatrixXd> &lamb,const vector<MatrixXd> &TX, const vector<MatrixXd> &C, const vector<MatrixXd> &A)
 {
 	// This is used to calculate values on final testing points
 	//ch = length(TX);
@@ -90,7 +90,7 @@ void InterTest::parallel(string id, const MatrixXd &X, const vector<MatrixXd> &l
 	
 }
 
-void InterTest::parallelND(string id, const MatrixXd &X, const vector<MatrixXd> &lamb, const vector<MatrixXd> &TX, const vector<MatrixXd> &C, const vector<MatrixXd> &A)
+void Leicester::InterTest::parallelND(string id, const MatrixXd &X, const vector<MatrixXd> &lamb, const vector<MatrixXd> &TX, const vector<MatrixXd> &C, const vector<MatrixXd> &A)
 {
 	// This is used to calculate values on final testing points
 	//ch = length(TX);
@@ -126,7 +126,7 @@ void InterTest::parallelND(string id, const MatrixXd &X, const vector<MatrixXd> 
 
 }
 
-VectorXd InterTest::serial(MatrixXd X, vector<MatrixXd> lamb, vector<MatrixXd> TX, vector<MatrixXd> C, vector<MatrixXd> A)
+VectorXd Leicester::InterTest::serial(MatrixXd X, vector<MatrixXd> lamb, vector<MatrixXd> TX, vector<MatrixXd> C, vector<MatrixXd> A)
 {
 	// This is used to calculate values on final testing points
 	//ch = length(TX);

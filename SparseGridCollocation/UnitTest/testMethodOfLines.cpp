@@ -12,7 +12,7 @@
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace Eigen;
-
+using namespace Leicester;
 
 namespace UnitTest
 {

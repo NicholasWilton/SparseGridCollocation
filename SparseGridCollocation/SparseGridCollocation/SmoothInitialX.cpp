@@ -12,9 +12,9 @@ using Eigen::RowVectorXd;
 using Eigen::UpLoType;
 using namespace std;
 
-VectorXd SmoothInitialX::x;
+VectorXd Leicester::SmoothInitialX::x;
 
-VectorXd SmoothInitialX::X()
+VectorXd Leicester::SmoothInitialX::X()
 {
 	if (x.size() == 0)
 	{

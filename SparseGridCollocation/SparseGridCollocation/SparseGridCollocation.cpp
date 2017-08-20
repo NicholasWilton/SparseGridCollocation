@@ -41,16 +41,16 @@ using namespace std;
 //#include "CppUnitTest.h"
 //using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-SparseGridCollocation::SparseGridCollocation()
+Leicester::SparseGridCollocation::SparseGridCollocation()
 {
 }
 
-map<string, vector<vector<MatrixXd>>> SparseGridCollocation::GetInterpolationState()
+map<string, vector<vector<MatrixXd>>> Leicester::SparseGridCollocation::GetInterpolationState()
 {
 	return InterpolationState;
 }
 
-vector<MatrixXd> SparseGridCollocation::SIKc(int upper, int lower, Params p)
+vector<MatrixXd> Leicester::SparseGridCollocation::SIKc(int upper, int lower, Params p)
 {
 	InterpolationState.clear();
 
@@ -78,7 +78,7 @@ vector<MatrixXd> SparseGridCollocation::SIKc(int upper, int lower, Params p)
 	return SIKc(upper, lower, p, InterpolationState);
 }
 
-vector<MatrixXd> SparseGridCollocation::SIKc(int upper, int lower, Params p, map<string, vector<vector<MatrixXd>>>& interpolation)
+vector<MatrixXd> Leicester::SparseGridCollocation::SIKc(int upper, int lower, Params p, map<string, vector<vector<MatrixXd>>>& interpolation)
 {
 	cout << "Starting SiK-c" << endl;
 
@@ -231,7 +231,7 @@ vector<MatrixXd> SparseGridCollocation::SIKc(int upper, int lower, Params p, map
 	return result;
 }
 
-vector<MatrixXd> SparseGridCollocation::MuSIKc(int upper, int lower, Params p)
+vector<MatrixXd> Leicester::SparseGridCollocation::MuSIKc(int upper, int lower, Params p)
 {
 	InterpolationState.clear();
 
@@ -248,18 +248,23 @@ vector<MatrixXd> SparseGridCollocation::MuSIKc(int upper, int lower, Params p)
 	cout << setprecision(16) << "inx1=" << p.inx1 << endl;
 	cout << setprecision(16) << "inx2=" << p.inx2 << endl;
 
+	int old1 = p.inx1;
+	int old2 = p.inx2;
+	p.inx1 = -p.K;
+	p.inx2 = 6.0 * p.K;
+
 	vector<VectorXd> smoothinitial = MoL::MethodOfLines(p);
 	SmoothInitialX::x = smoothinitial[0].head(smoothinitial[0].rows());
 	SmoothInitialU::u = smoothinitial[1].head(smoothinitial[1].rows());
 
 	p.Tdone = 0.1350;
-	p.inx1 = 0;
-	p.inx2 = 3.0 * p.K;
+	p.inx1 = old1;
+	p.inx2 = old2;
 
 	return MuSIKc(upper, lower, p, InterpolationState);
 }
 
-vector<MatrixXd> SparseGridCollocation::MuSIKc(int upper, int lower, Params p, map<string, vector<vector<MatrixXd>>>& interpolation)
+vector<MatrixXd> Leicester::SparseGridCollocation::MuSIKc(int upper, int lower, Params p, map<string, vector<vector<MatrixXd>>>& interpolation)
 {
 	cout << "Starting MuSiK-c" << endl;
 
@@ -336,26 +341,26 @@ vector<MatrixXd> SparseGridCollocation::MuSIKc(int upper, int lower, Params p, m
 		}
 	}
 
-	//for (auto i : interpolation)
-	//{
-	//	stringstream ss;
-	//	ss << "MuSiKc_" << i.first;
-	//	int countj = 0;
-	//	for (auto j : i.second)
-	//	{
-	//		stringstream ssj;
-	//		ssj << ss.str() << "." << countj;
-	//		int countk = 0;
-	//		for (auto k : j)
-	//		{
-	//			stringstream ssk;
-	//			ssk << ssj.str() << "." << countk << ".txt";
-	//			Common::saveArray(k, ssk.str());
-	//			countk++;
-	//		}
-	//		countj++;
-	//	}
-	//}
+	for (auto i : interpolation)
+	{
+		stringstream ss;
+		ss << "MuSiKc_" << i.first;
+		int countj = 0;
+		for (auto j : i.second)
+		{
+			stringstream ssj;
+			ssj << ss.str() << "." << countj;
+			int countk = 0;
+			for (auto k : j)
+			{
+				stringstream ssk;
+				ssk << ssj.str() << "." << countk << ".txt";
+				Common::saveArray(k, ssk.str());
+				countk++;
+			}
+			countj++;
+		}
+	}
 
 	Common::Logger("inter_test");
 
@@ -399,23 +404,23 @@ vector<MatrixXd> SparseGridCollocation::MuSIKc(int upper, int lower, Params p, m
 	for (int i = 0; i < threads.size(); i++)
 		threads.at(i).join();
 
-	//int counti = 0;
-	//for (auto i : interTests)
-	//{
-	//	stringstream ss;
-	//	ss << "MuSiKc_InterTest_" << counti;
-	//	int countj = 0;
-	//	for (auto j : i.GetResults())
-	//	{
-	//		stringstream ssj;
-	//		ssj << ss.str() << "." << j.first << ".txt";
+	int counti = 0;
+	for (auto i : interTests)
+	{
+		stringstream ss;
+		ss << "MuSiKc_InterTest_" << counti;
+		int countj = 0;
+		for (auto j : i.GetResults())
+		{
+			stringstream ssj;
+			ssj << ss.str() << "." << j.first << ".txt";
 
-	//		Common::saveArray(j.second, ssj.str());
+			Common::saveArray(j.second, ssj.str());
 
-	//		countj++;
-	//	}
-	//	counti++;
-	//}
+			countj++;
+		}
+		counti++;
+	}
 
 	Common::Logger("inter_test complete");
 	vector<VectorXd> Us = { VectorXd::Zero(10000) ,VectorXd::Zero(10000) ,VectorXd::Zero(10000) ,VectorXd::Zero(10000) ,VectorXd::Zero(10000) ,VectorXd::Zero(10000) ,VectorXd::Zero(10000) ,VectorXd::Zero(10000),VectorXd::Zero(10000) };
@@ -434,21 +439,25 @@ vector<MatrixXd> SparseGridCollocation::MuSIKc(int upper, int lower, Params p, m
 			stringstream ss1;
 			ss1 << count + 1;
 			MatrixXd V = interTests.at(index + 1).GetResult(ss1.str());
+			cout << V(1, 0) << endl;
 			stringstream ss2;
 			ss2 << "_" << count;
 			MatrixXd V_ = interTests.at(index).GetResult(ss2.str());
+			cout << V_(1, 0) << endl;
 			Us[count - 2] = V - V_;
+			cout << Us[count - 2](1, 0) << endl;
+			//wcout << Common::printMatrix(Us[count - 2]) << endl;
 		}
 	}
 
-	//int countu = 0;
-	//for (auto u : Us)
-	//{
-	//	stringstream ss;
-	//	ss << "musikc_U." << countu << ".txt";
-	//	Common::saveArray(u, ss.str());
-	//	countu++;
-	//}
+	int countu = 0;
+	for (auto u : Us)
+	{
+		stringstream ss;
+		ss << "musikc_U." << countu << ".txt";
+		Common::saveArray(u, ss.str());
+		countu++;
+	}
 
 	EuropeanCallOption option(E, T);
 	VectorXd AP = option.Price(TX, r, sigma);
@@ -482,7 +491,7 @@ vector<MatrixXd> SparseGridCollocation::MuSIKc(int upper, int lower, Params p, m
 	return result;
 }
 
-vector<MatrixXd> SparseGridCollocation::MuSIKcND(int upper, int lower, BasketOption option, Params p)
+vector<MatrixXd> Leicester::SparseGridCollocation::MuSIKcND(int upper, int lower, BasketOption option, Params p)
 {
 	InterpolationState.clear();
 
@@ -499,18 +508,23 @@ vector<MatrixXd> SparseGridCollocation::MuSIKcND(int upper, int lower, BasketOpt
 	cout << setprecision(16) << "inx1=" << p.inx1 << endl;
 	cout << setprecision(16) << "inx2=" << p.inx2 << endl;
 
+	int old1 = p.inx1;
+	int old2 = p.inx2;
+	p.inx1 = -p.K;
+	p.inx2 = 6.0 * p.K;
+
 	vector<VectorXd> smoothinitial = MoL::MethodOfLines(p);
 	SmoothInitialX::x = smoothinitial[0].head(smoothinitial[0].rows());
 	SmoothInitialU::u = smoothinitial[1].head(smoothinitial[1].rows());
 
 	p.Tdone = 0.1350;
-	p.inx1 = 0;
-	p.inx2 = 3.0 * p.K;
+	p.inx1 = old1;
+	p.inx2 = old2;
 
 	return MuSIKcND(upper, lower, option, p, InterpolationState);
 }
 
-vector<MatrixXd> SparseGridCollocation::MuSIKcND(int upper, int lower, BasketOption option, Params p, map<string, vector<vector<MatrixXd>>>& interpolation)
+vector<MatrixXd> Leicester::SparseGridCollocation::MuSIKcND(int upper, int lower, BasketOption option, Params p, map<string, vector<vector<MatrixXd>>>& interpolation)
 {
 	cout << "Starting MuSiK-c" << endl;
 
@@ -582,7 +596,7 @@ vector<MatrixXd> SparseGridCollocation::MuSIKcND(int upper, int lower, BasketOpt
 	int sequence = 1;
 	for (lvl; lvl <= 10 + dimensions; lvl++)
 	{
-		if (lvl< upper & lvl > lower)
+		if (lvl<= upper & lvl >= lower)
 		{
 			vector<string> newKeys = {};
 			stringstream ss;
@@ -619,26 +633,26 @@ vector<MatrixXd> SparseGridCollocation::MuSIKcND(int upper, int lower, BasketOpt
 		}
 	}
 	
-	//for (auto i : interpolation)
-	//{
-	//	stringstream ss;
-	//	ss << "MuSiKcND_" << i.first;
-	//	int countj = 0;
-	//	for (auto j : i.second)
-	//	{
-	//		stringstream ssj;
-	//		ssj << ss.str() << "." << countj;
-	//		int countk = 0;
-	//		for (auto k : j)
-	//		{
-	//			stringstream ssk;
-	//			ssk << ssj.str() << "." << countk << ".txt";
-	//			Common::saveArray(k, ssk.str());
-	//			countk++;
-	//		}
-	//		countj++;
-	//	}
-	//}
+	for (auto i : interpolation)
+	{
+		stringstream ss;
+		ss << "MuSiKcND_" << i.first;
+		int countj = 0;
+		for (auto j : i.second)
+		{
+			stringstream ssj;
+			ssj << ss.str() << "." << countj;
+			int countk = 0;
+			for (auto k : j)
+			{
+				stringstream ssk;
+				ssk << ssj.str() << "." << countk << ".txt";
+				Common::saveArray(k, ssk.str());
+				countk++;
+			}
+			countj++;
+		}
+	}
 	Common::Logger("inter_test");
 
 	InterTest interTest;
@@ -647,7 +661,7 @@ vector<MatrixXd> SparseGridCollocation::MuSIKcND(int upper, int lower, BasketOpt
 
 	for (int count = dimensions; count <= 10 + dimensions; count++)
 	{
-		if (upper > count & lower <= count)
+		if (upper >= count & lower <= count)
 		{
 			int lvl = count;
 			int n = lvl + option.Underlying;
@@ -655,8 +669,8 @@ vector<MatrixXd> SparseGridCollocation::MuSIKcND(int upper, int lower, BasketOpt
 			stringstream ss1;
 			ss1 << n;
 			vector<vector<MatrixXd>> test_ = interpolation[ss1.str()];
-			//threads.push_back(std::thread(&InterTest::parallelND, interTest, ss1.str(), TestGrid, test_[0], test_[1], test_[2], test_[3]));
-			interTest.parallelND(ss1.str(), TestGrid, test_[0], test_[1], test_[2], test_[3]);
+			threads.push_back(std::thread(&InterTest::parallelND, interTest, ss1.str(), TestGrid, test_[0], test_[1], test_[2], test_[3]));
+			//interTest.parallelND(ss1.str(), TestGrid, test_[0], test_[1], test_[2], test_[3]);
 			//cout << "key:" << ss1.str() << endl;
 			interTests.push_back(interTest);
 			
@@ -666,9 +680,9 @@ vector<MatrixXd> SparseGridCollocation::MuSIKcND(int upper, int lower, BasketOpt
 				stringstream ss2;
 				ss2 << n << "_" << n - dimension;
 				vector<vector<MatrixXd>> test = interpolation[ss2.str()];
-				//threads.push_back(std::thread(&InterTest::parallelND, interTest_, ss2.str(), TestGrid, test[0], test[1], test[2], test[3]));
+				threads.push_back(std::thread(&InterTest::parallelND, interTest_, ss2.str(), TestGrid, test[0], test[1], test[2], test[3]));
 				
-				interTest_.parallelND(ss2.str(), TestGrid, test[0], test[1], test[2], test[3]);
+				//interTest_.parallelND(ss2.str(), TestGrid, test[0], test[1], test[2], test[3]);
 				interTests.push_back(interTest_);
 				//cout << "key:" << ss2.str() << endl;
 				dimension++;
@@ -681,23 +695,23 @@ vector<MatrixXd> SparseGridCollocation::MuSIKcND(int upper, int lower, BasketOpt
 	for (int i = 0; i < threads.size(); i++)
 		threads.at(i).join();
 
-	//int counti = 0;
-	//for (auto i : interTests)
-	//{
-	//	stringstream ss;
-	//	ss << "MuSiKcND_InterTest_" << counti;
-	//	int countj = 0;
-	//	for (auto j : i.GetResults())
-	//	{
-	//		stringstream ssj;
-	//		ssj << ss.str() << "." << j.first << ".txt";
+	int counti = 0;
+	for (auto i : interTests)
+	{
+		stringstream ss;
+		ss << "MuSiKcND_InterTest_" << counti;
+		int countj = 0;
+		for (auto j : i.GetResults())
+		{
+			stringstream ssj;
+			ssj << ss.str() << "." << j.first << ".txt";
 
-	//		Common::saveArray(j.second, ssj.str());
+			Common::saveArray(j.second, ssj.str());
 
-	//		countj++;
-	//	}
-	//	counti++;
-	//}
+			countj++;
+		}
+		counti++;
+	}
 
 	Common::Logger("inter_test complete");
 	vector<VectorXd> Us = { VectorXd::Zero(10000) ,VectorXd::Zero(10000) ,VectorXd::Zero(10000) ,VectorXd::Zero(10000) ,VectorXd::Zero(10000) ,VectorXd::Zero(10000) ,VectorXd::Zero(10000) ,VectorXd::Zero(10000),VectorXd::Zero(10000) };
@@ -706,11 +720,16 @@ vector<MatrixXd> SparseGridCollocation::MuSIKcND(int upper, int lower, BasketOpt
 	
 	int n = dimensions;
 	int udx = 0;
+	cout << "intertests size=" << interTests.size() << endl;
+	cout << "upper=" << upper << " lower=" << lower << endl;
+
 	for (int count = 0; count < interTests.size(); count+= dimensions, udx++)
 	//for (int count = dimensions; count <= 10 + dimensions; count ++)
 	{
+		cout << "count\idx=" << count << endl;
+		cout << "udx=" << udx << endl;
 		int idx = count;
-		if (upper >= idx & lower <= idx )
+		if (upper >= udx + dimensions & lower <= udx + dimensions )
 		{
 			
 			n++;
@@ -719,16 +738,20 @@ vector<MatrixXd> SparseGridCollocation::MuSIKcND(int upper, int lower, BasketOpt
 			ss << n;
 			
 			MatrixXd U = interTests.at(idx).GetResult(ss.str());
+			wcout << U(1,0) << endl;
 			int coeff = Common::BinomialCoefficient(option.Underlying, 0);
 			U = U * coeff;
+			wcout << U(1, 0) << endl;
 			int index = 1;
 			for (int dimension = 1; dimension <= option.Underlying; dimension++)
 			{
 				ss.str(string());
 				ss << n << "_" << n - dimension;
 				MatrixXd V = interTests.at(idx + index).GetResult(ss.str());
+				wcout << V(1, 0) << endl;
 				coeff = (index % 2 == 0) ? Common::BinomialCoefficient(option.Underlying, dimension) : -Common::BinomialCoefficient(option.Underlying, dimension);
 				U = U + (coeff * V);
+				wcout << U(1, 0) << endl;
 				index++;
 
 			}
@@ -736,17 +759,17 @@ vector<MatrixXd> SparseGridCollocation::MuSIKcND(int upper, int lower, BasketOpt
 		}
 	}
 
-	//int countu = 0;
-	//for (auto u : Us)
-	//{
-	//	stringstream ss;
-	//	ss << "musikcND_U." << countu << ".txt";
-	//	Common::saveArray(u, ss.str());
-	//	countu++;
-	//}
+	int countu = 0;
+	for (auto u : Us)
+	{
+		stringstream ss;
+		ss << "musikcND_U." << countu << ".txt";
+		Common::saveArray(u, ss.str());
+		countu++;
+	}
 	
 	//TODO: basket option analytic price.
-	MatrixXd AP = option.Price(TestGrid, r, sigma);
+	VectorXd AP = option.Price(TestGrid, r, sigma);
 	
 	Common::Logger("MuSIK addition");
 	int m = Us[0].rows();
@@ -767,9 +790,9 @@ vector<MatrixXd> SparseGridCollocation::MuSIKcND(int upper, int lower, BasketOpt
 	Common::Logger("Error calculations");
 	for (int i = 0; i < MuSIK.cols(); i++)
 	{
-		VectorXd v = MuSIK.col(i).array() - AP.array();
+		VectorXd v = MuSIK.col(i).array() - AP.col(0).array();
 		RMS[i] = RootMeanSquare(v);
-		VectorXd m = abs(MuSIK.col(i).array() - AP.array());
+		VectorXd m = abs(MuSIK.col(i).array() - AP.col(0).array());
 		Max[i] = m.maxCoeff();
 	}
 
@@ -780,7 +803,7 @@ vector<MatrixXd> SparseGridCollocation::MuSIKcND(int upper, int lower, BasketOpt
 
 
 
-double SparseGridCollocation::RootMeanSquare(VectorXd v)
+double Leicester::SparseGridCollocation::RootMeanSquare(VectorXd v)
 {
 	double rms = sqrt((v.array() * v.array()).sum() / v.size() );
 	return rms;

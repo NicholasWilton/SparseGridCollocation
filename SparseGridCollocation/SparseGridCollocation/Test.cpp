@@ -16,16 +16,16 @@
 
 
 
-Test::Test()
+Leicester::Test::Test()
 {
 }
 
 
-Test::~Test()
+Leicester::Test::~Test()
 {
 }
 
-double Test::inner(double t, double x, const vector<MatrixXd> &lamb, const vector<MatrixXd> &TX, const vector<MatrixXd> &C, const vector<MatrixXd> &A)
+double Leicester::Test::inner(double t, double x, const vector<MatrixXd> &lamb, const vector<MatrixXd> &TX, const vector<MatrixXd> &C, const vector<MatrixXd> &A)
 {
 
 	int ch = TX.size();
@@ -66,7 +66,7 @@ double Test::inner(double t, double x, const vector<MatrixXd> &lamb, const vecto
 }
 
 //TXYZ should be a row vector for the N dimension matrix
-double Test::innerND(MatrixXd TXYZ, const vector<MatrixXd> &lamb, const vector<MatrixXd> &TX, const vector<MatrixXd> &C, const vector<MatrixXd> &A)
+double Leicester::Test::innerND(MatrixXd TXYZ, const vector<MatrixXd> &lamb, const vector<MatrixXd> &TX, const vector<MatrixXd> &C, const vector<MatrixXd> &A)
 {
 
 	int ch = TX.size();
@@ -101,7 +101,7 @@ double Test::innerND(MatrixXd TXYZ, const vector<MatrixXd> &lamb, const vector<M
 }
 
 
-VectorXd Test::inter(MatrixXd X, vector<MatrixXd> lamb, vector<MatrixXd> TX, vector<MatrixXd> C, vector<MatrixXd> A)
+VectorXd Leicester::Test::inter(MatrixXd X, vector<MatrixXd> lamb, vector<MatrixXd> TX, vector<MatrixXd> C, vector<MatrixXd> A)
 {
 	// This is used to calculate values on final testing points
 	//ch = length(TX);

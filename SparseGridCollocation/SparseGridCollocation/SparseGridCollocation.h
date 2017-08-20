@@ -15,31 +15,33 @@ using Eigen::Map;
 using Eigen::aligned_allocator;
 using namespace std;
 
-
-class API SparseGridCollocation
+namespace Leicester
 {
-public:
+	class API SparseGridCollocation
+	{
+	public:
 
-	SparseGridCollocation();
+		SparseGridCollocation();
 
-	double RootMeanSquare(VectorXd v);
-	
-	vector<MatrixXd> SIKc(int upper, int lower, Params p);
-	vector<MatrixXd> SIKc(int upper, int lower, Params p, map<string, vector<vector<MatrixXd>>>& interpolation);
-	
-	vector<MatrixXd> MuSIKc(int upper, int lower, Params p);
-	vector<MatrixXd> MuSIKc(int upper, int lower, Params p, map<string, vector<vector<MatrixXd>>>& interpolation);
-	
-	vector<MatrixXd> MuSIKcND(int upper, int lower, BasketOption option, Params p);
-	vector<MatrixXd> MuSIKcND(int upper, int lower, BasketOption option, Params p, map<string, vector<vector<MatrixXd>>>& interpolation);
+		double RootMeanSquare(VectorXd v);
 
-	map<string, vector<vector<MatrixXd>>> GetInterpolationState();
+		vector<MatrixXd> SIKc(int upper, int lower, Params p);
+		vector<MatrixXd> SIKc(int upper, int lower, Params p, map<string, vector<vector<MatrixXd>>>& interpolation);
+
+		vector<MatrixXd> MuSIKc(int upper, int lower, Params p);
+		vector<MatrixXd> MuSIKc(int upper, int lower, Params p, map<string, vector<vector<MatrixXd>>>& interpolation);
+
+		vector<MatrixXd> MuSIKcND(int upper, int lower, BasketOption option, Params p);
+		vector<MatrixXd> MuSIKcND(int upper, int lower, BasketOption option, Params p, map<string, vector<vector<MatrixXd>>>& interpolation);
+
+		map<string, vector<vector<MatrixXd>>> GetInterpolationState();
 
 
-private:
+	private:
 
-	//key - index from matlab code eg lamb3, TX3 etc -> '3'
-	//value - vector of items lamb, TX, C, A
-	//		- each in turn is a vector of Matrices
-	map<string, vector<vector<MatrixXd>>> InterpolationState;
-};
+		//key - index from matlab code eg lamb3, TX3 etc -> '3'
+		//value - vector of items lamb, TX, C, A
+		//		- each in turn is a vector of Matrices
+		map<string, vector<vector<MatrixXd>>> InterpolationState;
+	};
+}

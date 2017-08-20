@@ -18,7 +18,7 @@
 using Eigen::Matrix2d;
 using namespace boost::multiprecision;
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
+using namespace Leicester;
 
 
 namespace UnitTest

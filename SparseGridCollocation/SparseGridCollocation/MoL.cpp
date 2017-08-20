@@ -10,18 +10,18 @@
 using namespace Eigen;
 using namespace std;
 
-MoL::MoL()
+Leicester::MoL::MoL()
 {
 }
 
 
-MoL::~MoL()
+Leicester::MoL::~MoL()
 {
 }
 
 
 
-vector<VectorXd> MoL::MethodOfLines(Params p)
+vector<VectorXd> Leicester::MoL::MethodOfLines(Params p)
 {
 	stringstream ssX;
 	ssX << setprecision(16) << "SmoothInitial_EuroCall_" << p.T << "_" << p.Tdone << "_" << p.Tend << "_" << p.dt << "_" << p.K << "_" << p.r << "_" << p.sigma << "_" << p.theta << "_" << p.inx1 << "_" << p.inx2 << "_X.dat";
@@ -53,7 +53,7 @@ vector<VectorXd> MoL::MethodOfLines(Params p)
 
 }
 
-vector<VectorXd> MoL::MethodOfLines(double T, double Tdone, double Tend, double dt, double K, double r, double sigma, double theta, double inx1, double inx2)
+vector<VectorXd> Leicester::MoL::MethodOfLines(double T, double Tdone, double Tend, double dt, double K, double r, double sigma, double theta, double inx1, double inx2)
 {
 	cout << "MethodOfLines for 1-D European Call Option" << endl;
 	vector<VectorXd> price = EuroCallOption1D(T, Tdone, Tend, dt, K, r, sigma, theta, inx1, inx2);
@@ -79,7 +79,7 @@ vector<VectorXd> MoL::MethodOfLines(double T, double Tdone, double Tend, double 
 	return { X_ini, U_ini };
 }
 
-vector<VectorXd> MoL::EuroCallOption1D(double T, double Tdone, double Tend, double dt, double K, double r, double sigma, double theta, double inx1, double inx2)
+vector<VectorXd> Leicester::MoL::EuroCallOption1D(double T, double Tdone, double Tend, double dt, double K, double r, double sigma, double theta, double inx1, double inx2)
 {
 	Option *option = new EuropeanCallOption(K, T);
 	int N_uniform = 5000;

@@ -13,9 +13,9 @@ using Eigen::RowVectorXd;
 using Eigen::UpLoType;
 using namespace std;
 
-VectorXd SmoothInitialU::u;
+VectorXd Leicester::SmoothInitialU::u;
 
-VectorXd SmoothInitialU::U()
+VectorXd Leicester::SmoothInitialU::U()
 {
 	if (u.size() == 0)
 	{

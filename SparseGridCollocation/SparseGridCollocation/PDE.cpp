@@ -8,16 +8,16 @@
 //using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 
-PDE::PDE()
+Leicester::PDE::PDE()
 {
 }
 
 
-PDE::~PDE()
+Leicester::PDE::~PDE()
 {
 }
 
-MatrixXd PDE::BlackScholes(const MatrixXd &node, double r, double sigma,
+MatrixXd Leicester::PDE::BlackScholes(const MatrixXd &node, double r, double sigma,
 	const vector<MatrixXd> &lambda2, const vector<MatrixXd> &TX2, const vector<MatrixXd> &C2, const vector<MatrixXd> &A2,
 	const vector<MatrixXd> &lambda3, const vector<MatrixXd> &TX3, const vector<MatrixXd> &C3, const vector<MatrixXd> A3)
 {
@@ -52,7 +52,7 @@ MatrixXd PDE::BlackScholes(const MatrixXd &node, double r, double sigma,
 	return output;
 }
 
-MatrixXd PDE::BlackScholesNd(const MatrixXd &node, double r, double sigma, vector<string> keys, const map<string, vector<vector<MatrixXd>> > * state)
+MatrixXd Leicester::PDE::BlackScholesNd(const MatrixXd &node, double r, double sigma, vector<string> keys, const map<string, vector<vector<MatrixXd>> > * state)
 {
 	int N = node.rows();
 	vector<MatrixXd> Us;

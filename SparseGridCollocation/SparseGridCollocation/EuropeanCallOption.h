@@ -4,16 +4,19 @@
 using namespace Eigen;
 using namespace std;
 
-class API EuropeanCallOption : public Option
+namespace Leicester
 {
-public:
-	EuropeanCallOption();
-	EuropeanCallOption(double strike, double maturity);
-	~EuropeanCallOption();
-	VectorXd PayOffFunction(VectorXd S);
-	MatrixXd Price(const MatrixXd &X, double r, double sigma);
-private:
-	double Strike;
-	double Maturity;
-};
+	class API EuropeanCallOption : public Option
+	{
+	public:
+		EuropeanCallOption();
+		EuropeanCallOption(double strike, double maturity);
+		~EuropeanCallOption();
+		VectorXd PayOffFunction(VectorXd S);
+		MatrixXd Price(const MatrixXd &X, double r, double sigma);
+	private:
+		double Strike;
+		double Maturity;
+	};
 
+}

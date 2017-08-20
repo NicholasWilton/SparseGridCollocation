@@ -16,7 +16,7 @@
 using Eigen::Matrix2d;
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-
+using namespace Leicester;
 
 
 namespace UnitTest

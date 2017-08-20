@@ -12,7 +12,7 @@ using Eigen::RowVectorXd;
 using Eigen::UpLoType;
 using namespace std;
 
-double PPP::Calculate(const RowVectorXd &X)
+double Leicester::PPP::Calculate(const RowVectorXd &X)
 {
 	VectorXd x1 = SmoothInitialX::X();
 	VectorXd U1 = SmoothInitialU::U();

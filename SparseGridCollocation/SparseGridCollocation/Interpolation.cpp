@@ -13,33 +13,33 @@
 //using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 
-vector<vector<MatrixXd>> Interpolation::getResult()
+vector<vector<MatrixXd>> Leicester::Interpolation::getResult()
 {
 	return result;
 }
 
-MatrixXd Interpolation::getLambda(int id)
+MatrixXd Leicester::Interpolation::getLambda(int id)
 {
 	return Lambda[id];
 }
-MatrixXd Interpolation::getTX(int id)
+MatrixXd Leicester::Interpolation::getTX(int id)
 {
 	return TX[id];
 }
-MatrixXd Interpolation::getC(int id)
+MatrixXd Leicester::Interpolation::getC(int id)
 {
 	return C[id];
 }
-MatrixXd Interpolation::getA(int id)
+MatrixXd Leicester::Interpolation::getA(int id)
 {
 	return A[id];
 }
-MatrixXd Interpolation::getU(int id)
+MatrixXd Leicester::Interpolation::getU(int id)
 {
 	return U[id];
 }
 
-void Interpolation::interpolateGeneric(string prefix, double coef, double tsec, int b, int d, double inx1, double inx2, double r, double sigma, double T, double E,
+void Leicester::Interpolation::interpolateGeneric(string prefix, double coef, double tsec, int b, int d, double inx1, double inx2, double r, double sigma, double T, double E,
 	vector<string> keys, const map<string, vector<vector<MatrixXd>> > *vInterpolation)
 {
 	Lambda.clear();
@@ -54,8 +54,8 @@ void Interpolation::interpolateGeneric(string prefix, double coef, double tsec, 
 	//cout << "N.rows()=" << N.rows() << endl;
 	for (int i = 0; i < N.rows(); i++)
 	{
-		//threads.push_back(std::thread(&Interpolation::shapelambda2DGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
-		shapelambda2DGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
+		threads.push_back(std::thread(&Interpolation::shapelambda2DGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
+		//shapelambda2DGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
 	}
 
 
@@ -80,7 +80,7 @@ void Interpolation::interpolateGeneric(string prefix, double coef, double tsec, 
 
 }
 
-void Interpolation::interpolateGenericND(string prefix, double coef, double tsec, int b, int d, MatrixXd inx1, MatrixXd inx2, double r, double sigma, double T, double E,
+void Leicester::Interpolation::interpolateGenericND(string prefix, double coef, double tsec, int b, int d, MatrixXd inx1, MatrixXd inx2, double r, double sigma, double T, double E,
 	vector<string> keys, const map<string, vector<vector<MatrixXd>> > *vInterpolation)
 {
 	Lambda.clear();
@@ -95,13 +95,13 @@ void Interpolation::interpolateGenericND(string prefix, double coef, double tsec
 	//cout << "N.rows()=" << N.rows() << endl;
 	for (int i = 0; i < N.rows(); i++)
 	{
-		//threads.push_back(std::thread(&Interpolation::shapelambdaNDGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
-		shapelambdaNDGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
+		threads.push_back(std::thread(&Interpolation::shapelambdaNDGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
+		//shapelambdaNDGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
 	}
 
 	
-	//for (int i = 0; i < threads.size(); i++)
-	//	threads.at(i).join();
+	for (int i = 0; i < threads.size(); i++)
+		threads.at(i).join();
 
 	vector<MatrixXd> l;
 	vector<MatrixXd> tx;
@@ -121,7 +121,7 @@ void Interpolation::interpolateGenericND(string prefix, double coef, double tsec
 	
 }
 
-MatrixXd Interpolation::primeNMatrix(int b, int d)
+MatrixXd Leicester::Interpolation::primeNMatrix(int b, int d)
 {
 	MatrixXd L = subnumber(b, d);
 	int ch = L.rows();
@@ -134,7 +134,7 @@ MatrixXd Interpolation::primeNMatrix(int b, int d)
 	return N;
 }
 
-MatrixXd Interpolation::subnumber(int b, int d)
+MatrixXd Leicester::Interpolation::subnumber(int b, int d)
 {
 	MatrixXd L;
 
@@ -175,7 +175,7 @@ MatrixXd Interpolation::subnumber(int b, int d)
 typedef Eigen::SparseMatrix<double> SpMat;
 
 ///Copy v into result successfively until result is filled i.e. v =[1,2] totalength = 4 => result = [1,2,1,2]
-VectorXd Interpolation::Replicate(VectorXd v, int totalLength)
+VectorXd Leicester::Interpolation::Replicate(VectorXd v, int totalLength)
 {
 	VectorXd Result(totalLength);
 	for (int i = 0; i < totalLength; i += v.size())
@@ -187,7 +187,7 @@ VectorXd Interpolation::Replicate(VectorXd v, int totalLength)
 	}
 	return Result;
 }
-VectorXd Interpolation::Replicate(VectorXd v, int totalLength, int dup)
+VectorXd Leicester::Interpolation::Replicate(VectorXd v, int totalLength, int dup)
 {
 	VectorXd Result(totalLength);
 	
@@ -209,7 +209,7 @@ VectorXd Interpolation::Replicate(VectorXd v, int totalLength, int dup)
 	}
 	return Result;
 }
-void Interpolation::shapelambda2DGeneric(string prefix, int threadId, double coef, double tsec, double r, double sigma, double T, double E, double inx1, double inx2, MatrixXd N,
+void Leicester::Interpolation::shapelambda2DGeneric(string prefix, int threadId, double coef, double tsec, double r, double sigma, double T, double E, double inx1, double inx2, MatrixXd N,
 	vector<string> keys, const map<string, vector<vector<MatrixXd>> > * state)
 {
 	map<string, vector<vector<MatrixXd>>> vInterpolation = *state;
@@ -333,7 +333,7 @@ void Interpolation::shapelambda2DGeneric(string prefix, int threadId, double coe
 	U[threadId] = u;
 
 }
-void Interpolation::shapelambdaNDGeneric(string prefix, int threadId, double coef, double tsec, double r, double sigma, double T, double E, MatrixXd inx1, MatrixXd inx2, MatrixXd N,
+void Leicester::Interpolation::shapelambdaNDGeneric(string prefix, int threadId, double coef, double tsec, double r, double sigma, double T, double E, MatrixXd inx1, MatrixXd inx2, MatrixXd N,
 	vector<string> keys, const map<string, vector<vector<MatrixXd>> > * state)
 {
 	map<string, vector<vector<MatrixXd>>> vInterpolation = * state;
@@ -394,8 +394,8 @@ void Interpolation::shapelambdaNDGeneric(string prefix, int threadId, double coe
 		u -= PDE::BlackScholesNd(TXYZ, r, sigma, k, state);
 	}
 
-	if (prefix.compare("5") == 0)
-		Common::saveArray(u, "u.txt");
+	//if (prefix.compare("5") == 0)
+	//	Common::saveArray(u, "u.txt");
 
 	for (int i = 0; i < num; i++)
 	{
@@ -467,8 +467,8 @@ void Interpolation::shapelambdaNDGeneric(string prefix, int threadId, double coe
 		}
 	}
 
-	if (prefix.compare("5") == 0)
-		Common::saveArray(u, "u.txt");
+	//if (prefix.compare("5") == 0)
+	//	Common::saveArray(u, "u.txt");
 
 	MatrixXd tx = TXYZ;
 	
