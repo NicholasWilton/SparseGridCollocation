@@ -1,4 +1,5 @@
 #pragma once
+using namespace Eigen;
 namespace Leicester
 {
 	class API Params
@@ -14,8 +15,8 @@ namespace Leicester
 		double r;
 		double sigma;
 		double theta;
-		double inx1;
-		double inx2;
+		VectorXd inx1;
+		VectorXd inx2;
 	};
 }
 

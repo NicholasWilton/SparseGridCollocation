@@ -6,6 +6,7 @@
 #include "PDE.h"
 #include "PPP.h"
 #include "Test.h"
+#include "TestNodes.h"
 #include <thread>
 
 
@@ -239,7 +240,7 @@ void Leicester::Interpolation::shapelambda2DGeneric(string prefix, int threadId,
 	MatrixXd TX1(XXX.rows() * XXX.cols(), 2);
 	TX1 << xxx, yyy;
 
-	vector<MatrixXd> mqd = RBF::mqd2(TX1, TX1, a, c);
+	vector<MatrixXd> mqd = RBF::Gaussian2D(TX1, TX1, a, c);
 	MatrixXd FAI = mqd[0];
 	MatrixXd FAI_t = mqd[1];
 	MatrixXd FAI_x = mqd[2];
@@ -340,46 +341,14 @@ void Leicester::Interpolation::shapelambdaNDGeneric(string prefix, int threadId,
 
 	double num = N.prod();
 
-	vector<VectorXd> linearGrid;
-	int product = 1;
-	//wcout << Common::printMatrix(inx1) << endl;
-	//wcout << Common::printMatrix(inx2) << endl;
-	//wcout << Common::printMatrix(N) << endl;
-	for (int n = 0; n < N.cols(); n++) //N.Cols() is #dimensions
-	{
-		int i = N(0, n);
-		product *= i;
-		//VectorXd linearDimension = VectorXd::LinSpaced(product, inx1(0,n), inx2(0,n));
-		VectorXd linearDimension;
-		if(n == 0)
-			linearDimension = VectorXd::LinSpaced(i, 0, tsec);
-		else
-			linearDimension = VectorXd::LinSpaced(i, inx1(0, n), inx2(0, n));
-
-		//wcout << Common::printMatrix(linearDimension) << endl;
-		linearGrid.push_back(linearDimension);
-	}
-
-	
 	MatrixXd cha = inx2 - inx1;
 	MatrixXd c = coef * cha;
 	c(0, 0) = coef * tsec;
 	MatrixXd a = N.array() - 1;
 		
-	MatrixXd TXYZ(product, N.cols());
-	int dimension = 0;
-	
-	//TODO: this is a cartesian product, for which ordering doesn't seem to matter in the matlab heat 4-d or B-S slns:
-	for (auto linearVector : linearGrid)
-	{
-		int dups = 1;
-		if (linearGrid.size() > dimension + 1)
-			dups = linearGrid[dimension + 1].size();
-		TXYZ.col(dimension) = Replicate(linearVector, product, dups);
-		dimension++;
-	}
+	MatrixXd TXYZ = TestNodes::GenerateTestNodes(0, tsec, inx1, inx2, N, coef);
 
-	vector<MatrixXd> mqd = RBF::mqNd(TXYZ, TXYZ, a, c);
+	vector<MatrixXd> mqd = RBF::GaussianND(TXYZ, TXYZ, a, c);
 	
 	MatrixXd P = mqd[1] + (sigma * sigma) * mqd[3] / 2 + r * mqd[2] - r * mqd[0];
 

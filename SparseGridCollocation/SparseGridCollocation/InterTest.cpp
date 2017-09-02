@@ -72,7 +72,7 @@ void Leicester::InterTest::parallel(string id, const MatrixXd &X, const vector<M
 	{
 		RBF r;
 		//[D] = mq2d(X, TX{ j }, A{ j }, C{ j });
-		vector<MatrixXd> D = r.mqd2(X, TX[j], A[j], C[j]);
+		vector<MatrixXd> D = r.Gaussian2D(X, TX[j], A[j], C[j]);
 		//Common::saveArray(X, "Musikc_X.txt");
 		//Common::saveArray(TX[j], "Musikc_TX.txt");
 		//Common::saveArray(A[j], "Musikc_A.txt");
@@ -106,7 +106,7 @@ void Leicester::InterTest::parallelND(string id, const MatrixXd &X, const vector
 	{
 		RBF r;
 		//[D] = mq2d(X, TX{ j }, A{ j }, C{ j });
-		vector<MatrixXd> D = r.mqNd(X, TX[j], A[j], C[j]);
+		vector<MatrixXd> D = r.GaussianND(X, TX[j], A[j], C[j]);
 		//vector<MatrixXd> D = r.mqd2(X, TX[j], A[j], C[j]);
 		//Common::saveArray(X, "MusikcND_X.txt");
 		//Common::saveArray(TX[j], "MusikcND_TX.txt");
@@ -143,7 +143,7 @@ VectorXd Leicester::InterTest::serial(MatrixXd X, vector<MatrixXd> lamb, vector<
 	{
 		RBF r;
 		//[D] = mq2d(X, TX{ j }, A{ j }, C{ j });
-		vector<MatrixXd> D = r.mqd2(X, TX[j], A[j], C[j]);
+		vector<MatrixXd> D = r.Gaussian2D(X, TX[j], A[j], C[j]);
 
 		//V(:, j) = D*lamb{ j };
 		VectorXd v = D[0] * lamb[j];

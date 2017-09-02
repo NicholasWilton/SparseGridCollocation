@@ -464,10 +464,12 @@ int main(){
 	p.r = 0.03;
 	p.sigma = 0.15;
 	p.theta = 0.5;
-	p.inx1 = 0;
-	p.inx2 = 3.0 * p.K;
+	p.inx1 = VectorXd::Zero(1);
+	VectorXd inx2(1);
+	inx2(0) = 3.0 * p.K;
+	p.inx2 = inx2;
 
-	VectorXd x = VectorXd::LinSpaced(10000, p.inx1, p.inx2);
+	VectorXd x = VectorXd::LinSpaced(10000, p.inx1[0], p.inx2[0]);
 	VectorXd t = VectorXd::LinSpaced(10000, 0, 1);
 	MatrixXd TX(t.rows(), 2);
 	TX.col(0) = t;
@@ -477,10 +479,11 @@ int main(){
 	Common::saveArray(AP, "APEuroCall.txt");
 
 	Common::saveArray(x, "S0.txt");
-	QuantlibBenchMark(p, x);
+	//QuantlibBenchMark(p, x);
 
+	MatrixXd correlation = MatrixXd::Identity(2, 2);
 	vector<l::Option> portfolio = { EuropeanCallOption(100.0, 1), EuropeanCallOption(200.0, 1) };
-	l::BasketOption option(100.0,1,1);
+	l::BasketOption option(100.0,1,correlation);
 	SparseGridCollocation* test = new SparseGridCollocation();
 
 	vector<MatrixXd> MuSiKcBasket = test->MuSIKcND(10, 0, option, p);

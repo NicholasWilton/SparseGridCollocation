@@ -27,6 +27,85 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common", "Common\Common.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CudaLib", "..\CudaLib\CudaLib.vcxproj", "{3397B60D-EEDD-48DE-8C0B-45ED96DCCA57}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MatLab", "MatLab", "{1F3F6064-1096-4EC0-BA33-344E5D5A8FEE}"
+	ProjectSection(SolutionItems) = preProject
+		Matlab\Readme.txt = Matlab\Readme.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Black Scholes", "Black Scholes", "{50620F68-30A2-4D3C-B40D-A4FE8873E4E6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1 Asset", "1 Asset", "{7376ACAD-B7B8-4599-A72B-F8B9E3E81FB1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MOL to find an earlier time", "MOL to find an earlier time", "{943F4990-C6CD-41F1-9121-11C83EA79454}"
+	ProjectSection(SolutionItems) = preProject
+		Matlab\Black Scholes\1 Asset\MOL to find an earlier time\ECP.m = Matlab\Black Scholes\1 Asset\MOL to find an earlier time\ECP.m
+		Matlab\Black Scholes\1 Asset\MOL to find an earlier time\Eurocalloption1D.m = Matlab\Black Scholes\1 Asset\MOL to find an earlier time\Eurocalloption1D.m
+		Matlab\Black Scholes\1 Asset\MOL to find an earlier time\mq2d.m = Matlab\Black Scholes\1 Asset\MOL to find an earlier time\mq2d.m
+		Matlab\Black Scholes\1 Asset\MOL to find an earlier time\plotVGS.m = Matlab\Black Scholes\1 Asset\MOL to find an earlier time\plotVGS.m
+		Matlab\Black Scholes\1 Asset\MOL to find an earlier time\Smoothinitial.mat = Matlab\Black Scholes\1 Asset\MOL to find an earlier time\Smoothinitial.mat
+		Matlab\Black Scholes\1 Asset\MOL to find an earlier time\To_get_ini.m = Matlab\Black Scholes\1 Asset\MOL to find an earlier time\To_get_ini.m
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sparse grid collocation", "sparse grid collocation", "{6231745F-5776-4B36-8586-3C9843516800}"
+	ProjectSection(SolutionItems) = preProject
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\cfigure.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\cfigure.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\cMuSIK.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\cMuSIK.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\cSIK.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\cSIK.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\ECP.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\ECP.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\inner_test.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\inner_test.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\inter_test.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\inter_test.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\interplant.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\interplant.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\interplant_1.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\interplant_1.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\interplant_10.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\interplant_10.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\interplant_11.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\interplant_11.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\interplant_2.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\interplant_2.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\interplant_3.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\interplant_3.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\interplant_4.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\interplant_4.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\interplant_5.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\interplant_5.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\interplant_6.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\interplant_6.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\interplant_7.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\interplant_7.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\interplant_8.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\interplant_8.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\interplant_9.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\interplant_9.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\mq2d.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\mq2d.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\nodesnumber.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\nodesnumber.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\PDE.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\PDE.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\PPP.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\PPP.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\shapelambda2D.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\shapelambda2D.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\shapelambda2D_1.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\shapelambda2D_1.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\shapelambda2D_10.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\shapelambda2D_10.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\shapelambda2D_11.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\shapelambda2D_11.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\shapelambda2D_2.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\shapelambda2D_2.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\shapelambda2D_3.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\shapelambda2D_3.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\shapelambda2D_4.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\shapelambda2D_4.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\shapelambda2D_5.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\shapelambda2D_5.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\shapelambda2D_6.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\shapelambda2D_6.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\shapelambda2D_7.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\shapelambda2D_7.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\shapelambda2D_8.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\shapelambda2D_8.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\shapelambda2D_9.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\shapelambda2D_9.m
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\Smoothinitial.mat = Matlab\Black Scholes\1 Asset\sparse grid collocation\Smoothinitial.mat
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\Smoothinitial1.mat = Matlab\Black Scholes\1 Asset\sparse grid collocation\Smoothinitial1.mat
+		Matlab\Black Scholes\1 Asset\sparse grid collocation\subnumber.m = Matlab\Black Scholes\1 Asset\sparse grid collocation\subnumber.m
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "N Assets", "N Assets", "{10F1A420-F59B-4008-93E5-EBC9E85CAC20}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MOL to find an earlier time", "MOL to find an earlier time", "{B172E9E5-8ECB-44F2-B132-125A7C767A39}"
+	ProjectSection(SolutionItems) = preProject
+		Matlab\Black Scholes\N Assets\MOL to find an earlier time\CartesianProduct.m = Matlab\Black Scholes\N Assets\MOL to find an earlier time\CartesianProduct.m
+		Matlab\Black Scholes\N Assets\MOL to find an earlier time\DiffN.m = Matlab\Black Scholes\N Assets\MOL to find an earlier time\DiffN.m
+		Matlab\Black Scholes\N Assets\MOL to find an earlier time\ECP.m = Matlab\Black Scholes\N Assets\MOL to find an earlier time\ECP.m
+		Matlab\Black Scholes\N Assets\MOL to find an earlier time\EuroCallBasket.m = Matlab\Black Scholes\N Assets\MOL to find an earlier time\EuroCallBasket.m
+		Matlab\Black Scholes\N Assets\MOL to find an earlier time\mqnd.m = Matlab\Black Scholes\N Assets\MOL to find an earlier time\mqnd.m
+		Matlab\Black Scholes\N Assets\MOL to find an earlier time\PayoffFunction.m = Matlab\Black Scholes\N Assets\MOL to find an earlier time\PayoffFunction.m
+		Matlab\Black Scholes\N Assets\MOL to find an earlier time\PayoffS.m = Matlab\Black Scholes\N Assets\MOL to find an earlier time\PayoffS.m
+		Matlab\Black Scholes\N Assets\MOL to find an earlier time\plotVGS.m = Matlab\Black Scholes\N Assets\MOL to find an earlier time\plotVGS.m
+		Matlab\Black Scholes\N Assets\MOL to find an earlier time\SetupBasket.m = Matlab\Black Scholes\N Assets\MOL to find an earlier time\SetupBasket.m
+		Matlab\Black Scholes\N Assets\MOL to find an earlier time\TakeMeans.m = Matlab\Black Scholes\N Assets\MOL to find an earlier time\TakeMeans.m
+		Matlab\Black Scholes\N Assets\MOL to find an earlier time\To_get_ini.m = Matlab\Black Scholes\N Assets\MOL to find an earlier time\To_get_ini.m
+		Matlab\Black Scholes\N Assets\MOL to find an earlier time\WriteAllTestToFile.m = Matlab\Black Scholes\N Assets\MOL to find an earlier time\WriteAllTestToFile.m
+		Matlab\Black Scholes\N Assets\MOL to find an earlier time\WriteAllToFile.m = Matlab\Black Scholes\N Assets\MOL to find an earlier time\WriteAllToFile.m
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -89,5 +168,12 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{A83DC707-3CB8-46BA-8B2E-62B8625F3422} = {4F30216C-C3F2-466C-917B-6B28B0335E88}
+		{1F3F6064-1096-4EC0-BA33-344E5D5A8FEE} = {4F30216C-C3F2-466C-917B-6B28B0335E88}
+		{50620F68-30A2-4D3C-B40D-A4FE8873E4E6} = {1F3F6064-1096-4EC0-BA33-344E5D5A8FEE}
+		{7376ACAD-B7B8-4599-A72B-F8B9E3E81FB1} = {50620F68-30A2-4D3C-B40D-A4FE8873E4E6}
+		{943F4990-C6CD-41F1-9121-11C83EA79454} = {7376ACAD-B7B8-4599-A72B-F8B9E3E81FB1}
+		{6231745F-5776-4B36-8586-3C9843516800} = {7376ACAD-B7B8-4599-A72B-F8B9E3E81FB1}
+		{10F1A420-F59B-4008-93E5-EBC9E85CAC20} = {50620F68-30A2-4D3C-B40D-A4FE8873E4E6}
+		{B172E9E5-8ECB-44F2-B132-125A7C767A39} = {10F1A420-F59B-4008-93E5-EBC9E85CAC20}
 	EndGlobalSection
 EndGlobal

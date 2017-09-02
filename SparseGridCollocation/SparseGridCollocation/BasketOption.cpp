@@ -7,11 +7,12 @@ Leicester::BasketOption::BasketOption()
 {
 }
 
-Leicester::BasketOption::BasketOption(double strike, double maturity, int dimensions)
+Leicester::BasketOption::BasketOption(double strike, double maturity, MatrixXd correlation)
 {
 	this->Strike = strike;
 	this->Maturity = maturity;
-	this->Underlying = dimensions;
+	this->Underlying = correlation.rows();
+	this->correlation = correlation;
 }
 
 
@@ -27,6 +28,33 @@ VectorXd Leicester::BasketOption::PayOffFunction(MatrixXd S)
 	
 	VectorXd result = (delta.array() > 0).select(delta, 0);
 	return result;
+}
+
+MatrixXd Leicester::BasketOption::NodesAroundStrike(const MatrixXd &X, double strike, double radius)
+{
+	VectorXd avg = X.rowwise().sum() / X.cols();
+
+	double range = strike * radius;
+
+	MatrixXd result(X.rows(), X.cols());
+	result.fill(0);
+	vector<int> nonzero;
+	for (int row =0 ; row < avg.size(); row++)
+	{
+		if (avg[row] >= strike - range & avg[row] <= strike + range)
+		{
+			result.row(row) = X.row(row);
+			nonzero.push_back(row);
+		}
+	}
+	MatrixXd selected(nonzero.size(), X.cols());
+	int count = 0;
+	for (auto i : nonzero)
+	{
+		selected.row(count) = result.row(0);
+		count++;
+	}
+	return selected;
 }
 
 MatrixXd Leicester::BasketOption::Price(const MatrixXd &X, double r, double sigma)

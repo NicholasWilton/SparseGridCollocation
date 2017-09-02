@@ -116,7 +116,7 @@ VectorXd Leicester::Test::inter(MatrixXd X, vector<MatrixXd> lamb, vector<Matrix
 	for (int j = 0; j < ch; j++)
 	{
 		//[D] = mq2d(X, TX{ j }, A{ j }, C{ j });
-		vector<MatrixXd> D = RBF::mqd2(X, TX[j], A[j], C[j]);
+		vector<MatrixXd> D = RBF::Gaussian2D(X, TX[j], A[j], C[j]);
 
 		//V(:, j) = D*lamb{ j };
 		VectorXd v = D[0] * lamb[j];
