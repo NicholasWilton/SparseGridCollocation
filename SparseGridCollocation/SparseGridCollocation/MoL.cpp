@@ -9,9 +9,12 @@
 #include "TestNodes.h"
 #include <iomanip>
 #include <fstream>
+#include "Sort.h";
+
 
 using namespace Eigen;
 using namespace std;
+using namespace Leicester;
 
 Leicester::MoL::MoL()
 {
@@ -256,7 +259,7 @@ vector<VectorXd> Leicester::MoL::EuroCallOption1D(double T, double Tdone, double
 
 }
 
-vector<MatrixXd> Leicester::MoL::MethodOfLinesND(Params p, MatrixXd correlation)
+SmoothInitial Leicester::MoL::MethodOfLinesND(Params p, MatrixXd correlation)
 {
 	stringstream ssinx1;
 	stringstream ssinx2;
@@ -284,143 +287,139 @@ vector<MatrixXd> Leicester::MoL::MethodOfLinesND(Params p, MatrixXd correlation)
 		u.close();
 		MatrixXd mU = Common::ReadBinary(fileU, 32769, correlation.rows());
 		VectorXd U(Map<VectorXd>(mU.data(), mU.cols()*mU.rows()));
-		return { X, U };
+		SmoothInitial result;
+		result.S = X;
+		result.U = U;
 	}
 	else
 	{
-		vector<vector<VectorXd>> smoothInitial = MethodOfLinesND(p.T, p.Tdone, p.Tend, p.dt, p.K, p.r, p.sigma, p.theta, p.inx1, p.inx2, correlation);
-		MatrixXd smthX(32769, smoothInitial.size());
-		MatrixXd smthU(32769, smoothInitial.size());
-		int col = 0;
-		for (auto s : smoothInitial)
-		{
-			smthX.col(col) = s[0];
-			smthU.col(col) = s[1];
-			col++;
-		}
-		Common::WriteToBinary(fileX, smthX);
-		Common::WriteToBinary(fileU, smthU);
-		return { smthX, smthU };
+		SmoothInitial smoothInitial = MethodOfLinesND(p.T, p.Tdone, p.Tend, p.dt, p.K, p.r, p.sigma, p.theta, p.inx1, p.inx2, correlation);
+		//MatrixXd smthX(32769, smoothInitial.size());
+		//MatrixXd smthU(32769, smoothInitial.size());
+		//int col = 0;
+		//for (auto s : smoothInitial)
+		//{
+		//	smthX.col(col) = s[0];
+		//	smthU.col(col) = s[1];
+		//	col++;
+		//}
+		Common::WriteToBinary(fileX, smoothInitial.S);
+		Common::WriteToBinary(fileU, smoothInitial.U);
+		return smoothInitial;
 	}
 
 }
 
-vector<vector<VectorXd>> Leicester::MoL::MethodOfLinesND(double T, double Tdone, double Tend, double dt, double K, double r, double sigma, double theta, VectorXd inx1, VectorXd inx2, MatrixXd correlation)
+SmoothInitial Leicester::MoL::MethodOfLinesND(double T, double Tdone, double Tend, double dt, double K, double r, double sigma, double theta, VectorXd inx1, VectorXd inx2, MatrixXd correlation)
 {
 	vector<vector<VectorXd>> result;
 	cout << "MethodOfLines for N-D European Call Option" << endl;
-	vector<vector<VectorXd>> prices = EuroCallOptionND(T, Tdone, Tend, dt, K, r, sigma, theta, inx1, inx2, correlation);
+	SmoothInitial initial = EuroCallOptionND(T, Tdone, Tend, dt, K, r, sigma, theta, correlation);
 
-	for (auto price : prices)
+	MatrixXd a1 = MatrixXd::Ones(initial.C.rows(), initial.C.cols());
+	double Smin = 0;
+	double Smax = 3 * K;
+	double twoPower15Plus1 = pow(2, 15) + 1;
+
+	VectorXd X_ini = VectorXd::LinSpaced(twoPower15Plus1, Smin, Smax);
+	int n = initial.TestNodes.rows();
+	MatrixXd phi = MatrixXd::Ones(X_ini.size(), n);
+	for (int i = 0; i < n; i++)
 	{
-		VectorXd x = price[0];
-		VectorXd lamb = price[1];
-		VectorXd c = price[2];
-		double Smin = 0;
-		double Smax = 3 * K;
-		double twoPower15Plus1 = pow(2, 15) + 1;
-
-		VectorXd X_ini = VectorXd::LinSpaced(twoPower15Plus1, Smin, Smax);
-
-		MatrixXd phi = MatrixXd::Ones(X_ini.size(), x.size());
-		for (int i = 0; i < x.size(); i++)
-		{
-			vector<MatrixXd> rbf = RBF::MultiQuadric1D(X_ini, x(i), c(i));
-			phi.col(i) = rbf[0].col(0);
-		}
-
-		VectorXd U_ini = phi * lamb;
-		vector<VectorXd> r =  { X_ini, U_ini };
-		result.push_back(r);
+		vector<vector<MatrixXd>> rbf = RBF::MultiQuadricND(X_ini, initial.TestNodes.row(i), a1, initial.C.row(i) );
+		phi.col(i) = rbf[0][0].col(0);
 	}
-	return result;
+
+	VectorXd U_ini = phi * initial.Lambda;
+	initial.S = X_ini;
+	initial.U = U_ini;
+	
+	return initial;
 }
 
-vector<vector<VectorXd>> Leicester::MoL::EuroCallOptionND(double T, double Tdone, double Tend, double dt, double K, double r, double sigma, double theta, VectorXd inx1, VectorXd inx2, MatrixXd correlation)
+SmoothInitial Leicester::MoL::EuroCallOptionND(double T, double Tdone, double Tend, double dt, double K, double r, double sigma, double theta, MatrixXd correlation)
 {
-	vector<vector<VectorXd>> result;
-	int dimensions = correlation.rows();
+	//vector<vector<VectorXd>> result;
+	int assets = correlation.rows();
 	BasketOption *option = new BasketOption(K, T, correlation);
-	int N_uniform = 5000;
-	//VectorXd x = VectorXd::LinSpaced(N_uniform, inx1, inx2);
-	//MatrixXd X(N_uniform, inx1.rows());
-	//for (int i = 0; i < inx1.rows(); i++)
-	//	X.col(i) = VectorXd::LinSpaced(N_uniform, inx1[i], inx2[i]);
-	MatrixXd N(1, dimensions);
-	N.fill(N_uniform);
-	MatrixXd X = TestNodes::GenerateTestNodes(inx1, inx2, N, 1);
-
-
-	VectorXd u0 = option->PayOffFunction(X);
-	delete option;
-
+	int N_uniform = 50;
 	
-	MatrixXd d(N_uniform, dimensions);
-	for (int n = 0; n < N.cols(); n++) //N.Cols() is #dimensions
-	{
-		VectorXd linearDimension = VectorXd::LinSpaced(N_uniform, inx1[n], inx2[n]);
-		d.col(n) = linearDimension;
-	}
-	MatrixXd dx = MatrixUtil::Diff(d);
+	MatrixXd N(1, assets);
+	N.fill(N_uniform);
+	
+	vector<MatrixXd> setup = SetupBasket(assets, N_uniform, 50, 0.3, K);
+	MatrixXd inx1 = setup[0];
+	MatrixXd inx2 = setup[1];
+	MatrixXd testNodes = setup[2];
+	MatrixXd centralNodes = setup[3];
+	MatrixXd aroundStrikeNodes = setup[4];
+
+	VectorXd u0 = option->PayOffFunction(testNodes);
+	
+
+	VectorXd dx = MatrixUtil::Diff(testNodes);
 	//Common::saveArray(d, "ND_d.txt");
 	//Common::saveArray(dx, "ND_dx.txt");
 	const double inf = numeric_limits<double>::infinity();
 
-	MatrixXd pushed = MatrixUtil::PushRows(dx, inf);
-	MatrixXd queued = MatrixUtil::QueueRows(dx, inf);
+	VectorXd pushed = VectorUtil::Push(dx, inf);
+	VectorXd queued = VectorUtil::Queue(dx, inf);
 	VectorXd c = 2 * (pushed.array() >= queued.array()).select(queued, pushed);
 	//Common::saveArray(c, "ND_c.txt");
+	
 
-	//MatrixXd XX(1000, inx1.rows());
-	//for (int i = 0; i < inx1.rows(); i++)
-	//	XX.col(i) = VectorXd::LinSpaced(1000, inx1[i], inx2[i]);
+	int tnRows = testNodes.rows();
+	int asRows = aroundStrikeNodes.rows();
+	MatrixXd D1_mid = MatrixXd::Zero(asRows, tnRows);
+	MatrixXd D2_mid = MatrixXd::Zero(asRows, tnRows);
+	MatrixXd D3_mid = MatrixXd::Zero(asRows, tnRows);
 
-	N.fill(1000);
-	VectorXd tinx1 = VectorXd::Zero(inx1.rows());
-	VectorXd tinx2(inx2.rows());
-	tinx2.fill(3 * K);
-	MatrixXd XX = TestNodes::GenerateTestNodes(tinx1, tinx2, N, 1);
-	//Common::saveArray(X, "ND_X.txt");
-	//Common::saveArray(XX, "ND_XX.txt");
-	//MatrixXd IT = ((1.2 * K >= X.array()) && (X.array() >= 0.8 * K)).select(X, 0);
-	//MatrixXd AroundE = MatrixUtil::Select(IT, 0);
-	MatrixXd AroundE = BasketOption::NodesAroundStrike(X, K, 0.2);
+	MatrixXd A = MatrixXd::Zero(tnRows, tnRows);
+	MatrixXd D1 = MatrixXd::Zero(tnRows, tnRows);
+	MatrixXd D2 = MatrixXd::Zero(tnRows, tnRows);
 
-
-	int n = X.size();
-	MatrixXd D1_mid = MatrixXd::Zero(AroundE.rows(), n);
-	MatrixXd D2_mid = MatrixXd::Zero(AroundE.rows(), n);
-	MatrixXd D3_mid = MatrixXd::Zero(AroundE.rows(), n);
-
-	MatrixXd A = MatrixXd::Zero(n, n);
-	MatrixXd D1 = MatrixXd::Zero(n, n);
-	MatrixXd D2 = MatrixXd::Zero(n, n);
-
-	MatrixXd Axx = MatrixXd::Zero(XX.rows(), n);
-	MatrixXd a1 = MatrixXd::Ones(c.rows(), c.cols());
-
-	for (int j = 0; j < n; j++)
+	MatrixXd Axx = MatrixXd::Zero(centralNodes.rows(), tnRows);
+	MatrixXd a1 = MatrixXd::Ones(c.rows(), testNodes.cols());
+	MatrixXd S = option->PayOffS(aroundStrikeNodes);
+	MatrixXd Sc = option->PayOffS(centralNodes);
+	delete option;
+	for (int j = 0; j < tnRows; j++)
 	{
-		vector<MatrixXd> vAxx = RBF::MultiQuadricND(XX, X.row(j), a1, c.row(j));
-		Axx.col(j) = vAxx[0].col(0);
-		Common::saveArray(vAxx[0], "ND_Axx.txt");
+		vector<vector<MatrixXd>> vAxx = RBF::MultiQuadricND(centralNodes, testNodes.row(j), a1, c.row(j));
+		Axx.col(j) = vAxx[0][0].col(0);
+		//Common::saveArray(vAxx[0][0], "ND_Axx.txt");
 
-		vector<MatrixXd> vAx = RBF::MultiQuadricND(X, X.row(j), a1, c.row(j));
-		A.col(j) = vAx[0].col(0);
-		Common::saveArray(A, "ND_A.txt");
-		D1.col(j) = vAx[1].col(0);
-		Common::saveArray(D1, "ND_D1.txt");
-		D2.col(j) = vAx[2].col(0);
-		Common::saveArray(D2, "ND_D2.txt");
-		vector<MatrixXd> vAE = RBF::MultiQuadricND(AroundE, X.row(j), a1, c.row(j));
-		D1_mid.col(j) = vAE[1].col(0);
-		Common::saveArray(D1_mid, "ND_D1_mid.txt");
-		D2_mid.col(j) = vAE[2].col(0);
-		Common::saveArray(D2_mid, "ND_D2_mid.txt");
+		vector<vector<MatrixXd>> vAx = RBF::MultiQuadricND(testNodes, testNodes.row(j), a1, c.row(j));
+		A.col(j) = vAx[0][0].col(0);
+		//Common::saveArray(A, "ND_A.txt");
+
+		for (auto m : vAx[1])
+			D1.col(j) += m.col(0);
+		//Common::saveArray(D1, "ND_D1.txt");
+
+		for (auto m : vAx[2]) //diagonal
+			D2.col(j) += m.col(0);
+		for (auto m : vAx[3]) // upper triangle
+			D2.col(j) += (2 * m.col(0));
+		//Common::saveArray(D2, "ND_D2.txt");
+
+		vector<vector<MatrixXd>> vAE = RBF::MultiQuadricND(aroundStrikeNodes, testNodes.row(j), a1, c.row(j));
+		for (auto m : vAE[1])
+			D1_mid.col(j) += m.col(0);
+		//Common::saveArray(D1_mid, "ND_D1_mid.txt");
+
+		for (auto m : vAE[2]) //diagonal
+			D2_mid.col(j) += m.col(0);
+		for (auto m : vAE[3]) //diagonal
+			D2_mid.col(j) += ( 2 * m.col(0)) ;
+		//Common::saveArray(D2_mid, "ND_D2_mid.txt");
+
 		//D3_mid.col(j) = vAE[3].col(0);
-		D1_mid.col(j) = D1_mid.col(j).array() / AroundE.array();
-		D2_mid.col(j) = D2_mid.col(j).array() / (AroundE.array() * AroundE.array());
+		D1_mid.col(j) = D1_mid.col(j).array() / S.array();
+		D2_mid.col(j) = D2_mid.col(j).array() / (S.array() * S.array());
 	}
+
+	D3_mid = -D2_mid.array() / S.array();
 
 	Common::saveArray(A, "A.txt");
 	Common::saveArray(u0, "u0.txt");
@@ -429,7 +428,6 @@ vector<vector<VectorXd>> Leicester::MoL::EuroCallOptionND(double T, double Tdone
 	MatrixXd uu0 = Axx*lamb;
 	MatrixXd deri1 = D1_mid*lamb;
 	MatrixXd deri2 = D2_mid*lamb;
-
 	MatrixXd deri3 = D3_mid*lamb;
 
 	MatrixXd A1 = A.row(1);
@@ -468,9 +466,25 @@ vector<vector<VectorXd>> Leicester::MoL::EuroCallOptionND(double T, double Tdone
 		deri1 = D1_mid*lamb;
 		deri2 = D2_mid*lamb;
 		deri3 = D3_mid*lamb;
+		MatrixXd SK = S / K;
+		MatrixXd d1 = ( SK.array().log() + (r + sigma * sigma / 2) * (Tdone) ) / (sigma * sqrt(Tdone));
+		deri3 = deri3.array() * (1 + ( d1 / (sigma * sqrt(Tdone)) ).array() );
+
+		MatrixXd plot1(S.rows(), 2);
+		plot1.col(0) = S;
+		plot1.col(1) = deri2;
+		plot1 = sortMatrix(plot1);
+		plot1 = TakeMeans(plot1);
+		deri2 = plot1.col(1);
+
+		MatrixXd plot2(S.rows(), 2);
+		plot2.col(0) = S;
+		plot2.col(1) = deri3;
+		plot2 = sortMatrix(plot2);
+		plot2 = TakeMeans(plot2);
+		deri3 = plot2.col(1);
 
 		double Ptop = deri3.maxCoeff();
-
 		double Pend = deri3.minCoeff();
 
 		MatrixXd::Index I1Row, I1Col;
@@ -530,9 +544,11 @@ vector<vector<VectorXd>> Leicester::MoL::EuroCallOptionND(double T, double Tdone
 
 	}
 	cout << "Total Iterations:" << count << "\r\n";
-	vector<VectorXd> res = { X.col(n), lamb, c };
-	result.push_back(res);
+	//vector<MatrixXd> res = { testNodes, lamb, c };
+	//result.push_back(res);
 	
+	SmoothInitial result(Tdone, testNodes, lamb, c);
+
 	return result;
 
 }
@@ -787,3 +803,50 @@ vector<vector<VectorXd>> Leicester::MoL::EuroCallOptionND_ODE(double T, double T
 	return result;
 
 }
+
+vector<MatrixXd> Leicester::MoL::SetupBasket(int assets, int testNodeNumber, int centralNodeNumber, double aroundStrikeRange, double strike)
+{
+	MatrixXd inx1 = -1 * MatrixXd::Ones(1, assets) *strike;
+	MatrixXd inx2 = 2 * MatrixXd::Ones(1, assets) *strike;
+
+	MatrixXd testNodes = TestNodes::GenerateTestNodes(testNodeNumber, inx1.row(0).transpose(), inx2.row(0).transpose(), assets);
+
+	MatrixXd cetralNodes = TestNodes::GenerateTestNodes(centralNodeNumber, inx1.row(0).transpose(), inx2.row(0).transpose(), assets);
+
+	MatrixXd aroundStrikeNodes = BasketOption::NodesAroundStrike(testNodes, strike, aroundStrikeRange);
+
+	return { inx1, inx2, testNodes, cetralNodes, aroundStrikeNodes };
+
+}
+
+MatrixXd Leicester::MoL::TakeMeans(MatrixXd M)
+{
+	double last =  - numeric_limits<double>::infinity();
+	double sum = 0;
+	int ni = 0;
+	MatrixXd Na = MatrixXd::Zero(M.rows(), M.cols());
+	int count = 0;
+	double current = -numeric_limits<double>::infinity();
+	for (int i =0 ; i< M.rows(); i++)
+	{
+		current = M(i,1);
+		if (i != 1 && (current != last))
+		{
+			ni++;
+			Na(ni, 0) = M(i - 1, 0);
+			Na(ni, 1) = sum / count;
+			count = 1;
+			sum = current;
+		}
+		else
+		{
+			count++;
+			sum += current;
+		}
+
+	}
+
+	MatrixXd N = Na.block(0, 0, ni, 2);
+	return N;
+}
+

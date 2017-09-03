@@ -19,6 +19,7 @@
 #include "Params.h"
 #include "MoL.h"
 #include "C:\Users\User\Source\Repos\SparseGridCollocation\CudaLib\kernel.h"
+#include "SmoothInitial.h"
 
 using Eigen::Matrix;
 using Eigen::MatrixXd;
@@ -521,11 +522,11 @@ vector<MatrixXd> Leicester::SparseGridCollocation::MuSIKcND(int upper, int lower
 	p.inx1.fill(-p.K);
 	p.inx2.fill(6.0 * p.K);
 
-	vector<VectorXd> smoothinitial = MoL::MethodOfLines(p);
-	SmoothInitialX::x = smoothinitial[0].head(smoothinitial[0].rows());
-	SmoothInitialU::u = smoothinitial[1].head(smoothinitial[1].rows());
+	SmoothInitial smoothinitial = MoL::MethodOfLinesND(p, option.correlation);
+	SmoothInitialX::x = smoothinitial.S;
+	SmoothInitialU::u = smoothinitial.U;
 
-	p.Tdone = 0.1350;
+	p.Tdone = smoothinitial.T;
 	p.inx1 = old1;
 	p.inx2 = old2;
 

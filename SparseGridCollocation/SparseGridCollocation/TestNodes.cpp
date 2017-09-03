@@ -74,6 +74,36 @@ MatrixXd Leicester::TestNodes::GenerateTestNodes(double timeLowerLimit, double t
 	return TXYZ;
 }
 
+MatrixXd Leicester::TestNodes::GenerateTestNodes(int nodes, VectorXd lowerLimits, VectorXd upperLimits, int dimensions)
+{
+	vector<VectorXd> linearGrid;
+	int product = 1;
+
+	for (int n = 0; n < dimensions; n++)
+	{
+		product *= nodes;
+
+		VectorXd linearDimension = VectorXd::LinSpaced(nodes, lowerLimits[n], upperLimits[n]);
+
+		linearGrid.push_back(linearDimension);
+	}
+
+
+	MatrixXd TXYZ(product, dimensions);
+	int dimension = 0;
+
+	for (auto linearVector : linearGrid)
+	{
+		int dups = 1;
+		if (linearGrid.size() > dimension + 1)
+			dups = linearGrid[dimension + 1].size();
+		TXYZ.col(dimension) = Replicate(linearVector, product, dups);
+		dimension++;
+	}
+
+	return TXYZ;
+}
+
 VectorXd Leicester::TestNodes::Replicate(VectorXd v, int totalLength, int dup)
 {
 	VectorXd Result(totalLength);

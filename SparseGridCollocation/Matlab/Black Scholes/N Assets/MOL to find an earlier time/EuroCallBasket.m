@@ -58,7 +58,7 @@ end
 [speedRows,speedCols]=size(D2_mid);
 
 %D_Speed = deal(ones(speedRows,speedCols));
-D3_mid = - D2_mid ./ D_mid;
+D3_mid = - D2_mid ./ S;
 lamb = A\u0;
 
 uu0 = Axx*lamb;
@@ -158,7 +158,7 @@ part3 = diff(deri3(b:end));
 II1 = part1 >= 0;
 II2 = part2 >= 0;
 II3 = part3 >= 0;
-set(tp,'string',sprintf('T = %.3f,    N = %3i. min = %.8f sum(II2) = %i',Tdone,N, min(deri2), sum(II2)))
+%set(tp,'string',sprintf('T = %.3f,    N = %3i. min = %.8f sum(II2) = %i',Tdone,N, min(deri2), sum(II2)))
 if min(deri2) >= 0 % Gamma greater than 0
 %  Approximation of Speed is monotonic in subintervals
 if sum(II1) == 0 || sum(II1) == length(part1)

@@ -388,25 +388,29 @@ vector<MatrixXd> Leicester::RBF::MultiQuadricND_ODE(const MatrixXd &TP, const Ma
 	return Derivatives;
 }
 
-vector<MatrixXd> Leicester::RBF::MultiQuadricND(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C)
+vector<vector<MatrixXd>> Leicester::RBF::MultiQuadricND(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C)
 {
 	vector<MatrixXd> result;// V, Vt, Vx Vxy
 	int Num = CN.rows();
 	int N = TP.rows();
 	int dimensions = TP.cols();
 
-	MatrixXd D(N, Num);
-	D.fill(1.0);
+	MatrixXd D = MatrixXd::Ones(N, Num);
 
-	vector<MatrixXd> Derivatives;
-	Derivatives.push_back(D);
-	for (int d = 1; d < 3; d++)
+	vector<MatrixXd> D_first;
+
+	int length_second_order_half = (dimensions* dimensions - dimensions) / 2;
+	vector<MatrixXd> D_second_half;
+	for (int i = 0; i < length_second_order_half; i++)
+		D_second_half.push_back(MatrixXd::Zero(TP.rows(), 1));
+
+	vector<MatrixXd> D_second_diag;
+	for (int i = 0; i < dimensions; i++)
 	{
-		MatrixXd Dx(N, Num);
-		Dx.fill(1.0);
-		Derivatives.push_back(Dx);
+		D_first.push_back(MatrixXd::Zero(TP.rows(), 1));
+		D_second_diag.push_back(MatrixXd::Zero(TP.rows(), 1));
 	}
-
+	
 	for (int j = 0; j < Num; j++)
 	{
 		vector<VectorXd> FAIn;
@@ -414,55 +418,51 @@ vector<MatrixXd> Leicester::RBF::MultiQuadricND(const MatrixXd &TP, const Matrix
 		{
 
 			MatrixXd r = TP.col(d).array() - CN(j, d);
-			double ca = C(0, 0) / A(0, 0);
-			MatrixXd FAI = ((r.array()* r.array()) + (ca * ca)).sqrt();
-			Derivatives[0].col(j).array() *= FAI.array();
-			FAIn.push_back(FAI);
+			double ca = C(0, 0) / A(j, d);
+			MatrixXd Phi = ((r.array()* r.array()) + (ca * ca)).sqrt();
+			D.col(j).array() *= Phi.array();
+			FAIn.push_back(Phi);
 		}
 
 		//VectorXd vt = (TP.col(0).array() - CN(j, 0));
 		//Derivatives[1].col(j) = vt;
 
-		MatrixXd dS(TP.rows(), dimensions);
 		for (int d = 0; d < dimensions; d++)
 		{
-			MatrixXd prod = PhiProduct(FAIn, d);
+			MatrixXd PhiX = FAIn[d];
 			//Common::saveArray(prod, "ND_prod.txt");
-			
-			dS.col(d) = TP.col(d).array() * (TP.col(d).array() - CN(j, d)) * prod.array() / FAIn[d].array();
+			MatrixXd r = TP.col(d).array() - CN(j, d);
+			D_first[d].col(j) = TP.col(d).array() * (r).array() * D.col(j).array() / (PhiX.array() * PhiX.array()).array();
+			MatrixXd tpS = (TP.col(d).array() * TP.col(d).array());
+			MatrixXd a = (1 / PhiX.array()) - (r.array() * r.array()) / (PhiX.array() * PhiX.array() * PhiX.array());
+			MatrixXd b = D.col(j).array() / PhiX.array();
+			D_second_diag[d].col(j) = tpS.array() * a.array() * b.array();
 		}
 
-		VectorXd sum = dS.rowwise().sum();
-		Derivatives[1].col(j) = sum;
-		
-		VectorXd sumij = VectorXd::Zero(TP.rows());
+	
+		int kk = 0;
 		for (int d = 0; d < dimensions; d++)
 		{
-
-			VectorXd sumi = VectorXd::Zero(TP.rows());
-			for (int i = 0; i < TP.cols(); i++)
+			MatrixXd PhiX = FAIn[d];
+			for (int i = d+1; i < dimensions; i++)
 			{
-				VectorXd vxy;
-				VectorXd dTpCn1 = TP.col(d).array() - CN(j, d);
-				Common::saveArray(dTpCn1, "ND_dTpCn1.txt");
-				VectorXd dTpCn2 = TP.col(i).array() - CN(j, i); 
-				Common::saveArray(dTpCn2, "ND_dTpCn2.txt");
+				MatrixXd r = TP.col(i).array() - CN(j, i);
+				double ca = C(0, 0) / A(j, i);
+				MatrixXd Phii = ((r.array()* r.array()) + (ca * ca)).sqrt();
 				VectorXd Sx = TP.col(d).array() * TP.col(i).array();
-				Common::saveArray(Sx, "ND_Sx.txt");
-				MatrixXd qFAI = FAIn[d].array() * FAIn[d].array() * FAIn[d].array();
-				Common::saveArray(qFAI, "ND_qFAI.txt");
-				vxy = Sx.array() * ( (FAIn[i].array() / FAIn[d].array()) - ( FAIn[i].array() * dTpCn1.array() * dTpCn2.array() / qFAI.array() ) );
-				Common::saveArray(vxy, "ND_vxy.txt");
-				sumi.array() = sumi.array() + vxy.array();
+				//Common::saveArray(Sx, "ND_Sx.txt");
+				VectorXd dTpCn1 = TP.col(d).array() - CN(j, d);
+				//Common::saveArray(dTpCn1, "ND_dTpCn1.txt");
+				VectorXd dTpCn2 = TP.col(i).array() - CN(j, i);
+				//Common::saveArray(dTpCn2, "ND_dTpCn2.txt");
+				VectorXd denom = PhiX.array() * PhiX.array() *Phii.array() * Phii.array();
+				D_second_half[kk].col(j) = Sx.array() * dTpCn1.array() * dTpCn2.array() * D.col(j).array() / denom.array();
+				
 			}
-			sumij.array() = sumij.array() + sumi.array();
-
 		}
-		Derivatives[2].col(j) = sumij;
-
 	}
 
-	return Derivatives;
+	return { {D}, D_first, D_second_half, D_second_diag };
 }
 
 VectorXd Leicester::RBF::PhiProduct(vector<VectorXd> PhiN, int n)

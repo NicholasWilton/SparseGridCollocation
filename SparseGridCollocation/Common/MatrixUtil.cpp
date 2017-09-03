@@ -11,13 +11,17 @@ MatrixUtil::~MatrixUtil()
 {
 }
 
-MatrixXd MatrixUtil::Diff(MatrixXd m)
+VectorXd MatrixUtil::Diff(MatrixXd m)
 {
-	MatrixXd result(m.rows() - 1, m.cols());
-	for (int j = 0; j < m.cols(); j++)
+	VectorXd result(m.rows() - 1);
 	for (int i = 0; i < m.rows() - 1; i++)
 	{
-		result(i,j) = m(i + 1, j) - m(i, j);
+		double sum = 0;
+		for (int j = 0; j < m.cols(); j++)
+		{
+			sum += (m(i + 1, j) - m(i, j)) * (m(i + 1, j) - m(i, j));
+		}
+		result[i] = sqrt(sum);
 	}
 	return result;
 }

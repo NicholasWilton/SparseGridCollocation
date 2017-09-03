@@ -30,6 +30,11 @@ VectorXd Leicester::BasketOption::PayOffFunction(MatrixXd S)
 	return result;
 }
 
+VectorXd Leicester::BasketOption::PayOffS(MatrixXd S)
+{
+	return S.rowwise().mean().array() - this->Strike;
+}
+
 MatrixXd Leicester::BasketOption::NodesAroundStrike(const MatrixXd &X, double strike, double radius)
 {
 	VectorXd avg = X.rowwise().sum() / X.cols();

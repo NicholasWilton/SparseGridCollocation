@@ -171,6 +171,7 @@
     <ClInclude Include="PPP.h" />
     <ClInclude Include="RBF.h" />
     <ClInclude Include="Interpolation.h" />
+    <ClInclude Include="SmoothInitial.h" />
     <ClInclude Include="SmoothInitialU.h" />
     <ClInclude Include="SmoothInitialX.h" />
     <ClInclude Include="SparseGridCollocation.h" />
@@ -190,6 +191,7 @@
     <ClCompile Include="PPP.cpp" />
     <ClCompile Include="RBF.cpp" />
     <ClCompile Include="Interpolation.cpp" />
+    <ClCompile Include="SmoothInitial.cpp" />
     <ClCompile Include="SmoothInitialU.cpp" />
     <ClCompile Include="SmoothInitialX.cpp" />
     <ClCompile Include="SparseGridCollocation.cpp" />
