@@ -490,7 +490,7 @@ int main(){
 	l::BasketOption option(100.0,1,correlation);
 	SparseGridCollocation* test = new SparseGridCollocation();
 
-	vector<MatrixXd> MuSiKcBasket = test->MuSIKcND(10, 0, option, p);
+	vector<MatrixXd> MuSiKcBasket = test->MuSIKcND(4, 0, option, p);
 	//vector<MatrixXd> MuSiKc = test->MuSIKc(10, 0, p);
 	
 	

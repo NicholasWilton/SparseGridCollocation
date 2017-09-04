@@ -109,8 +109,9 @@ vector<MatrixXd> Leicester::RBF::GaussianND(const MatrixXd &TP, const MatrixXd &
 		{
 			//V
 			VectorXd a1 = A(0, d)*(TP.col(d).array() - CN(j, d));
-			VectorXd b1 = -(a1.array() * a1.array()) / (C(0, d) *C(0, d));
-			VectorXd FAI = b1.array().exp();
+			//VectorXd b1 = -(a1.array() * a1.array()) / (C(0, d) *C(0, d));
+			//VectorXd FAI = b1.array().exp();
+			VectorXd FAI = (-((A(0, d)*(TP.col(d).array() - CN(j, d))).array() * (A(0, d)*(TP.col(d).array() - CN(j, d))).array()) / (C(0, d) *C(0, d))).array().exp();
 			//wcout << Common::printMatrix(FAI) << endl;
 			Derivatives[0].col(j).array() *= FAI.array();
 			FAIn.push_back(FAI);
@@ -122,41 +123,40 @@ vector<MatrixXd> Leicester::RBF::GaussianND(const MatrixXd &TP, const MatrixXd &
 		//Common::saveArray(vt, "vt.txt");
 
 		//sum-i (r - q-i) * S-i * dV/dS-i
-		MatrixXd dS(TP.rows(), dimensions -1);
-		for (int d = 1; d < dimensions; d++)
-		{
-			VectorXd a4 = -2 * (A(0, d) / C(0, d)) * (A(0, d) / C(0, d)) * (TP.col(d).array() - CN(j, d)); // -2 *[ (a/c)^2 * (x - cn) ]
-			dS.col(d-1) = a4.array() * TP.col(d).array();
-		}
-		VectorXd sum = dS.rowwise().sum();
-		Derivatives[2].col(j) = sum;
-
 		// d^2V/dS-i dS-j =  4 * [ (a/c)^4 * (S-i * S-j + cn^2 - S-j*cn - Sj* cn) ] * exp[(a * (S-i - cn)) ^ 2 / c ^ 2] * exp[ ( a * (S-j - cn)  )^2 / c^2 ]
 		// 1/2 * sum-i sum-j [sigma-i * sigma-j *rho-ij *S-i *S-j * d^2V/dS-i dS-j]
 		VectorXd sumij = VectorXd::Zero(TP.rows());
-		for (int d = 1; d < dimensions; d++) 
+		MatrixXd dS(TP.rows(), dimensions -1);
+		for (int d = 1; d < dimensions; d++)
 		{
+			//VectorXd a4 = -2 * (A(0, d) / C(0, d)) * (A(0, d) / C(0, d)) * (TP.col(d).array() - CN(j, d)); // -2 *[ (a/c)^2 * (x - cn) ]
+			dS.col(d-1) = (-2 * (A(0, d) / C(0, d)) * (A(0, d) / C(0, d)) * (TP.col(d).array() - CN(j, d))).array() * TP.col(d).array();
+		
 			VectorXd sumi = VectorXd::Zero(TP.rows());
 			for (int i = 1; i < TP.cols(); i++)
 			{
-				VectorXd vxy;
-				double sA = A(0, d) * A(0, d);
-				double qA = sA * sA;
-				VectorXd diff = TP.col(d).array() - CN(j, d);
-				double sC = C(0, d) *C(0, d) ;
-				double qC = sC * sC;
-				VectorXd dTpCn = TP.col(d).array() - CN(j, i); // x - c
-				//double dAC = A(0, d) / C(0, d);
+				//VectorXd vxy;
+				//double sA = A(0, d) * A(0, d);
+				//double qA = sA * sA;
+				//VectorXd diff = TP.col(d).array() - CN(j, d);
+				//double sC = C(0, d) *C(0, d) ;
+				//double qC = sC * sC;
+				//VectorXd dTpCn = TP.col(d).array() - CN(j, i); // x - c
+				
 				//TODO: do we need to transpose TP.row() to get a column vec?
 				//vxy = 4 * (qA / qC) * (TP.col(d).array() * TP(i,d) + (CN(j, d) * CN(j, d)) - (TP.col(d).array() * CN(j, d)) - (TP(i, d) * CN(j, d)));
 				//TODO: is it not dV/dS_i d_j ?
-				VectorXd a5 = 4 * qA * (dTpCn.array() * dTpCn.array() / qC); // 4 * a^4 * (x - c)^2 / c^4
-				vxy = -2 * sA / sC + a5.array();//  -2 * a^2/c^2 + [4 * a^4 * (x - c)^2 / c^4]
-				sumi.array() = sumi.array() + TP.col(d).array() * TP.col(i).array() * vxy.array();
+				//VectorXd a5 = 4 * qA * (dTpCn.array() * dTpCn.array() / qC); // 4 * a^4 * (x - c)^2 / c^4
+				//vxy = -2 * sA / sC + a5.array();//  -2 * a^2/c^2 + [4 * a^4 * (x - c)^2 / c^4]
+				//sumi.array() = sumi.array() + TP.col(d).array() * TP.col(i).array() * vxy.array();
+				sumi.array() = sumi.array() + TP.col(d).array() * TP.col(i).array() * (-2 * (A(0, d) * A(0, d)) / (C(0, d) *C(0, d)) + (4 * (A(0, d) * A(0, d)* A(0, d) * A(0, d)) * ((TP.col(d).array() - CN(j, i)).array() * (TP.col(d).array() - CN(j, i)).array() / (C(0, d) *C(0, d)*C(0, d) *C(0, d)))).array()).array();
 			}
 			sumij.array() = sumij.array() + sumi.array();
 			
 		}
+		VectorXd sum = dS.rowwise().sum();
+		Derivatives[2].col(j) = sum;
+
 		Derivatives[3].col(j) = sumij;
 
 		for (int d = 1; d < Derivatives.size(); d++)

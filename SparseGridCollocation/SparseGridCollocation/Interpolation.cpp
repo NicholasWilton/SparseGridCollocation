@@ -96,13 +96,13 @@ void Leicester::Interpolation::interpolateGenericND(string prefix, double coef, 
 	//cout << "N.rows()=" << N.rows() << endl;
 	for (int i = 0; i < N.rows(); i++)
 	{
-		//threads.push_back(std::thread(&Interpolation::shapelambdaNDGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
-		shapelambdaNDGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
+		threads.push_back(std::thread(&Interpolation::shapelambdaNDGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
+		//shapelambdaNDGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
 	}
 
 	
-	//for (int i = 0; i < threads.size(); i++)
-	//	threads.at(i).join();
+	for (int i = 0; i < threads.size(); i++)
+		threads.at(i).join();
 
 	vector<MatrixXd> l;
 	vector<MatrixXd> tx;

@@ -673,7 +673,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::MuSIKcND(int upper, int lower
 
 	for (int count = dimensions; count <= 10 + dimensions; count++)
 	{
-		if (upper >= count & lower <= count)
+		if (upper > count & lower <= count)
 		{
 			int lvl = count;
 			int n = lvl + option.Underlying;
