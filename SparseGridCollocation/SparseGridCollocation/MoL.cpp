@@ -270,26 +270,35 @@ SmoothInitial Leicester::MoL::MethodOfLinesND(Params p, MatrixXd correlation)
 	}
 
 	stringstream ssX;
-	ssX << setprecision(16) << "SmoothInitial_EuroCall_" << p.T << "_" << p.Tdone << "_" << p.Tend << "_" << p.dt << "_" << p.K << "_" << p.r << "_" << p.sigma << "_" << p.theta << "_" << ssinx1.str() << "_" << ssinx2.str() << "_X.dat";
+	ssX << setprecision(16) << "SmoothInitial_EuroCall_" << p.T << "_" << p.Tend << "_" << p.dt << "_" << p.K << "_" << p.r << "_" << p.sigma << "_" << p.theta << "_" << ssinx1.str() << "_" << ssinx2.str() << "_X.dat";
 	stringstream ssU;
-	ssU << setprecision(16) << "SmoothInitial_EuroCall_" << p.T << "_" << p.Tdone << "_" << p.Tend << "_" << p.dt << "_" << p.K << "_" << p.r << "_" << p.sigma << "_" << p.theta << "_" << ssinx1.str() << "_" << ssinx2.str() << "_U.dat";
+	ssU << setprecision(16) << "SmoothInitial_EuroCall_" << p.T << "_" << p.Tend << "_" << p.dt << "_" << p.K << "_" << p.r << "_" << p.sigma << "_" << p.theta << "_" << ssinx1.str() << "_" << ssinx2.str() << "_U.dat";
+	stringstream ssT;
+	ssT << setprecision(16) << "SmoothInitial_EuroCall_" << p.T << "_" << p.Tend << "_" << p.dt << "_" << p.K << "_" << p.r << "_" << p.sigma << "_" << p.theta << "_" << ssinx1.str() << "_" << ssinx2.str() << "_T.dat";
 
 	string fileX = ssX.str();
 	ifstream x(fileX.c_str());
 	string fileU = ssU.str();
 	ifstream u(fileU.c_str());
+	string fileT = ssT.str();
+	ifstream t(fileT.c_str());
 
-	if (x.good() & u.good())
+	if (x.good() & u.good() & t.good())
 	{
 		x.close();
-		MatrixXd mX = Common::ReadBinary(fileX, 32769, correlation.rows());
-		VectorXd X(Map<VectorXd>(mX.data(), mX.cols()*mX.rows()));
+		//MatrixXd mX = Common::ReadBinary(fileX, 32769, correlation.rows());
+		//VectorXd X(Map<VectorXd>(mX.data(), mX.cols()*mX.rows()));
 		u.close();
-		MatrixXd mU = Common::ReadBinary(fileU, 32769, correlation.rows());
-		VectorXd U(Map<VectorXd>(mU.data(), mU.cols()*mU.rows()));
+		//MatrixXd mU = Common::ReadBinary(fileU, 32769, correlation.rows());
+		//VectorXd U(Map<VectorXd>(mU.data(), mU.cols()*mU.rows()));
+		t.close();
+		MatrixXd mT = Common::ReadBinary(fileT, 1, 1);
+		VectorXd T(Map<VectorXd>(mT.data(), mT.cols()*mT.rows()));
 		SmoothInitial result;
-		result.S = X;
-		result.U = U;
+		//result.S = X;
+		//result.U = U;
+		result.T = T[0];
+		return result;
 	}
 	else
 	{
@@ -305,6 +314,9 @@ SmoothInitial Leicester::MoL::MethodOfLinesND(Params p, MatrixXd correlation)
 		//}
 		Common::WriteToBinary(fileX, smoothInitial.S);
 		Common::WriteToBinary(fileU, smoothInitial.U);
+		MatrixXd T(1, 1);
+		T << smoothInitial.T;
+		Common::WriteToBinary(fileT, T);
 		return smoothInitial;
 	}
 
@@ -355,8 +367,6 @@ SmoothInitial Leicester::MoL::EuroCallOptionND(double T, double Tdone, double Te
 	MatrixXd aroundStrikeNodes = setup[4];
 
 	VectorXd u0 = option->PayOffFunction(testNodes);
-	
-
 	VectorXd dx = MatrixUtil::Diff(testNodes);
 	//Common::saveArray(d, "ND_d.txt");
 	//Common::saveArray(dx, "ND_dx.txt");
@@ -381,10 +391,13 @@ SmoothInitial Leicester::MoL::EuroCallOptionND(double T, double Tdone, double Te
 	MatrixXd Axx = MatrixXd::Zero(centralNodes.rows(), tnRows);
 	MatrixXd a1 = MatrixXd::Ones(c.rows(), testNodes.cols());
 	MatrixXd S = option->PayOffS(aroundStrikeNodes);
+	Common::saveArray(S, "S.txt");
 	MatrixXd Sc = option->PayOffS(centralNodes);
 	delete option;
+	cout << "MoL RBF Kernel interpolation\r\n";
 	for (int j = 0; j < tnRows; j++)
 	{
+		cout << j+1 << "/" << tnRows;
 		vector<vector<MatrixXd>> vAxx = RBF::MultiQuadricND(centralNodes, testNodes.row(j), a1, c.row(j));
 		Axx.col(j) = vAxx[0][0].col(0);
 		//Common::saveArray(vAxx[0][0], "ND_Axx.txt");
@@ -399,6 +412,8 @@ SmoothInitial Leicester::MoL::EuroCallOptionND(double T, double Tdone, double Te
 
 		for (auto m : vAx[2]) //diagonal
 			D2.col(j) += m.col(0);
+		//
+		//Common::saveArray(D2, "ND_D2.txt");
 		for (auto m : vAx[3]) // upper triangle
 			D2.col(j) += (2 * m.col(0));
 		//Common::saveArray(D2, "ND_D2.txt");
@@ -410,19 +425,30 @@ SmoothInitial Leicester::MoL::EuroCallOptionND(double T, double Tdone, double Te
 
 		for (auto m : vAE[2]) //diagonal
 			D2_mid.col(j) += m.col(0);
-		for (auto m : vAE[3]) //diagonal
+		for (auto m : vAE[3]) //upper triangle
 			D2_mid.col(j) += ( 2 * m.col(0)) ;
 		//Common::saveArray(D2_mid, "ND_D2_mid.txt");
 
 		//D3_mid.col(j) = vAE[3].col(0);
 		D1_mid.col(j) = D1_mid.col(j).array() / S.array();
+		//Common::saveArray(D1_mid, "ND_D1_mid.txt");
+		
 		D2_mid.col(j) = D2_mid.col(j).array() / (S.array() * S.array());
+		if (j != tnRows -1 )
+			cout << "\r";
+		else
+			cout << endl;
 	}
 
-	D3_mid = -D2_mid.array() / S.array();
+	for (int i=0; i< D2_mid.cols(); i++)
+		D3_mid.col(i) = -D2_mid.col(i).array() / S.col(0).array();
 
-	Common::saveArray(A, "A.txt");
-	Common::saveArray(u0, "u0.txt");
+	//Common::saveArray(A, "A.txt");
+	//Common::saveArray(u0, "u0.txt");
+	//Common::saveArray(D1, "ND_D1.txt");
+	//Common::saveArray(D2, "ND_D2.txt");
+	//Common::saveArray(D1_mid, "ND_D1_mid.txt");
+	//Common::saveArray(D2_mid, "ND_D2_mid.txt");
 	VectorXd lamb = A.lu().solve(u0);
 
 	MatrixXd uu0 = Axx*lamb;
@@ -448,8 +474,8 @@ SmoothInitial Leicester::MoL::EuroCallOptionND(double T, double Tdone, double Te
 		MatrixXd g = G* lamb;
 
 		//VectorXd fff = VectorUtil::PushAndQueue(0, (VectorXd)g.col(0), inx2 - exp(-r*Tdone)*K);
-		g = PushAndQueueBoundaries(g, inx2,r, Tdone, K);
-		VectorXd fff = Map<VectorXd>(g.data(), g.cols() * g.rows());
+		MatrixXd g1 = PushAndQueueBoundaries(g, inx2.transpose(),r, Tdone, K);
+		VectorXd fff = Map<VectorXd>(g1.data(), g1.cols() * g1.rows());
 		//VectorXd fff = VectorUtil::PushAndQueue(0, v, inx2[n] - exp(-r*Tdone)*K);
 
 		MatrixXd HH(A1.cols(), A1.cols());
@@ -461,42 +487,48 @@ SmoothInitial Leicester::MoL::EuroCallOptionND(double T, double Tdone, double Te
 		//Common::saveArray(fff, "fff.txt");
 
 		lamb = HH.lu().solve(fff);
-		
+		//Common::saveArray(lamb, "lamb.txt");
 		MatrixXd uu0 = Axx*lamb;
 		deri1 = D1_mid*lamb;
+		//Common::saveArray(deri1, "deri1.txt");
 		deri2 = D2_mid*lamb;
+		//Common::saveArray(deri2, "deri2.txt");
 		deri3 = D3_mid*lamb;
 		MatrixXd SK = S / K;
 		MatrixXd d1 = ( SK.array().log() + (r + sigma * sigma / 2) * (Tdone) ) / (sigma * sqrt(Tdone));
 		deri3 = deri3.array() * (1 + ( d1 / (sigma * sqrt(Tdone)) ).array() );
 
 		MatrixXd plot1(S.rows(), 2);
-		plot1.col(0) = S;
-		plot1.col(1) = deri2;
-		plot1 = sortMatrix(plot1);
-		plot1 = TakeMeans(plot1);
-		deri2 = plot1.col(1);
+		plot1.col(0) = S.col(0);
+		plot1.col(1) = deri2.col(0);
+		//wcout << Common::printMatrix(plot1) << endl;
+		MatrixXd sorted1 = sortMatrix(plot1);
+		//wcout << Common::printMatrix(sorted1) << endl;
+		plot1 = TakeMeans(sorted1);
+		//wcout << Common::printMatrix(plot1) << endl;
+		VectorXd vderi2 = plot1.col(1);
+		
 
 		MatrixXd plot2(S.rows(), 2);
-		plot2.col(0) = S;
-		plot2.col(1) = deri3;
-		plot2 = sortMatrix(plot2);
-		plot2 = TakeMeans(plot2);
-		deri3 = plot2.col(1);
+		plot2.col(0) = S.col(0);
+		plot2.col(1) = deri3.col(0);
+		MatrixXd sorted2 = sortMatrix(plot2);
+		plot2 = TakeMeans(sorted2);
+		VectorXd vderi3 = plot2.col(1);
 
-		double Ptop = deri3.maxCoeff();
-		double Pend = deri3.minCoeff();
+		double Ptop = vderi3.maxCoeff();
+		double Pend = vderi3.minCoeff();
 
 		MatrixXd::Index I1Row, I1Col;
-		deri3.maxCoeff(&I1Row, &I1Col);
+		vderi3.maxCoeff(&I1Row, &I1Col);
 
 		MatrixXd::Index I2Row, I2Col;
-		deri3.minCoeff(&I2Row, &I2Col);
+		vderi3.minCoeff(&I2Row, &I2Col);
 
 		double part1Length = (I1Row < I2Row) ? I1Row : I2Row;
 		double part2Length = (I1Row > I2Row) ? I1Row : I2Row;
 
-		VectorXd vderi3 = deri3.col(0);
+		
 		MatrixXd part1 = VectorUtil::Diff(vderi3.block(0, 0, part1Length, 1));
 		MatrixXd prediff = vderi3.block(part1Length, 0, part2Length - part1Length + 1, 1);
 		MatrixXd part2 = VectorUtil::Diff(prediff);
@@ -515,7 +547,7 @@ SmoothInitial Leicester::MoL::EuroCallOptionND(double T, double Tdone, double Te
 		ones = MatrixXd::Ones(part3.rows(), part3.cols());
 		MatrixXd II3 = (part3.array() >= zeros.array()).select(ones, zeros);
 
-		double min = deri2.minCoeff();
+		double min = vderi2.minCoeff();
 		double II1sum = II1.sum();
 		double II2sum = II2.sum();
 		double II3sum = II3.sum();
@@ -524,7 +556,7 @@ SmoothInitial Leicester::MoL::EuroCallOptionND(double T, double Tdone, double Te
 		double p3size = part3.size();
 		wstringstream wss;
 		wss << "iteration:" << count << setprecision(8) << " T:" << Tdone;
-		Common::Logger(wss.str());
+		wcout << wss.str();
 		if (min >= 0)
 		{
 			//	Approximation of Speed is monotonic in subintervals
@@ -809,13 +841,13 @@ vector<MatrixXd> Leicester::MoL::SetupBasket(int assets, int testNodeNumber, int
 	MatrixXd inx1 = -1 * MatrixXd::Ones(1, assets) *strike;
 	MatrixXd inx2 = 2 * MatrixXd::Ones(1, assets) *strike;
 
-	MatrixXd testNodes = TestNodes::GenerateTestNodes(testNodeNumber, inx1.row(0).transpose(), inx2.row(0).transpose(), assets);
-
-	MatrixXd cetralNodes = TestNodes::GenerateTestNodes(centralNodeNumber, inx1.row(0).transpose(), inx2.row(0).transpose(), assets);
-
-	MatrixXd aroundStrikeNodes = BasketOption::NodesAroundStrike(testNodes, strike, aroundStrikeRange);
-
-	return { inx1, inx2, testNodes, cetralNodes, aroundStrikeNodes };
+	vector<MatrixXd> testNodes = TestNodes::GenerateTestNodes(testNodeNumber, inx1.row(0).transpose(), inx2.row(0).transpose(), assets);
+	//Common::saveArray(testNodes, "testNodes.txt");
+	vector<MatrixXd> cetralNodes = TestNodes::GenerateTestNodes(centralNodeNumber, inx1.row(0).transpose(), inx2.row(0).transpose(), assets);
+	//Common::saveArray(cetralNodes, "cetralNodes.txt");
+	MatrixXd aroundStrikeNodes = BasketOption::NodesAroundStrikeFromGrid(testNodes[0], strike, aroundStrikeRange);
+	Common::saveArray(aroundStrikeNodes, "aroundStrikeNodes.txt");
+	return { inx1, inx2, testNodes[1], cetralNodes[1], aroundStrikeNodes };
 
 }
 
@@ -827,23 +859,25 @@ MatrixXd Leicester::MoL::TakeMeans(MatrixXd M)
 	MatrixXd Na = MatrixXd::Zero(M.rows(), M.cols());
 	int count = 0;
 	double current = -numeric_limits<double>::infinity();
-	for (int i =0 ; i< M.rows(); i++)
+	for (int i =0 ; i<= M.rows(); i++)
 	{
-		current = M(i,1);
-		if (i != 1 && (current != last))
+		if (i < M.rows())
+			current = M(i,0);
+		if (( i != 0 && (abs(current - last) > DBL_EPSILON)) | i == M.rows())
 		{
-			ni++;
-			Na(ni, 0) = M(i - 1, 0);
+			Na(ni, 0) = M(i-1, 0);
 			Na(ni, 1) = sum / count;
+			ni++;
 			count = 1;
-			sum = current;
+			if (i < M.rows())
+				sum = M(i, 1);
 		}
 		else
 		{
 			count++;
-			sum += current;
+			sum += M(i,1);
 		}
-
+		last = current;
 	}
 
 	MatrixXd N = Na.block(0, 0, ni, 2);

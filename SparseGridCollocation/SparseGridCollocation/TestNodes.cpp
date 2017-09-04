@@ -53,7 +53,7 @@ MatrixXd Leicester::TestNodes::GenerateTestNodes(double timeLowerLimit, double t
 		if (n == 0)
 			linearDimension = VectorXd::LinSpaced(i, timeLowerLimit, timeUpperLimit);
 		else
-			linearDimension = VectorXd::LinSpaced(i, lowerLimits(0, n), upperLimits(0, n));
+			linearDimension = VectorXd::LinSpaced(i, lowerLimits[n-1], upperLimits[n-1]);
 
 		linearGrid.push_back(linearDimension);
 	}
@@ -61,12 +61,15 @@ MatrixXd Leicester::TestNodes::GenerateTestNodes(double timeLowerLimit, double t
 
 	MatrixXd TXYZ(product, N.cols());
 	int dimension = 0;
-
+	int dups = 1;
 	for (auto linearVector : linearGrid)
 	{
-		int dups = 1;
-		if (linearGrid.size() > dimension + 1)
-			dups = linearGrid[dimension + 1].size();
+		//if (linearGrid.size() > dimension + 1)
+			if (dimension == 0)
+				dups = product / linearGrid[dimension].rows();
+			else
+				dups = dups / linearGrid[dimension].rows();
+
 		TXYZ.col(dimension) = Replicate(linearVector, product, dups);
 		dimension++;
 	}
@@ -74,7 +77,7 @@ MatrixXd Leicester::TestNodes::GenerateTestNodes(double timeLowerLimit, double t
 	return TXYZ;
 }
 
-MatrixXd Leicester::TestNodes::GenerateTestNodes(int nodes, VectorXd lowerLimits, VectorXd upperLimits, int dimensions)
+vector<MatrixXd> Leicester::TestNodes::GenerateTestNodes(int nodes, VectorXd lowerLimits, VectorXd upperLimits, int dimensions)
 {
 	vector<VectorXd> linearGrid;
 	int product = 1;
@@ -89,7 +92,8 @@ MatrixXd Leicester::TestNodes::GenerateTestNodes(int nodes, VectorXd lowerLimits
 	}
 
 
-	MatrixXd TXYZ(product, dimensions);
+	MatrixXd TXYZNodes(product, dimensions);
+	MatrixXd TXYZGrid(nodes, dimensions);
 	int dimension = 0;
 
 	for (auto linearVector : linearGrid)
@@ -97,11 +101,34 @@ MatrixXd Leicester::TestNodes::GenerateTestNodes(int nodes, VectorXd lowerLimits
 		int dups = 1;
 		if (linearGrid.size() > dimension + 1)
 			dups = linearGrid[dimension + 1].size();
-		TXYZ.col(dimension) = Replicate(linearVector, product, dups);
+		TXYZNodes.col(dimension) = Replicate(linearVector, product, dups);
+		TXYZGrid.col(dimension) = linearVector;
 		dimension++;
 	}
 
-	return TXYZ;
+	return { TXYZGrid, TXYZNodes };
+}
+
+MatrixXd Leicester::TestNodes::CartesianProduct(MatrixXd grid)
+{
+	int product = 1;
+	int dimensions = grid.cols();
+
+	for (int n = 0; n < dimensions; n++)
+		product *= grid.rows();
+
+	MatrixXd TXYZNodes(product, dimensions);
+	
+	for (int dimension = 0; dimension < dimensions; dimension++)
+	{
+		int dups = 1;
+		if (grid.cols() > dimension + 1)
+			dups = grid.col(dimension + 1).rows();
+		TXYZNodes.col(dimension) = Replicate(grid.col(dimension), product, dups);
+	
+	}
+
+	return TXYZNodes;
 }
 
 VectorXd Leicester::TestNodes::Replicate(VectorXd v, int totalLength, int dup)

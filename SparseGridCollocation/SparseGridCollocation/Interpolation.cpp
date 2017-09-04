@@ -96,13 +96,13 @@ void Leicester::Interpolation::interpolateGenericND(string prefix, double coef, 
 	//cout << "N.rows()=" << N.rows() << endl;
 	for (int i = 0; i < N.rows(); i++)
 	{
-		threads.push_back(std::thread(&Interpolation::shapelambdaNDGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
-		//shapelambdaNDGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
+		//threads.push_back(std::thread(&Interpolation::shapelambdaNDGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
+		shapelambdaNDGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
 	}
 
 	
-	for (int i = 0; i < threads.size(); i++)
-		threads.at(i).join();
+	//for (int i = 0; i < threads.size(); i++)
+	//	threads.at(i).join();
 
 	vector<MatrixXd> l;
 	vector<MatrixXd> tx;
@@ -164,7 +164,8 @@ MatrixXd Leicester::Interpolation::subnumber(int b, int d)
 
 			if (L.rows() > 0)
 			{
-				l.block(0, 0, l.rows() - 1, l.cols()) = L;
+				//l.block(0, 0, l.rows() - 1, l.cols()) = L;
+				l.block(0, 0, L.rows(), L.cols()) = L;
 			}
 			L = l;
 		}
@@ -341,16 +342,24 @@ void Leicester::Interpolation::shapelambdaNDGeneric(string prefix, int threadId,
 
 	double num = N.prod();
 
-	MatrixXd cha = inx2 - inx1;
+	MatrixXd cha(1, 1 + inx2.cols());
+	cha.block(0,1,1,inx2.cols()) = inx2 - inx1;
+	cha(0, 0) = tsec;
 	MatrixXd c = coef * cha;
-	c(0, 0) = coef * tsec;
+	
 	MatrixXd a = N.array() - 1;
 		
-	MatrixXd TXYZ = TestNodes::GenerateTestNodes(0, tsec, inx1, inx2, N, coef);
-
+	MatrixXd TXYZ = TestNodes::GenerateTestNodes(0, tsec, inx1.transpose(), inx2.transpose(), N, coef);
+	//Common::saveArray(TXYZ, "TXYZ.txt");
 	vector<MatrixXd> mqd = RBF::GaussianND(TXYZ, TXYZ, a, c);
+	//Common::saveArray(mqd[0], "mqd0.txt");
+	//Common::saveArray(mqd[1], "mqd1.txt");
+	//Common::saveArray(mqd[2], "mqd2.txt");
+	//Common::saveArray(mqd[3], "mqd3.txt");
 	
 	MatrixXd P = mqd[1] + (sigma * sigma) * mqd[3] / 2 + r * mqd[2] - r * mqd[0];
+	//if (prefix.compare("4") == 0)
+	//	Common::saveArray(P, "P.txt");
 
 	VectorXd u = MatrixXd::Zero(num, 1);
 	
@@ -363,7 +372,7 @@ void Leicester::Interpolation::shapelambdaNDGeneric(string prefix, int threadId,
 		u -= PDE::BlackScholesNd(TXYZ, r, sigma, k, state);
 	}
 
-	//if (prefix.compare("5") == 0)
+	//if (prefix.compare("4") == 0)
 	//	Common::saveArray(u, "u.txt");
 
 	for (int i = 0; i < num; i++)
@@ -372,8 +381,8 @@ void Leicester::Interpolation::shapelambdaNDGeneric(string prefix, int threadId,
 		double upper = 0.0;
 		for (int j = 1; j < TXYZ.cols(); j ++ ) //if ANY node is on a spatial dimensional boundary then our product should be zero
 		{
-			double diff1 = abs(TXYZ(i, j) - inx1(0, j));
-			double diff2 = abs(TXYZ(i, j) - inx2(0, j));
+			double diff1 = abs(TXYZ(i, j) - inx1(0, j-1));
+			double diff2 = abs(TXYZ(i, j) - inx2(0, j-1));
 			if (j == 1)
 			{
 				lower = diff1;
@@ -436,11 +445,12 @@ void Leicester::Interpolation::shapelambdaNDGeneric(string prefix, int threadId,
 		}
 	}
 
-	//if (prefix.compare("5") == 0)
+	//if (prefix.compare("4") == 0)
 	//	Common::saveArray(u, "u.txt");
 
 	MatrixXd tx = TXYZ;
 	
+	//wcout << Common::printMatrix(P) << endl;
 	PartialPivLU<MatrixXd> lu = PartialPivLU<MatrixXd>(P);
 	
 	MatrixXd J = lu.matrixLU().triangularView<UpLoType::Upper>();
@@ -467,5 +477,6 @@ void Leicester::Interpolation::shapelambdaNDGeneric(string prefix, int threadId,
 	C[threadId] = c;
 	A[threadId] = a;
 	U[threadId] = u;
+	//Common::saveArray(l, "l.txt");
 
 }

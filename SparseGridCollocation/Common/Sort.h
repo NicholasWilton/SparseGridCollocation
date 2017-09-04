@@ -25,7 +25,7 @@ Eigen::Matrix<Scalar, rows, cols, options, maxRows, maxCols> sortMatrix(
 		compareRows<Eigen::Matrix<Scalar, 1, cols>>
 	);
 
-	Eigen::Matrix<Scalar, rows, cols, options, maxRows, maxCols> sorted;
+	Eigen::Matrix<Scalar, rows, cols, options, maxRows, maxCols> sorted(target.rows(), target.cols());
 	for (unsigned int i = 0; i < matrixRows.size(); i++)
 		sorted.row(i) = matrixRows[i];
 	return sorted;

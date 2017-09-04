@@ -6,6 +6,8 @@
 #include "testCommon.h"
 #include "Common.h"
 #include "InterTest.h"
+#include "Sort.h"
+#include "MoL.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace Eigen;
@@ -17,6 +19,27 @@ namespace UnitTest
 	{
 	public:
 
+		TEST_METHOD(testSort)
+		{
+			MatrixXd m(3, 2);
+			m << 1, 2, 3, 4, 5, 6;
+			MatrixXd n = sortMatrix(m);
+			Logger::WriteMessage(Common::printMatrix(n).c_str());
+		}
+
+		TEST_METHOD(testTakeMeans)
+		{
+			MatrixXd m(6, 2);
+			m << 
+				1.0, 2.0, 
+				1.0, 4.0, 
+				5.0, 6.0, 
+				5.0, 7.0,
+				6.0, 1.0,
+				6.0, 1.0;
+			MatrixXd n = MoL::TakeMeans(m);
+			Logger::WriteMessage(Common::printMatrix(n).c_str());
+		}
 
 		TEST_METHOD(testMuSIKcGeneric)
 		{

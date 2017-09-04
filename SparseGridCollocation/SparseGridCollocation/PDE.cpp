@@ -67,21 +67,21 @@ MatrixXd Leicester::PDE::BlackScholesNd(const MatrixXd &node, double r, double s
 		ss << "PDE." << key;
 		for (int j = 0; j < ch2; j++)
 		{
-			stringstream ssj;
-			ssj << ss.str() << "." << j;
-			stringstream ssk;
-			ssk << ssj.str() << ".node.txt";
+			//stringstream ssj;
+			//ssj << ss.str() << "." << j;
+			//stringstream ssk;
+			//ssk << ssj.str() << ".node.txt";
 			//Common::saveArray(node, ssk.str());
-			ssk.str(string());
-			ssk << ssj.str() << ".item1.txt";
+			//ssk.str(string());
+			//ssk << ssj.str() << ".item1.txt";
 			//Common::saveArray(item[1][j], ssk.str());
-			MatrixXd m = item[1][j];
+			//MatrixXd m = item[1][j];
 			//wcout << Common::printMatrix(m) << endl;
-			ssk.str(string());
-			ssk << ssj.str() << ".item2.txt";
+			//ssk.str(string());
+			//ssk << ssj.str() << ".item2.txt";
 			//Common::saveArray(item[2][j], ssk.str());
-			ssk.str(string());
-			ssk << ssj.str() << ".item3.txt";
+			//ssk.str(string());
+			//ssk << ssj.str() << ".item3.txt";
 			//Common::saveArray(item[3][j], ssk.str());
 
 			vector<MatrixXd> mqd = RBF::GaussianND(node, item[1][j], item[3][j], item[2][j]);
@@ -90,13 +90,14 @@ MatrixXd Leicester::PDE::BlackScholesNd(const MatrixXd &node, double r, double s
 			//Common::saveArray(mqd[2], "mqd2.txt");
 			//Common::saveArray(mqd[3], "mqd3.txt");
 
-			MatrixXd a = mqd[1] * item[0][j]; // lambda * dV/dt
-			MatrixXd b = (pow(sigma, 2) / 2) * mqd[3] * item[0][j]; // 1/2 sum-i sum-j sigma^2 rho-ij Si Sj d2V/dSi dSj
-			MatrixXd c = r * mqd[2] * item[0][j]; // sum-i (r - q-i) Si dV/dSi
-			MatrixXd d = r * mqd[0] * item[0][j]; //rV
-			U.col(j) = a + b + c - d;
-			ssk.str(string());
-			ssk << ssj.str() << ".ucolj.txt";
+			//MatrixXd a = mqd[1] * item[0][j]; // lambda * dV/dt
+			//MatrixXd b = (pow(sigma, 2) / 2) * mqd[3] * item[0][j]; // 1/2 sum-i sum-j sigma^2 rho-ij Si Sj d2V/dSi dSj
+			//MatrixXd c = r * mqd[2] * item[0][j]; // sum-i (r - q-i) Si dV/dSi
+			//MatrixXd d = r * mqd[0] * item[0][j]; //rV
+			//U.col(j) = a + b + c - d;
+			U.col(j) = (mqd[1] * item[0][j]) + ((pow(sigma, 2) / 2) * mqd[3] * item[0][j]) + (r * mqd[2] * item[0][j]) - (r * mqd[0] * item[0][j]);
+			//ssk.str(string());
+			//ssk << ssj.str() << ".ucolj.txt";
 			//Common::saveArray(U.col(j), ssk.str());
 		}
 		Us.push_back(U);

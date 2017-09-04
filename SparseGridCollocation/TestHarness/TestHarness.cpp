@@ -458,16 +458,20 @@ int main(){
 	Params p;
 	p.T = 1.0;
 	p.Tdone = 0.0;
-	p.Tend = 0.2 * p.T;
+	p.Tend = 0.5 * p.T;
 	p.dt = 1.0 / 1000.0;
 	p.K = 100.0;
 	p.r = 0.03;
 	p.sigma = 0.15;
 	p.theta = 0.5;
-	p.inx1 = VectorXd::Zero(1);
-	VectorXd inx2(1);
-	inx2(0) = 3.0 * p.K;
+	//Set this to vary dimensions:
+	int assets = 2;
+	p.inx1 = VectorXd::Zero(assets);
+	VectorXd inx2(assets);
+	inx2.fill(3.0 * p.K);
 	p.inx2 = inx2;
+	MatrixXd correlation = MatrixXd::Identity(assets, assets);
+	
 
 	VectorXd x = VectorXd::LinSpaced(10000, p.inx1[0], p.inx2[0]);
 	VectorXd t = VectorXd::LinSpaced(10000, 0, 1);
@@ -481,18 +485,15 @@ int main(){
 	Common::saveArray(x, "S0.txt");
 	//QuantlibBenchMark(p, x);
 
-	MatrixXd correlation = MatrixXd::Identity(2, 2);
+
 	vector<l::Option> portfolio = { EuropeanCallOption(100.0, 1), EuropeanCallOption(200.0, 1) };
 	l::BasketOption option(100.0,1,correlation);
 	SparseGridCollocation* test = new SparseGridCollocation();
 
 	vector<MatrixXd> MuSiKcBasket = test->MuSIKcND(10, 0, option, p);
-	vector<MatrixXd> MuSiKc = test->MuSIKc(10, 0, p);
+	//vector<MatrixXd> MuSiKc = test->MuSIKc(10, 0, p);
 	
-	//vector<MatrixXd> MuSiKcBasket = test->MuSIKcND(6, 0, option, p);
-	//vector<MatrixXd> MuSiKc = test->MuSIKc(6, 0, p);
-
-	//vector<MatrixXd> SiKc = test->SIKc(12, 0, p);
+	
 
 	//wcout << "MuSIK-c ND result:" << endl;
 	//wcout << Common::printMatrix(result[0]) << endl;
@@ -505,23 +506,23 @@ int main(){
 
 	//wcout << "MuSIK-c result:" << endl;
 	//wcout << Common::printMatrix(result[0]) << endl;
-	wcout << "MuSIK-c RMS error:" << endl;
-	wcout << Common::printMatrix(MuSiKc[1]) << endl;
-	wcout << "MuSIK-c MAX error:" << endl;
-	wcout << Common::printMatrix(MuSiKc[2]) << endl;
-	wcout << getchar() << endl;
+	//wcout << "MuSIK-c RMS error:" << endl;
+	//wcout << Common::printMatrix(MuSiKc[1]) << endl;
+	//wcout << "MuSIK-c MAX error:" << endl;
+	//wcout << Common::printMatrix(MuSiKc[2]) << endl;
+	//wcout << getchar() << endl;
 
-	wcout << "MuSIK-c vs MuSIK-c basket:" << endl;
-	Common::checkMatrix(MuSiKc[0], MuSiKcBasket[0]);
-	Common::saveArray(MuSiKc[0], "MuSiKc.txt");
-	Common::saveArray(MuSiKcBasket[0], "MuSiKcBasket.txt");
+	//wcout << "MuSIK-c vs MuSIK-c basket:" << endl;
+	//Common::checkMatrix(MuSiKc[0], MuSiKcBasket[0]);
+	//Common::saveArray(MuSiKc[0], "MuSiKc.txt");
+	//Common::saveArray(MuSiKcBasket[0], "MuSiKcBasket.txt");
 
 	//wcout << "SIK-c RMS error:" << endl;
 	//wcout << Common::printMatrix(SiKc[1]) << endl;
 	//wcout << "SIK-c MAX error:" << endl;
 	//wcout << Common::printMatrix(SiKc[2]) << endl;
 
-	wcout << getchar() << endl;
+	//wcout << getchar() << endl;
 
 
 /*

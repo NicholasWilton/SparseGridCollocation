@@ -64,13 +64,13 @@ namespace UnitTest
 			VectorXd inx2(1);
 			inx2[0] = 6.0 * K;
 			MatrixXd Corr = MatrixXd::Zero(1, 1);
-			vector<vector<VectorXd>> result = MoL::MethodOfLinesND(T, Tdone, Tend, dt, K, r, sigma, theta, inx1, inx2, Corr);
+			SmoothInitial result = MoL::MethodOfLinesND(T, Tdone, Tend, dt, K, r, sigma, theta, inx1, inx2, Corr);
 
 			VectorXd uX = SmoothInitialX::X();
 			VectorXd uU = SmoothInitialU::U();
 
-			Assert::IsTrue(testCommon::checkMatrix(uX, result[0][0], 0.0000001));
-			Assert::IsTrue(testCommon::checkMatrix(uU, result[0][1], 0.0000001));
+			Assert::IsTrue(testCommon::checkMatrix(uX, result.S, 0.0000001));
+			Assert::IsTrue(testCommon::checkMatrix(uU, result.U, 0.0000001));
 
 
 		}

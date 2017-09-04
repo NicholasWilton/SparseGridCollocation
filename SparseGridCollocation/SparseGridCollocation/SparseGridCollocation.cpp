@@ -507,7 +507,6 @@ vector<MatrixXd> Leicester::SparseGridCollocation::MuSIKcND(int upper, int lower
 	cout << "N-Dimensional MuSiK-c with levels " << lower << " to " << upper << endl;
 	cout << "Parameters:" << endl;
 	cout << setprecision(16) << "T=" << p.T << endl;
-	cout << setprecision(16) << "Tdone=" << p.Tdone << endl;
 	cout << setprecision(16) << "Tend=" << p.Tend << endl;
 	cout << setprecision(16) << "dt=" << p.dt << endl;
 	cout << setprecision(16) << "K=" << p.K << endl;
@@ -527,6 +526,8 @@ vector<MatrixXd> Leicester::SparseGridCollocation::MuSIKcND(int upper, int lower
 	SmoothInitialU::u = smoothinitial.U;
 
 	p.Tdone = smoothinitial.T;
+	//p.Tdone = 0.1350;
+	cout << setprecision(16) << "Tdone=" << p.Tdone << endl;
 	p.inx1 = old1;
 	p.inx2 = old2;
 
@@ -542,8 +543,8 @@ vector<MatrixXd> Leicester::SparseGridCollocation::MuSIKcND(int upper, int lower
 	double r = p.r; // interest rate
 	double sigma = p.sigma;
 	double T = p.T; // Maturity
-	MatrixXd inx1(1, dimensions);
-	MatrixXd inx2(1, dimensions);
+	MatrixXd inx1(1, option.Underlying);
+	MatrixXd inx2(1, option.Underlying);
 	for (int col = 0; col < inx1.cols(); col++)
 	{
 		inx1(0,col) = p.inx1[col];
@@ -560,7 +561,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::MuSIKcND(int upper, int lower
 	MatrixXd TestGrid(ch, dimensions);
 	TestGrid.col(0) = VectorXd::Zero(ch);
 	for (int d = 1; d < dimensions; d++)
-		TestGrid.col(d) = VectorXd::LinSpaced(ch, inx1(0, d), inx2(0, d));
+		TestGrid.col(d) = VectorXd::LinSpaced(ch, inx1(0, d-1), inx2(0, d-1));
 
 	int lvl = dimensions;
 
@@ -580,7 +581,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::MuSIKcND(int upper, int lower
 		string key = ss.str();
 		{
 			Interpolation i;
-			i.interpolateGenericND(key, coef, tsec, n, d, inx1, inx2, r, sigma, T, E, level, &interpolation);
+			i.interpolateGenericND(key, coef, tsec, n, dimensions, inx1, inx2, r, sigma, T, E, level, &interpolation);
 			interpolation[key] = i.getResult();
 		}
 		newKeys.push_back(key);
@@ -593,7 +594,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::MuSIKcND(int upper, int lower
 			string key = ss.str();
 			{
 				Interpolation i;
-				i.interpolateGenericND(key, coef, tsec, n, d, inx1, inx2, r, sigma, T, E, level, &interpolation);
+				i.interpolateGenericND(key, coef, tsec, n, dimensions, inx1, inx2, r, sigma, T, E, level, &interpolation);
 				interpolation[key] = i.getResult();
 			}
 			newKeys.push_back(key);
@@ -620,7 +621,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::MuSIKcND(int upper, int lower
 			string key = ss1.str();
 			{
 				Interpolation i;
-				i.interpolateGenericND(key, coef, tsec, n, d, inx1, inx2, r, sigma, T, E, level, &interpolation);
+				i.interpolateGenericND(key, coef, tsec, n, dimensions, inx1, inx2, r, sigma, T, E, level, &interpolation);
 				interpolation[key] = i.getResult();
 			}
 			newKeys.push_back(key);
@@ -632,7 +633,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::MuSIKcND(int upper, int lower
 				string key = ss2.str();
 				{
 					Interpolation i;
-					i.interpolateGenericND(key, coef, tsec, n, d, inx1, inx2, r, sigma, T, E, level, &interpolation);
+					i.interpolateGenericND(key, coef, tsec, n, dimensions, inx1, inx2, r, sigma, T, E, level, &interpolation);
 					interpolation[key] = i.getResult();
 				}
 				newKeys.push_back(key);

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "BasketOption.h"
 #include "Distributions.h"
+#include "TestNodes.h"
 
 
 Leicester::BasketOption::BasketOption()
@@ -32,7 +33,7 @@ VectorXd Leicester::BasketOption::PayOffFunction(MatrixXd S)
 
 VectorXd Leicester::BasketOption::PayOffS(MatrixXd S)
 {
-	return S.rowwise().mean().array() - this->Strike;
+	return S.rowwise().mean().array();
 }
 
 MatrixXd Leicester::BasketOption::NodesAroundStrike(const MatrixXd &X, double strike, double radius)
@@ -56,10 +57,41 @@ MatrixXd Leicester::BasketOption::NodesAroundStrike(const MatrixXd &X, double st
 	int count = 0;
 	for (auto i : nonzero)
 	{
-		selected.row(count) = result.row(0);
+		selected.row(count) = result.row(i);
 		count++;
 	}
 	return selected;
+}
+
+MatrixXd Leicester::BasketOption::NodesAroundStrikeFromGrid(const MatrixXd &X, double strike, double radius)
+{
+	double range = strike * radius;
+	MatrixXd lower(X.rows(), X.cols());
+	lower.fill(strike - range);
+	MatrixXd upper(X.rows(), X.cols());
+	upper.fill(strike + range);
+	MatrixXd zero = MatrixXd::Zero(X.rows(), X.cols());
+
+	MatrixXd X1 = (X.array() >= lower.array()).select(X, zero);
+	MatrixXd X2 = (X.array() <= upper.array()).select(X1, zero);
+
+	vector<int> nonzero;
+	for (int row = 0; row < X2.rows(); row++)
+	{
+		if (X2.row(row).sum() != 0)
+			nonzero.push_back(row);
+	}
+
+	MatrixXd selected(nonzero.size(), X.cols());
+	int count = 0;
+	for (auto i : nonzero)
+	{
+		selected.row(count) = X2.row(i);
+		count++;
+	}
+
+	MatrixXd result = TestNodes::CartesianProduct(selected);
+	return result;
 }
 
 MatrixXd Leicester::BasketOption::Price(const MatrixXd &X, double r, double sigma)

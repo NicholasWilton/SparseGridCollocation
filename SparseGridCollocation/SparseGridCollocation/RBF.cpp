@@ -111,6 +111,7 @@ vector<MatrixXd> Leicester::RBF::GaussianND(const MatrixXd &TP, const MatrixXd &
 			VectorXd a1 = A(0, d)*(TP.col(d).array() - CN(j, d));
 			VectorXd b1 = -(a1.array() * a1.array()) / (C(0, d) *C(0, d));
 			VectorXd FAI = b1.array().exp();
+			//wcout << Common::printMatrix(FAI) << endl;
 			Derivatives[0].col(j).array() *= FAI.array();
 			FAIn.push_back(FAI);
 		}
@@ -462,7 +463,7 @@ vector<vector<MatrixXd>> Leicester::RBF::MultiQuadricND(const MatrixXd &TP, cons
 		}
 	}
 
-	return { {D}, D_first, D_second_half, D_second_diag };
+	return { {D}, D_first, D_second_diag, D_second_half };
 }
 
 VectorXd Leicester::RBF::PhiProduct(vector<VectorXd> PhiN, int n)
