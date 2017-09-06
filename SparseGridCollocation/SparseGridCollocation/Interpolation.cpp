@@ -8,6 +8,7 @@
 #include "Test.h"
 #include "TestNodes.h"
 #include <thread>
+#include "./kernel.h"
 
 
 //#include "CppUnitTest.h"
@@ -55,13 +56,13 @@ void Leicester::Interpolation::interpolateGeneric(string prefix, double coef, do
 	//cout << "N.rows()=" << N.rows() << endl;
 	for (int i = 0; i < N.rows(); i++)
 	{
-		threads.push_back(std::thread(&Interpolation::shapelambda2DGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
-		//shapelambda2DGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
+		//threads.push_back(std::thread(&Interpolation::shapelambda2DGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
+		shapelambda2DGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
 	}
 
 
-	for (int i = 0; i < threads.size(); i++)
-		threads.at(i).join();
+	/*for (int i = 0; i < threads.size(); i++)
+		threads.at(i).join();*/
 
 	vector<MatrixXd> l;
 	vector<MatrixXd> tx;
@@ -96,8 +97,8 @@ void Leicester::Interpolation::interpolateGenericND(string prefix, double coef, 
 	//cout << "N.rows()=" << N.rows() << endl;
 	for (int i = 0; i < N.rows(); i++)
 	{
-		threads.push_back(std::thread(&Interpolation::shapelambdaNDGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
-		//shapelambdaNDGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
+		//threads.push_back(std::thread(&Interpolation::shapelambdaNDGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
+		shapelambdaNDGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
 	}
 
 	
@@ -240,8 +241,11 @@ void Leicester::Interpolation::shapelambda2DGeneric(string prefix, int threadId,
 
 	MatrixXd TX1(XXX.rows() * XXX.cols(), 2);
 	TX1 << xxx, yyy;
-
+	//wcout << Common::printMatrix(TX1) << endl;
 	vector<MatrixXd> mqd = RBF::Gaussian2D(TX1, TX1, a, c);
+	vector<MatrixXd> mqdc = CudaRBF::Gaussian2D(TX1, TX1, a, c);
+	wcout << Common::printMatrix(mqd[0]) << endl;
+	wcout << Common::printMatrix(mqdc[0]) << endl;
 	MatrixXd FAI = mqd[0];
 	MatrixXd FAI_t = mqd[1];
 	MatrixXd FAI_x = mqd[2];

@@ -91,7 +91,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Users\User\Downloads\QuantLib-1.10\QuantLib-1.10;C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\Common;C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\TestData;C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\SparseGridCollocation;c:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\VS\UnitTest\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\User\Downloads\QuantLib-1.10\QuantLib-1.10;$(SolutionDir)\Common;$(SolutionDir)\TestData;$(SolutionDir)\SparseGridCollocation;c:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\VS\UnitTest\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
@@ -197,9 +197,6 @@
     <ClCompile Include="TestHarness.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\CudaLib\CudaLib.vcxproj">
-      <Project>{3397b60d-eedd-48de-8c0b-45ed96dcca57}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\Common\Common.vcxproj">
       <Project>{87f0fd5e-85c9-4944-a7af-2bcae1ce165b}</Project>
     </ProjectReference>

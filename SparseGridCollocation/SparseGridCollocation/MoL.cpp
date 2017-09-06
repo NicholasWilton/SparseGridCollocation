@@ -30,16 +30,21 @@ Leicester::MoL::~MoL()
 vector<VectorXd> Leicester::MoL::MethodOfLines(Params p)
 {
 	stringstream ssX;
-	ssX << setprecision(16) << "SmoothInitial_EuroCall_" << p.T << "_" << p.Tdone << "_" << p.Tend << "_" << p.dt << "_" << p.K << "_" << p.r << "_" << p.sigma << "_" << p.theta << "_" << p.inx1[0] << "_" << p.inx2 << "_X.dat";
+	ssX << setprecision(16) << "SmoothInitial_EuroCall_" << p.T << "_" << p.Tdone << "_" << p.Tend << "_" << p.dt << "_" << p.K << "_" << p.r << "_" << p.sigma << "_" << p.theta << "_" << p.inx1[0] << "_" << p.inx2[0] << "_X.dat";
 	stringstream ssU;
-	ssU << setprecision(16) << "SmoothInitial_EuroCall_" << p.T << "_" << p.Tdone << "_" << p.Tend << "_" << p.dt << "_" << p.K << "_" << p.r << "_" << p.sigma << "_" << p.theta << "_" << p.inx1[0] << "_" << p.inx2 << "_U.dat";
+	ssU << setprecision(16) << "SmoothInitial_EuroCall_" << p.T << "_" << p.Tdone << "_" << p.Tend << "_" << p.dt << "_" << p.K << "_" << p.r << "_" << p.sigma << "_" << p.theta << "_" << p.inx1[0] << "_" << p.inx2[0] << "_U.dat";
+	stringstream ssT;
+	ssT << setprecision(16) << "SmoothInitial_EuroCall_" << p.T << "_" << p.Tdone << "_" << p.Tend << "_" << p.dt << "_" << p.K << "_" << p.r << "_" << p.sigma << "_" << p.theta << "_" << p.inx1[0] << "_" << p.inx2[0] << "_T.dat";
+
 
 	string fileX = ssX.str();
 	ifstream x(fileX.c_str());
 	string fileU = ssU.str();
 	ifstream u(fileU.c_str());
+	string fileT = ssT.str();
+	ifstream t(fileU.c_str());
 
-	if (x.good() & u.good())
+	if (x.good() & u.good() & t.good())
 	{
 		x.close();
 		MatrixXd mX = Common::ReadBinary(fileX, 32769, 1);
@@ -47,13 +52,17 @@ vector<VectorXd> Leicester::MoL::MethodOfLines(Params p)
 		u.close();
 		MatrixXd mU = Common::ReadBinary(fileU, 32769, 1);
 		VectorXd U(Map<VectorXd>(mU.data(), mU.cols()*mU.rows()));
-		return { X, U };
+		t.close();
+		MatrixXd mT = Common::ReadBinary(fileT, 1, 1);
+		VectorXd T(Map<VectorXd>(mT.data(), mT.cols()*mT.rows()));
+		return { X, U, T };
 	}
 	else
 	{
 		vector<VectorXd> smoothInitial = MethodOfLines(p.T, p.Tdone, p.Tend, p.dt, p.K, p.r, p.sigma, p.theta, p.inx1[0], p.inx2[0]);
 		Common::WriteToBinary(fileX, smoothInitial[0]);
 		Common::WriteToBinary(fileU, smoothInitial[1]);
+		Common::WriteToBinary(fileT, smoothInitial[2]);
 		return smoothInitial;
 	}
 
@@ -67,6 +76,7 @@ vector<VectorXd> Leicester::MoL::MethodOfLines(double T, double Tdone, double Te
 	VectorXd x = price[0];
 	VectorXd lamb = price[1];
 	VectorXd c = price[2];
+	VectorXd t = price[3];
 	double Smin = 0;
 	double Smax = 3 * K;
 	double twoPower15Plus1 = pow(2, 15) + 1;
@@ -82,7 +92,7 @@ vector<VectorXd> Leicester::MoL::MethodOfLines(double T, double Tdone, double Te
 
 	VectorXd U_ini = phi * lamb;
 
-	return { X_ini, U_ini };
+	return { X_ini, U_ini,t };
 }
 
 vector<VectorXd> Leicester::MoL::EuroCallOption1D(double T, double Tdone, double Tend, double dt, double K, double r, double sigma, double theta, double inx1, double inx2)
@@ -167,11 +177,11 @@ vector<VectorXd> Leicester::MoL::EuroCallOption1D(double T, double Tdone, double
 
 
 	MatrixXd P = a * r - 0.5 * (sigma * sigma) * d2 - r * d1;
-	Common::saveArray(P, "P.txt");
+	//Common::saveArray(P, "P.txt");
 	MatrixXd H = a + dt * (1 - theta)* P;
-	Common::saveArray(H, "H.txt");
+	//Common::saveArray(H, "H.txt");
 	MatrixXd G = a - dt * theta * P;
-	Common::saveArray(G, "G.txt");
+	//Common::saveArray(G, "G.txt");
 
 	int count = 0;
 	cout << "MoL Iterative solver\r\n";
@@ -253,9 +263,11 @@ vector<VectorXd> Leicester::MoL::EuroCallOption1D(double T, double Tdone, double
 		count++;
 
 	}
-	cout << "Total Iterations:" << count << "\r\n";
-	return { x, lamb, c };
-
+	VectorXd t(1);
+	t(0) = Tdone;
+	vector<VectorXd> res = { x, lamb, c, t };
+	cout << "\r\n" << "Total Iterations:" << count << "\r\n";
+	return res;
 
 }
 
@@ -286,17 +298,17 @@ SmoothInitial Leicester::MoL::MethodOfLinesND(Params p, MatrixXd correlation)
 	if (x.good() & u.good() & t.good())
 	{
 		x.close();
-		//MatrixXd mX = Common::ReadBinary(fileX, 32769, correlation.rows());
-		//VectorXd X(Map<VectorXd>(mX.data(), mX.cols()*mX.rows()));
+		MatrixXd mX = Common::ReadBinary(fileX, 32769, correlation.rows());
+		VectorXd X(Map<VectorXd>(mX.data(), mX.cols()*mX.rows()));
 		u.close();
-		//MatrixXd mU = Common::ReadBinary(fileU, 32769, correlation.rows());
-		//VectorXd U(Map<VectorXd>(mU.data(), mU.cols()*mU.rows()));
+		MatrixXd mU = Common::ReadBinary(fileU, 32769, correlation.rows());
+		VectorXd U(Map<VectorXd>(mU.data(), mU.cols()*mU.rows()));
 		t.close();
 		MatrixXd mT = Common::ReadBinary(fileT, 1, 1);
 		VectorXd T(Map<VectorXd>(mT.data(), mT.cols()*mT.rows()));
 		SmoothInitial result;
-		//result.S = X;
-		//result.U = U;
+		result.S = X;
+		result.U = U;
 		result.T = T[0];
 		return result;
 	}
@@ -575,7 +587,7 @@ SmoothInitial Leicester::MoL::EuroCallOptionND(double T, double Tdone, double Te
 		count++;
 
 	}
-	cout << "Total Iterations:" << count << "\r\n";
+	cout << "\r\n" << "Total Iterations:" << count << "\r\n";
 	//vector<MatrixXd> res = { testNodes, lamb, c };
 	//result.push_back(res);
 	
@@ -829,7 +841,9 @@ vector<vector<VectorXd>> Leicester::MoL::EuroCallOptionND_ODE(double T, double T
 
 	}
 	cout << "Total Iterations:" << count << "\r\n";
-	vector<VectorXd> res = { X.col(n), lamb, c };
+	VectorXd t(1);
+	t(0) =  Tdone;
+	vector<VectorXd> res = { X.col(n), lamb, c, t };
 	result.push_back(res);
 
 	return result;

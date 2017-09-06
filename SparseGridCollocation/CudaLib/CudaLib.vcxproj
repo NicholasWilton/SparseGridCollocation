@@ -94,7 +94,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
     <CudaCompile>
       <CodeGeneration>compute_35,sm_35</CodeGeneration>
-      <Include>$(ProjectDir)cuda_include;%(Include)</Include>
+      <Include>$(SolutionDir)CudaLib\cuda_include;%(Include)</Include>
       <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
     </CudaCompile>
   </ItemDefinitionGroup>
@@ -115,7 +115,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
-      <Include>$(ProjectDir)cuda_include;%(Include)</Include>
+      <Include>$(SolutionDir)CudaLib\cuda_include;%(Include)</Include>
       <CodeGeneration>compute_35,sm_35</CodeGeneration>
       <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
     </CudaCompile>
@@ -141,7 +141,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
     <CudaCompile>
       <CodeGeneration>compute_35,sm_35</CodeGeneration>
-      <Include>$(ProjectDir)cuda_include;%(Include)</Include>
+      <Include>$(SolutionDir)CudaLib\cuda_include;%(Include)</Include>
       <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
     </CudaCompile>
   </ItemDefinitionGroup>
@@ -166,7 +166,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
-      <Include>$(ProjectDir)cuda_include;%(Include)</Include>
+      <Include>$(SolutionDir)CudaLib\cuda_include;%(Include)</Include>
       <CodeGeneration>compute_35,sm_35</CodeGeneration>
       <GenerateRelocatableDeviceCode>true</GenerateRelocatableDeviceCode>
     </CudaCompile>

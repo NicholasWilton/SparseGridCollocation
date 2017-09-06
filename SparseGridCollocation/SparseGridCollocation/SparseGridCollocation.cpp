@@ -262,8 +262,8 @@ vector<MatrixXd> Leicester::SparseGridCollocation::MuSIKc(int upper, int lower, 
 	vector<VectorXd> smoothinitial = MoL::MethodOfLines(p);
 	SmoothInitialX::x = smoothinitial[0].head(smoothinitial[0].rows());
 	SmoothInitialU::u = smoothinitial[1].head(smoothinitial[1].rows());
-
-	p.Tdone = 0.1350;
+	p.Tdone = smoothinitial[2][0];
+	//p.Tdone = 0.1350;
 	p.inx1[0] = old1;
 	p.inx2[0] = old2;
 

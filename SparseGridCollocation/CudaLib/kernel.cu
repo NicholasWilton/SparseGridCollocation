@@ -138,29 +138,29 @@ vector<MatrixXd> CudaRBF::Gaussian2D(const MatrixXd &TP, const MatrixXd &CN, con
 	cn = CN.data();
 	double *d_a, *d_c, *d_tx, *d_cn;
 
-	cudaError_t e = cudaMalloc((void **)&d_a, 2 * sizeof(double));
+	cudaError_t e = cudaMalloc((void **)&d_a, A.rows() * A.cols() * sizeof(double));
 	if (e != cudaSuccess)
 		printf("cudaMalloc d_a returned error %s (code %d), line(%d)\n", cudaGetErrorString(e), e, __LINE__);
-	e = cudaMalloc((void **)&d_c, 2 * sizeof(double));
+	e = cudaMalloc((void **)&d_c, C.rows() * C.cols() * sizeof(double));
 	if (e != cudaSuccess)
 		printf("cudaMalloc d_c returned error %s (code %d), line(%d)\n", cudaGetErrorString(e), e, __LINE__);
-	e = cudaMalloc((void **)&d_tx, 30 * sizeof(double));
+	e = cudaMalloc((void **)&d_tx, TP.rows() * TP.cols() * sizeof(double));
 	if (e != cudaSuccess)
 		printf("cudaMalloc d_tx returned error %s (code %d), line(%d)\n", cudaGetErrorString(e), e, __LINE__);
-	e = cudaMalloc((void **)&d_cn, 30 * sizeof(double));
+	e = cudaMalloc((void **)&d_cn, CN.rows() * CN.cols() * sizeof(double));
 	if (e != cudaSuccess)
 		printf("cudaMalloc d_tx1 returned error %s (code %d), line(%d)\n", cudaGetErrorString(e), e, __LINE__);
 
-	e = cudaMemcpy(d_a, a, sizeof(double) * 2, cudaMemcpyKind::cudaMemcpyHostToDevice);
+	e = cudaMemcpy(d_a, a, sizeof(double) * A.rows() * A.cols(), cudaMemcpyKind::cudaMemcpyHostToDevice);
 	if (e != cudaSuccess)
 		printf("cudaMemcpy d_a returned error %s (code %d), line(%d)\n", cudaGetErrorString(e), e, __LINE__);
-	e = cudaMemcpy(d_c, c, sizeof(double) * 2, cudaMemcpyKind::cudaMemcpyHostToDevice);
+	e = cudaMemcpy(d_c, c, sizeof(double) * C.rows() * C.cols(), cudaMemcpyKind::cudaMemcpyHostToDevice);
 	if (e != cudaSuccess)
 		printf("cudaMemcpy d_c returned error %s (code %d), line(%d)\n", cudaGetErrorString(e), e, __LINE__);
-	e = cudaMemcpy(d_tx, tx, sizeof(double) * 30, cudaMemcpyKind::cudaMemcpyHostToDevice);
+	e = cudaMemcpy(d_tx, tx, sizeof(double) * TP.rows() * TP.cols(), cudaMemcpyKind::cudaMemcpyHostToDevice);
 	if (e != cudaSuccess)
 		printf("cudaMemcpy d_tx returned error %s (code %d), line(%d)\n", cudaGetErrorString(e), e, __LINE__);
-	e = cudaMemcpy(d_cn, tx, sizeof(double) * 30, cudaMemcpyKind::cudaMemcpyHostToDevice);
+	e = cudaMemcpy(d_cn, tx, sizeof(double) * CN.rows() * CN.cols(), cudaMemcpyKind::cudaMemcpyHostToDevice);
 	if (e != cudaSuccess)
 		printf("cudaMemcpy d_tx1 returned error %s (code %d), line(%d)\n", cudaGetErrorString(e), e, __LINE__);
 
@@ -182,7 +182,7 @@ vector<MatrixXd> CudaRBF::Gaussian2D(const MatrixXd &TP, const MatrixXd &CN, con
 	dim3 grid(1, 1);
 	//test << < grid, threads >> > ();
 	//cudaDeviceSynchronize();
-
+	printMatrix(tx, dimTx);
 	Gaussian2d_CUDA << < grid, threads >> > (d_result, d_tx, dimTx.x, dimTx.y, d_cn, dimTx.x, dimTx.y, d_a, dimA.x, dimA.y, d_c, dimC.x, dimC.y);
 	//mqd2_CUDA<32>(d_result, d_tx, dimTx.x, dimTx.y, d_tx1, dimTx.x, dimTx.y, d_a, dimA.x, dimA.y, d_c, dimC.x, dimC.y);
 	gpuErrchk<<<1,1>>>(cudaPeekAtLastError());

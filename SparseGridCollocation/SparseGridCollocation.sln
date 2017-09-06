@@ -25,8 +25,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestData", "TestData\TestDa
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Common", "Common\Common.vcxproj", "{87F0FD5E-85C9-4944-A7AF-2BCAE1CE165B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CudaLib", "..\CudaLib\CudaLib.vcxproj", "{3397B60D-EEDD-48DE-8C0B-45ED96DCCA57}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MatLab", "MatLab", "{1F3F6064-1096-4EC0-BA33-344E5D5A8FEE}"
 	ProjectSection(SolutionItems) = preProject
 		Matlab\Readme.txt = Matlab\Readme.txt
@@ -106,6 +104,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MOL to find an earlier time
 		Matlab\Black Scholes\N Assets\MOL to find an earlier time\WriteAllToFile.m = Matlab\Black Scholes\N Assets\MOL to find an earlier time\WriteAllToFile.m
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CudaLib", "CudaLib\CudaLib.vcxproj", "{3397B60D-EEDD-48DE-8C0B-45ED96DCCA57}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dissertation", "Dissertation", "{126C2F95-BB15-4A09-8BC3-0DD4DCA497C5}"
+	ProjectSection(SolutionItems) = preProject
+		..\Dissertation\latex_macros.tex = ..\Dissertation\latex_macros.tex
+		..\Dissertation\MuSiKc_Dissertation.tex = ..\Dissertation\MuSiKc_Dissertation.tex
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -175,5 +181,6 @@ Global
 		{6231745F-5776-4B36-8586-3C9843516800} = {7376ACAD-B7B8-4599-A72B-F8B9E3E81FB1}
 		{10F1A420-F59B-4008-93E5-EBC9E85CAC20} = {50620F68-30A2-4D3C-B40D-A4FE8873E4E6}
 		{B172E9E5-8ECB-44F2-B132-125A7C767A39} = {10F1A420-F59B-4008-93E5-EBC9E85CAC20}
+		{126C2F95-BB15-4A09-8BC3-0DD4DCA497C5} = {4F30216C-C3F2-466C-917B-6B28B0335E88}
 	EndGlobalSection
 EndGlobal

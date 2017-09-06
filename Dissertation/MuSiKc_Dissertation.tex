@@ -1,0 +1,418 @@
+\documentclass[a4paper]{amsart}
+\usepackage{amsmath, amsthm}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\include{latex_macros}
+
+\begin{document}
+
+\title[Multi-Level Sparse Grid Interpolation Kernel Collocation (MuSiKc)]
+{The Multi-Level Sparse Grid Interpolation Kernel Collocation (MuSiK-c) Algorithm, Applied to Basket Options}
+\author[NicholasWilton]{Nicholas Wilton}
+
+
+\maketitle
+
+\section{Introduction}
+
+ 
+
+\section{Theoretical Background}
+
+\subsection{Radial Basis Functions}
+
+\subsection{Spectral Methods}
+
+\subsection{Finite Difference}
+
+\subsection{Method of Lines}
+
+\subsection{Sparse Grid Collocation}
+
+ 
+
+\section{Algorithm Details}
+
+\subsection{SiK-c Algo}
+
+\subsection{MuSik-c Algo}
+
+\subsection{Computational Complexity Comparisons}
+
+ 
+
+\section{Implentation Details}
+
+\subsection{Eigen API and MatLab comparison}
+
+\subsection{Eigen Expression Trees vs MatLab}
+
+\subsection{CUDA parallelisation vs Threading}
+
+
+\section{Appendices}
+
+\subsection{Code Repositories}
+
+\subsection{Supporting Documents}
+ 
+
+Numerical Experiments
+
+\section{Lagrange Functions in Buhmann Form}
+This note contains my view of the now classical Buhmann cardinal
+function theory, i.e. the Lagrange function theory, all of which is
+a footnote to the Poisson Summation Formula, in the best possible
+sense. All of this is probably somewhere in \cite{mdb}, albeit
+implicitly or in changed guise. We begin with the univariate theory
+for simplicity.
+
+\section{Lagrange Functions on $\ZZ$}
+
+We begin with the classical Poisson Summation Formula in one
+dimension, then develop the Buhmann form of the Lagrange function on $\ZZ$.
+
+\subsection{The Poisson Summation Formula on $\ZZ$}
+
+Let $f \in S(\RR)$, to avoid analytical inconvenience.  We need the
+classical form of the Poisson Summation Formula. To this end, we
+define $\TT := [-\pi, \pi]$ and define the {\em $\TT$-periodization}
+of $f$ by
+\be
+P_{\TT} f(x) \equiv P\!f(x) := \sum_{j \in \ZZ} f(x + 2 \pi j).
+\label{PSF0}
+\ee
+
+\begin{thm}
+\be
+P\!f(x) = \sum_{j \in \ZZ} f(x + 2\pi j)
+=
+(2\pi)^{-1}\sum_{k \in \ZZ} \fhat(k) e^{ikx}.
+\label{ps1}
+\ee
+\label{PSF1}
+\end{thm}
+
+\begin{proof}
+The smoothness and decay of $f$ imply that the
+Fourier series 
+\[
+P\!f(x) = \sum_{\ell \in \ZZ} c_\ell e^{i\ell x}
+\]
+converges absolutely and uniformly. Further,
+\begin{align*}
+c_\ell
+&= (2\pi)^{-1} \int_{-\pi}^{\pi} P\!f(x) e^{-i\ell x}\,dx\\
+&= (2\pi)^{-1} \int_{-\pi}^{\pi} \left(\sum_{j \in \ZZ} f(x + 2\pi j)\right)
+e^{-i\ell x}\,dx\\
+&= (2\pi)^{-1} \int_\RR f(x) e^{-i\ell x}\,dx\\
+&= (2\pi)^{-1} \fhat(\ell),
+\end{align*}
+using the Dominated Convergence Theorem to justify the interchange of
+summation and integration.
+\end{proof}
+
+If we replace $f$ by $\fhat$ in Theorem \ref{PSF1}, then we obtain a
+{\em dual} Poisson Summation Formula, as it were.
+
+\begin{cor}
+We have
+\be
+\sum_{k \in \ZZ} \fhat(\xi + 2\pi k) = \sum_{j \in \ZZ} f(j)
+e^{-ij\xi}.
+\label{ps2}
+\ee
+\label{PSF2}
+\end{cor}
+
+\begin{proof}
+Replace $f$ by $\fhat$ in Theorem \ref{PSF1}, recalling that 
+$\widehat{\widehat{f}}(x) = 2\pi f(-x)$.
+\end{proof}
+
+\subsection{The Lagrange Function on $\ZZ$}
+
+Let $\phi \in S(\RR)$, to avoid all analytic inconvenience.
+We also want to
+choose $\phi$ with interpolation in mind, so we shall also assume that
+its Fourier transform $\phihat$ is strictly positive, which implies that
+$f$ is a strictly positive definite function.
+
+We want to construct a function $L \in \Span_{k \in \ZZ} \phi( \cdot -
+k)$ for which $L(j) = \delta_{oj}$, for $j \in \ZZ$. Such a function
+will be called the Lagrange function, by analogy with the Lagrange
+form of the interpolating polynomial. Thus, proceeding formally for the moment,
+we have
+\be
+L(x) = \sum_{k \in \ZZ} \lambda_k \phi(x-k)
+\label{L0}
+\ee
+or, in the Fourier domain,
+\be
+\Lhat(\xi) = \left(\sum_{k \in \ZZ} \lambda_k e^{-ik\xi}\right)
+\phihat(\xi) 
+\label{L1}
+\ee
+It is not obvious that \eqref{L1} is well defined, but we shall soon
+show that all is well. 
+We periodize both sides to form a $2\pi$--periodic function and,
+using the Poisson Summation Formula in the form of Corollary
+\ref{PSF2}, we find
+We obtain
+\be
+1 \equiv
+\sum_{\ell \in \ZZ} L(\ell) e^{-i\ell \xi}
+= \sum_{j\in \ZZ} \Lhat(\xi + 2\pi j)
+= \left(\sum_{k \in \ZZ} \lambda_k e^{-ik\xi}\right) \left(\sum_{j \in \ZZ}
+\phihat(\xi + 2\pi j)\right).
+\label{L2}
+\ee
+Hence, recalling that $\phihat(\xi) > 0$, for all $\xi \in \RR$,
+\eqref{L2} implies
+\be
+\sum_{k \in \ZZ} \lambda_k \exp(-ik\xi) = \frac{1}{\sum_{j \in \ZZ}
+\phihat(\xi + 2\pi j)}.
+\label{L2b}
+\ee
+Substituting \eqref{L2b} in \eqref{L1}, we
+obtain the Buhmann form of the Fourier transform of the Lagrange
+function, that is,
+\be
+\Lhat(\xi) = \frac{\phihat(\xi)}{\sum_{j \in \ZZ} \phihat(\xi + 2\pi
+  j)}.
+\ee
+
+
+
+\section{Lagrange Functions on $h\ZZ$}
+
+We follow the same route as before.
+
+\subsection{The Poisson Summation Formula on $h\ZZ$}
+
+We could deduce the scaled version of the Poisson Summation Formula 
+directly from Theorem \ref{PSF1}, but I prefer
+to begin {\em ab initio}. 
+We shall now periodize $f$ over $h^{-1}\TT$, for $h > 0$, i.e.
+we define
+\be
+P_{h^{-1} \TT} f(x) = \sum_{j \in \ZZ} f(x + 2\pi h^{-1} j).
+\label{PSFh0}
+\ee
+The {\em scaled
+  exponentials} are the $2\pi h^{-1}$-periodic functions defined by
+\be
+e^h_j(x) := e^{i h jx}, \qquad j \in \ZZ,
+\ee
+and form a complete orthonormal set with respect to the inner product
+\be
+\langle
+F, G\rangle
+= 
+\frac{1}{2\pi h^{-1}} \int_{-\pi h^{-1}}^{\pi h^{-1}}
+F(s) G(s)^*\,ds.
+\ee
+In other words, $\{e^h_j : j \in \ZZ\}$ forms a complete orthonormal
+set for $L^2(h^{-1}\TT)$ endowed with the normalized inner product
+\[
+\langle F, G \rangle = \frac{1}{\Vol_1 h^{-1}\TT} \int_{h^{-1}\TT} F G^*.
+\]
+
+\begin{thm} We have
+\be
+P_{h^{-1}\TT} f(x)
+= \sum_{j \in \ZZ} f(x + 2\pi h^{-1} j)
+=
+\left(2 \pi h^{-1}\right)^{-1} \sum_{k \in \ZZ} \fhat(kh) e^{ihkx},
+\label{psh1}
+\ee
+i.e.
+\be
+P_{h^{-1} \TT} f = \left(\Vol_1 h^{-1}\TT\right)^{-1}
+\sum_{k \in \ZZ} \fhat(kh) e^{h^{-1}}_k.
+\label{psh1.1}
+\ee
+\label{PSFh1}
+\end{thm}
+
+\begin{proof}
+As in Theorem \ref{PSF1}, the Fourier
+series
+\[
+P_{h^{-1} \TT} f(x) = 
+\left(\Vol_1 h^{-1}\TT\right)^{-1} \sum_{\ell \in \ZZ} c^h_\ell e^{ih \ell x}
+\]
+converges absolutely and uniformly, and
+\begin{align*}
+c^h_\ell
+&= \left(2\pi h^{-1}\right)^{-1}
+\int_{-\pi/h}^{\pi/h} P_h f(x) e^{-ih \ell x}\,dx\\
+&= \left(2\pi h^{-1}\right)^{-1}
+   \int_{-\pi h^{-1}}^{\pi h^{-1}} \left(\sum_{j \in \ZZ} f(x + 2\pi h^{-1} j)\right)
+e^{-i h \ell x}\,dx\\
+&= \left(2\pi h^{-1}\right)^{-1}\int_\RR f(x) e^{-i h\ell x}\,dx\\
+&= \left(2\pi h^{-1}\right)^{-1}\fhat(h \ell),
+\end{align*}
+using the Dominated Convergence Theorem to justify the interchange of
+summation and integration.
+\end{proof}
+
+The analogous form of Corollary \ref{PSF2} is now fairly clear.
+
+\begin{cor}
+\be
+\sum_{k \in \ZZ} \fhat(\xi + 2 \pi h^{-1} k)
+= h \sum_{\ell \in \ZZ} f(h \ell) e^{-i h \ell \xi}.
+\label{PSFh2}
+\ee
+\end{cor}
+
+
+\subsection{The Lagrange Function on $h\ZZ$}
+
+We now consider the Lagrange function when interpolating on the
+scaled integer grid $h\ZZ$, for $h > 0$.
+Thus we define
+\be
+\phi_h(x) := \phi(h^{-1}x)
+\label{Lh00}
+\ee
+and we now want to construct a function 
+$L^h \in \Span_{k \in \ZZ} \phi_h( \cdot -
+kh)$ for which $L^h(jh) = \delta_{oj}$, for $j \in \ZZ$. 
+It is almost obvious that $L^h (x) = L(h^{-1} x)$, but the
+Fourier analysis is satisfying.
+Thus we consider
+\be
+L^h(x) = \sum_{k \in \ZZ} \lambda^h_k \phi_h(x-kh)
+\label{Lh0}
+\ee
+or, in the Fourier domain,
+\be
+\Lhhat(\xi) = \left(\sum_{k \in \ZZ} \lambda^h_k e^{-ih k\xi}\right)
+\phihhat(\xi) 
+\label{Lh1}
+\ee
+We must now periodize \eqref{Lh1} to obtain a $2\pi h^{-1}$-periodic
+function, using the scaled Poisson Summation Formula, i.e.
+\[
+\sum_{k \in \ZZ} \Lhhat(\xi + 2\pi h^{-1} k)
+= h \sum_{\ell \in \ZZ} L^h(h \ell)e^{-ih \ell \xi} \equiv h.
+\]
+Hence \eqref{Lh1} becomes
+\be
+1 \equiv h^{-1} \sum_{k \in \ZZ} \Lhhat(\xi + 2\pi h^{-1} k)
+= h^{-1}\left( \sum_{k \in \ZZ} \lambda^h_k e^{-ih k\xi}\right)
+\sum_{m \in \ZZ} \phihhat(\xi + 2\pi h^{-1} m)
+\label{Lh2}
+\ee
+Eliminating $\sum \lambda^h_k \exp(-ih k\xi)$ from \eqref{Lh1} and
+\eqref{Lh2}, we obtain
+\be
+\Lhhat(\xi) = 
+\frac{\phihhat(\xi)}{h^{-1} \sum_{m \in \ZZ} 
+   \phihhat(\xi + 2\pi h^{-1} m)}
+=
+h \left(
+\frac{\phihat(h\xi)}{\sum_{m \in \ZZ} \phihat(h\xi + 2\pi m)}\right)
+= h \Lhat(h\xi).
+\label{Lh3}
+\ee
+Hence $L^h (x) = L(h^{-1} x)$, as expected.
+
+
+\section{Lagrange functions on $A \ZZ^d$ for $A \in \GL(\RR^d)$}
+
+Let $A \in \GL(\RR^d)$ and $f \in S(\RR^d)$.
+shall be using the normalized inner product on $L^2(A^{-1}\TT^d)$, that
+is,
+\be
+\langle F, G \rangle
+= \frac{1}{\Vol_d A^{-1}\TT^d} \int_{A^{-1}\TT^d} F(x) G(x)^*\,dx
+\ee
+and $\Vol_d A^{-1} \TT^d = (2\pi)^d |A|^{-1}$.
+The $A^{-1}\TT^d$-periodic
+exponentials providing our complete orthonormal sequence are given
+by
+\be
+e^A_k(x) = e^{i\langle k, A x\rangle}, \qquad k \in \ZZ^d.
+\ee
+
+\subsection{The Poisson Summation Formula on $A \ZZ^d$}
+
+We define the $A^{-1}\TT^d$-periodization $P_{A^{-1}\TT} f$ by
+\be
+P_{A^{-1} \TT^d} f(x) = \sum_{j \in \ZZ^2} f(x + 2\pi A^{-1} j).
+\label{ml0}
+\ee
+
+\begin{thm}
+\be
+P_{A^{-1} \TT^d} f(x)
+= \left(\Vol_d A^{-1} \TT^d\right)^{-1}
+\sum_{\ell \in \ZZ^d} \fhat(A^T \ell) e^A_{ell}(xi).
+\label{ml1}
+\ee
+\label{mlthm1}
+\end{thm}
+
+\begin{proof}
+We have the Fourier series
+\[
+P_{A^{-1}\TT^d} f(x) = \sum_{k \in \ZZ^d} c^{A}_k e^A_k(x),
+\]
+where
+\begin{align*}
+c^{A}_k
+&= \frac{1}{\Vol_d A^{-1} \TT^d} 
+\int_{A^{-1}\TT^d} 
+P_{A^{-1} \TT^d} f(x) e^{A}_{-k}(x)\,dx\\
+&= \frac{1}{\Vol_d A^{-1} \TT^d} 
+\int_{A^{-1}\TT^d} \int_{\RR^d} f(x) e^{A}_{-k}(x)\,dx\\
+&= \frac{1}{\Vol_d A^{-1} \TT^d} 
+\int_{A^{-1}\TT^d} \int_{\RR^d} f(x) e^{-i\langle A^T k, x\rangle}\,dx\\
+&= \frac{\fhat(A^T k)}{\Vol_d A^{-1} \TT^d} 
+\int_{A^{-1}\TT^d} 
+\end{align*}
+\end{proof}
+
+The dual form takes a similar form.
+
+\begin{cor}
+\be
+\sum_{k \in \ZZ^d} \fhat(\xi + 2\pi A^{-T} k)
+= |A| \sum_{\ell \in \ZZ^d} f(A\ell) e^{-i\langle \ell, A^T \xi\rangle}.
+\label{ml2}
+\ee
+\label{mlcor2}
+\end{cor}
+
+\subsection{The Lagrange Function on $A\ZZ$}
+
+We define $\phi_A(x) = \phi (A^{-1}x)$, for $x \in \RR^d$. Then
+$\phiAhat(\xi) = |A| \phihat(A^T \xi)$, and it is again almost obvious
+that $L^A(x) = L(A^{-1}x)$, so that $\LAhat(\xi) = |A| \Lhat(A^T
+\xi)$. For completeness, we again provide the full Fourier derivation.
+
+\begin{thm}
+The Fourier transform of the Lagrange function $L^A$ is given by
+\be
+\LAhat(\xi)
+= \frac{\phiAhat(\xi)}{|A|^{-1} \sum_{k \in \ZZ^d} \phiAhat (\xi + 2\pi
+  A^{-T} k)}.
+\ee
+\end{thm}
+
+\begin{thebibliography}{99}
+\bibitem{mdb} Buhmann (2003), 
+{\em Radial Basis Functions}, CUP.
+\end{thebibliography}
+
+
+
+\end{document}
+
+
+
+
+
