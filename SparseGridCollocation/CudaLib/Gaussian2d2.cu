@@ -39,7 +39,7 @@ Gaussian2d2_CUDA(double *D, double *Dt, double *Dx, double *Dxx, double *TP, dim
 	int j = blockDim.x * blockIdx.x + threadIdx.x;
 	printf("start mqd22_CUDA i=%i j =%i \r\n", i, j);
 	
-	if (j < dimCN.y)
+	if (j < dimCN.x)
 	{
 
 		printf("mqd22_CUDA i=%i j =%i dimCN.y=%i\r\n", i, j, dimCN.y);
@@ -54,9 +54,9 @@ Gaussian2d2_CUDA(double *D, double *Dt, double *Dx, double *Dxx, double *TP, dim
 		/*
 		CALCULATE FAI
 		*/
-		dim3 dimFAI(1, dimTP.y);
+		dim3 dimFAI(dimCN.x, dimTP.y);
 		//double *FAI1 = new double[dimTP.y, 1];
-		double *FAI1 = (double*)malloc(sizeof(double) * dimTP.y * 1);
+		double *FAI1 = (double*)malloc(sizeof(double) * dimFAI.y * dimFAI.x);
 		//matrixFill_CUDA << <grid, threads >> > (FAI1, dim3(1, dimTP.y), 1.0);
 		//gpuErrchk << <1, 1 >> >(cudaPeekAtLastError());
 		//gpuErrchk << <1, 1 >> >(cudaDeviceSynchronize());
@@ -244,23 +244,24 @@ Gaussian2d2_CUDA(double *D, double *Dt, double *Dx, double *Dxx, double *TP, dim
 		printMatrix_CUDA << <1, 1 >> >(DxxColJ, dim3(1, dimTP.y));
 		//__syncthreads();
 
-		SetColumn << <threads, grid >> >(D, i, DColJ, dim3(dimCN.y, dimTP.x));
+		dim3 dimResult(dimCN.x, dimTP.y);
+		SetColumn << <threads, grid >> >(D, j, DColJ, dimResult);
 		gpuErrchk << <1, 1 >> >(cudaPeekAtLastError());
 		gpuErrchk << <1, 1 >> >(cudaDeviceSynchronize());
 		//__syncthreads();
-		SetColumn << <threads, grid >> >(Dt, i, DtColJ, dim3(dimCN.y, dimTP.x));
+		SetColumn << <threads, grid >> >(Dt, j, DtColJ, dimResult);
 		gpuErrchk << <1, 1 >> >(cudaPeekAtLastError());
 		gpuErrchk << <1, 1 >> >(cudaDeviceSynchronize());
 		//__syncthreads();
-		SetColumn << <threads, grid >> >(Dx, i, DxColJ, dim3(dimCN.y, dimTP.x));
+		SetColumn << <threads, grid >> >(Dx, j, DxColJ, dimResult);
 		gpuErrchk << <1, 1 >> >(cudaPeekAtLastError());
 		gpuErrchk << <1, 1 >> >(cudaDeviceSynchronize());
 		//__syncthreads();
-		SetColumn << <threads, grid >> >(Dxx, i, DxxColJ, dim3(dimCN.y, dimTP.x));
+		SetColumn << <threads, grid >> >(Dxx, j, DxxColJ, dimResult);
 		gpuErrchk << <1, 1 >> >(cudaPeekAtLastError());
 		gpuErrchk << <1, 1 >> >(cudaDeviceSynchronize());
 		
-
+		printMatrix_CUDA<<<1,1>>>(D, dimResult);
 		delete[] FAI1;
 	}
 	__syncthreads();

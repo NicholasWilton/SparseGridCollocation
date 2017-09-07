@@ -386,7 +386,7 @@ GetRow(double * result, int row, double *A, dim3 dimA)
 
 	if (i == row & j < dimA.x)
 	{
-		int idx = j + (i * dimA.x);
+		int idx = i + (j * dimA.y);
 		result[j] = A[idx];
 	}
 }
@@ -399,7 +399,7 @@ SetColumn(double * matrix, int col, double *vector, dim3 dimMatrix)
 
 	if (i < dimMatrix.y & j == col)
 	{
-		int idx = j + (i * dimMatrix.x);
+		int idx = i + (j * dimMatrix.y);
 		matrix[idx] = vector[i];
 	}
 }

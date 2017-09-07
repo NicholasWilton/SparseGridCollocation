@@ -244,7 +244,7 @@ void Leicester::Interpolation::shapelambda2DGeneric(string prefix, int threadId,
 	//wcout << Common::printMatrix(TX1) << endl;
 	vector<MatrixXd> mqd = RBF::Gaussian2D(TX1, TX1, a, c);
 	vector<MatrixXd> mqdc = CudaRBF::Gaussian2D(TX1, TX1, a, c);
-	wcout << Common::printMatrix(mqd[0]) << endl;
+	wcout << Common::printMatrix(mqd[0].col(0)) << endl;
 	wcout << Common::printMatrix(mqdc[0]) << endl;
 	MatrixXd FAI = mqd[0];
 	MatrixXd FAI_t = mqd[1];
