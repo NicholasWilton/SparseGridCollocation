@@ -35,3 +35,5 @@ class API CudaRBF
 public:
 	static vector<MatrixXd> Gaussian2D(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C);
 };
+
+void SetupLevel7(Eigen::MatrixXd &TX1, Eigen::MatrixXd &CN);

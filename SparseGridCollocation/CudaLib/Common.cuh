@@ -16,10 +16,14 @@
 using namespace std;
 using namespace thrust;
 
+
 extern __global__ void
 matrixMul_CUDA(double *C, double *A, double *B, int wA, int wB);
 
 int matrixMultiply(int block_size, double * h_A, dim3 &dimsA, double * h_B, dim3 &dimsB);
+
+extern __global__ void
+dumpMatrix_CUDA(double *matrix, dim3 dimMatrix);
 
 extern __global__ void
 printMatrix_CUDA(double *matrix, dim3 dimMatrix);
@@ -39,6 +43,15 @@ ScalarVectorDifference_CUDA(double *D, double a, double *B, double c, dim3 dimB)
 
 extern __global__ void
 ElementWiseMultiply_CUDA(double *C, double *A, double *B, dim3 dimC);
+
+extern __global__ void
+ElementWiseMultiply_CUDA2(double *C, double *A, double *B, dim3 dimC);
+extern __global__ void
+ElementWiseMultiply_CUDA3(double *C, double *A, double *B, dim3 dimC);
+extern __global__ void
+ElementWiseMultiply_CUDA4(double *C, double *A, double *B, dim3 dimC);
+extern __global__ void
+ElementWiseMultiply_CUDA5(double *C, double *A, double *B, dim3 dimC);
 
 //extern __global__ void
 //ElementWiseMultiply_CUDA(double *D, double *A, double *B, double *C, dim3 dimD);
@@ -60,6 +73,9 @@ GetRow(double * result, int row, double *A, dim3 dimA);
 
 extern __global__ void
 SetColumn(double * matrix, int col, double *vector, dim3 dimMatrix);
+
+extern __global__ void
+SetColumnLogged(double * matrix, int col, double *vector, dim3 dimMatrix);
 
 extern __global__ void
 mqd2_CUDA(double *D, double *Dt, double *Dx, double *Dxx, double *TP, dim3 dimTP, double *CN, dim3 dimCN, double *A, dim3 dimA, double *C, dim3 dimC);

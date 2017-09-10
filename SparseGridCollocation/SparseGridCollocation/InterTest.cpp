@@ -3,6 +3,7 @@
 #include "RBF.h"
 #include <thread>
 #include "Common.h"
+#include "kernel.h"
 
 using Eigen::Matrix;
 using Eigen::MatrixXd;
@@ -73,6 +74,7 @@ void Leicester::InterTest::parallel(string id, const MatrixXd &X, const vector<M
 		RBF r;
 		//[D] = mq2d(X, TX{ j }, A{ j }, C{ j });
 		vector<MatrixXd> D = r.Gaussian2D(X, TX[j], A[j], C[j]);
+		//vector<MatrixXd> D = CudaRBF::Gaussian2D(X, TX[j], A[j], C[j]);
 		//Common::saveArray(X, "Musikc_X.txt");
 		//Common::saveArray(TX[j], "Musikc_TX.txt");
 		//Common::saveArray(A[j], "Musikc_A.txt");

@@ -357,7 +357,7 @@ SmoothInitial Leicester::MoL::MethodOfLinesND(double T, double Tdone, double Ten
 	VectorXd U_ini = phi * initial.Lambda;
 	initial.S = X_ini;
 	initial.U = U_ini;
-	
+		
 	return initial;
 }
 
@@ -366,12 +366,12 @@ SmoothInitial Leicester::MoL::EuroCallOptionND(double T, double Tdone, double Te
 	//vector<vector<VectorXd>> result;
 	int assets = correlation.rows();
 	BasketOption *option = new BasketOption(K, T, correlation);
-	int N_uniform = 50;
+	int N_uniform = 5000*assets;
 	
 	MatrixXd N(1, assets);
 	N.fill(N_uniform);
 	
-	vector<MatrixXd> setup = SetupBasket(assets, N_uniform, 50, 0.3, K);
+	vector<MatrixXd> setup = SetupBasket(assets, N_uniform, N_uniform/5, 0.2, K);
 	MatrixXd inx1 = setup[0];
 	MatrixXd inx2 = setup[1];
 	MatrixXd testNodes = setup[2];
@@ -528,17 +528,19 @@ SmoothInitial Leicester::MoL::EuroCallOptionND(double T, double Tdone, double Te
 		plot2 = TakeMeans(sorted2);
 		VectorXd vderi3 = plot2.col(1);
 
+		wcout << Common::printMatrix(vderi3) << endl;
+
 		double Ptop = vderi3.maxCoeff();
 		double Pend = vderi3.minCoeff();
 
-		MatrixXd::Index I1Row, I1Col;
-		vderi3.maxCoeff(&I1Row, &I1Col);
+		MatrixXd::Index TopRow, TopCol;
+		vderi3.maxCoeff(&TopRow, &TopCol);
 
-		MatrixXd::Index I2Row, I2Col;
-		vderi3.minCoeff(&I2Row, &I2Col);
+		MatrixXd::Index BottomRow, BottomCol;
+		vderi3.minCoeff(&BottomRow, &BottomCol);
 
-		double part1Length = (I1Row < I2Row) ? I1Row : I2Row;
-		double part2Length = (I1Row > I2Row) ? I1Row : I2Row;
+		double part1Length = (TopRow < BottomRow) ? TopRow : BottomRow; //the region between 0 and peak speed
+		double part2Length = (TopRow > BottomRow) ? TopRow : BottomRow; //the region between peak speed and lowest speed
 
 		
 		MatrixXd part1 = VectorUtil::Diff(vderi3.block(0, 0, part1Length, 1));
@@ -853,14 +855,14 @@ vector<vector<VectorXd>> Leicester::MoL::EuroCallOptionND_ODE(double T, double T
 vector<MatrixXd> Leicester::MoL::SetupBasket(int assets, int testNodeNumber, int centralNodeNumber, double aroundStrikeRange, double strike)
 {
 	MatrixXd inx1 = -1 * MatrixXd::Ones(1, assets) *strike;
-	MatrixXd inx2 = 2 * MatrixXd::Ones(1, assets) *strike;
+	MatrixXd inx2 = 6 * MatrixXd::Ones(1, assets) *strike;
 
 	vector<MatrixXd> testNodes = TestNodes::GenerateTestNodes(testNodeNumber, inx1.row(0).transpose(), inx2.row(0).transpose(), assets);
 	//Common::saveArray(testNodes, "testNodes.txt");
 	vector<MatrixXd> cetralNodes = TestNodes::GenerateTestNodes(centralNodeNumber, inx1.row(0).transpose(), inx2.row(0).transpose(), assets);
 	//Common::saveArray(cetralNodes, "cetralNodes.txt");
 	MatrixXd aroundStrikeNodes = BasketOption::NodesAroundStrikeFromGrid(testNodes[0], strike, aroundStrikeRange);
-	Common::saveArray(aroundStrikeNodes, "aroundStrikeNodes.txt");
+	//Common::saveArray(aroundStrikeNodes, "aroundStrikeNodes.txt");
 	return { inx1, inx2, testNodes[1], cetralNodes[1], aroundStrikeNodes };
 
 }

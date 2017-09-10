@@ -14,8 +14,7 @@
 using namespace std;
 using namespace thrust;
 
-extern __global__ void gpuErrchk(cudaError_t ans);
-extern __global__ void gpuAssert(cudaError_t code, const char *file, int line, bool abort = true);
-
+extern __global__ void gpuAssert(cudaError_t code, const char *file, int line);
+//extern __global__ void gpuErrchk(cudaError_t ans);
 extern __global__ void
 Gaussian2d2_CUDA(double *D, double *Dt, double *Dx, double *Dxx, double *TP, dim3 dimTP, double *CN, dim3 dimCN, double *A, dim3 dimA, double *C, dim3 dimC);

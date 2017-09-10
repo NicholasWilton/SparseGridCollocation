@@ -18,14 +18,6 @@ using namespace std;
 using namespace thrust;
 
 
-__global__ void test()
-{
-	int i = blockDim.y * blockIdx.y + threadIdx.y;
-	int j = blockDim.x * blockIdx.x + threadIdx.x;
-	printf("start test i=%i j =%i \r\n", i, j);
-
-}
-
 
 __global__ void
 Gaussian2d_CUDA(double *D, double *Dt, double *Dx, double *Dxx,
@@ -50,20 +42,20 @@ Gaussian2d_CUDA(double *D, double *Dt, double *Dx, double *Dxx,
 		dim3 dimCN(CNx, CNy);
 		dim3 dimA(Ax, Ay);
 		dim3 dimC(Cx, Cy);
-		printf("TP size=%f", sizeof(TP));
-		printMatrix_CUDA << < dim3(1,1), dim3(1,1)>> > (TP, dimTP);
-		gpuErrchk << <1, 1 >> >(cudaPeekAtLastError());
-		gpuErrchk << <1, 1 >> >(cudaDeviceSynchronize());
+		//printf("TP size=%f", sizeof(TP));
+		//printMatrix_CUDA << < dim3(1,1), dim3(1,1)>> > (TP, dimTP);
+		//gpuErrchk << <1, 1 >> >(cudaPeekAtLastError());
+		//gpuErrchk << <1, 1 >> >(cudaDeviceSynchronize());
 				
-		printf("dimTPx=%i dimTPy=%i dimCNx=%i dimCNy=%i dimAx=%i dimAy=%i dimCx=%i dimCy=%i\r\n", dimTP.x, dimTP.y, dimCN.x, dimCN.y, dimA.x, dimA.y, dimC.x, dimC.y);
-		Gaussian2d2_CUDA << <1, TPx >> > (D, Dt, Dx, Dxx, TP, dimTP, CN, dimCN, A, dimA, C, dimC);
-		gpuErrchk << <1, 1 >> >(cudaPeekAtLastError());
-		gpuErrchk << <1, 1 >> >(cudaDeviceSynchronize());
+		//printf("dimTPx=%i dimTPy=%i dimCNx=%i dimCNy=%i dimAx=%i dimAy=%i dimCx=%i dimCy=%i\r\n", dimTP.x, dimTP.y, dimCN.x, dimCN.y, dimA.x, dimA.y, dimC.x, dimC.y);
+		Gaussian2d2_CUDA << <1, dim3(1, CNy) >> > (D, Dt, Dx, Dxx, TP, dimTP, CN, dimCN, A, dimA, C, dimC);
+		gpuAssert << <1, 1 >> >(cudaPeekAtLastError(), __FILE__, __LINE__);
+		gpuAssert << <1, 1 >> >(cudaDeviceSynchronize(), __FILE__, __LINE__);
 
 		//printf("D size=%f", sizeof(D));
 		//printMatrix_CUDA << < dim3(1, 1), dim3(1, 1) >> > (D, dim3(TPy, TPy));
-		gpuErrchk << <1, 1 >> >(cudaPeekAtLastError());
-		gpuErrchk << <1, 1 >> >(cudaDeviceSynchronize());
+		//gpuErrchk << <1, 1 >> >(cudaPeekAtLastError());
+		//gpuErrchk << <1, 1 >> >(cudaDeviceSynchronize());
 
 		//__syncthreads();
 		//result[0] = D;

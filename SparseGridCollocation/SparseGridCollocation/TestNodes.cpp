@@ -81,19 +81,21 @@ vector<MatrixXd> Leicester::TestNodes::GenerateTestNodes(int nodes, VectorXd low
 {
 	vector<VectorXd> linearGrid;
 	int product = 1;
+	double nthRoot = pow((double)nodes, (1.0 / dimensions) );
+	int grid = floor(nthRoot);
 
 	for (int n = 0; n < dimensions; n++)
 	{
-		product *= nodes;
+		product *= nthRoot;
 
-		VectorXd linearDimension = VectorXd::LinSpaced(nodes, lowerLimits[n], upperLimits[n]);
+		VectorXd linearDimension = VectorXd::LinSpaced(grid, lowerLimits[n], upperLimits[n]);
 
 		linearGrid.push_back(linearDimension);
 	}
 
 
 	MatrixXd TXYZNodes(product, dimensions);
-	MatrixXd TXYZGrid(nodes, dimensions);
+	MatrixXd TXYZGrid(grid, dimensions);
 	int dimension = 0;
 
 	for (auto linearVector : linearGrid)

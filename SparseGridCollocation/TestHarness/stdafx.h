@@ -23,11 +23,11 @@
 #include <memory>
 #include <iomanip>
 
-#include "Common.h"
+#include ".\..\Common\Common.h"
 #include "data.h"
 #include "Interpolation.h"
-#include "Option.h"
-#include "EuropeanCallOption.h"
+#include ".\..\SparseGridCollocation\Option.h"
+#include ".\..\SparseGridCollocation\EuropeanCallOption.h"
 
 // Header declarations / definitions
 

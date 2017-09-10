@@ -8,7 +8,7 @@
 #include "Test.h"
 #include "TestNodes.h"
 #include <thread>
-#include "./kernel.h"
+#include "kernel.h"
 
 
 //#include "CppUnitTest.h"
@@ -62,8 +62,8 @@ void Leicester::Interpolation::interpolateGeneric(string prefix, double coef, do
 
 
 	/*for (int i = 0; i < threads.size(); i++)
-		threads.at(i).join();*/
-
+		threads.at(i).join();
+*/
 	vector<MatrixXd> l;
 	vector<MatrixXd> tx;
 	vector<MatrixXd> a;
@@ -97,8 +97,8 @@ void Leicester::Interpolation::interpolateGenericND(string prefix, double coef, 
 	//cout << "N.rows()=" << N.rows() << endl;
 	for (int i = 0; i < N.rows(); i++)
 	{
-		//threads.push_back(std::thread(&Interpolation::shapelambdaNDGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
-		shapelambdaNDGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
+		threads.push_back(std::thread(&Interpolation::shapelambdaNDGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
+		//shapelambdaNDGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
 	}
 
 	
@@ -243,9 +243,32 @@ void Leicester::Interpolation::shapelambda2DGeneric(string prefix, int threadId,
 	TX1 << xxx, yyy;
 	//wcout << Common::printMatrix(TX1) << endl;
 	vector<MatrixXd> mqd = RBF::Gaussian2D(TX1, TX1, a, c);
-	vector<MatrixXd> mqdc = CudaRBF::Gaussian2D(TX1, TX1, a, c);
-	wcout << Common::printMatrix(mqd[0].col(0)) << endl;
-	wcout << Common::printMatrix(mqdc[0]) << endl;
+	//Common::saveArray(TX1, "cTX1.txt");
+	//Common::saveArray(a, "cA.txt");
+	//Common::saveArray(c, "cC.txt");
+	//vector<MatrixXd> mqdc = CudaRBF::Gaussian2D(TX1, TX1, a, c);
+	//wcout << Common::printMatrix(mqd[0].col(0)) << endl;
+	//wcout << Common::printMatrix(mqdc[0]) << endl;
+	
+	//wcout << "D" << endl;
+	
+	//bool f1 = Common::checkMatrix(mqd[0], mqdc[0], 0.001, false);
+	////wcout << "Dt" << endl;
+	//bool f2 = Common::checkMatrix(mqd[1], mqdc[1], 0.001, false);
+	////wcout << "Dx" << endl;
+	//bool f3 = Common::checkMatrix(mqd[2], mqdc[2], 0.001, false);
+	////wcout << "Dxx" << endl;
+	//bool f4 = Common::checkMatrix(mqd[3], mqdc[3], 0.001, false);
+	//if (!f1 | !f2 | !f3 | !f4)
+	//{
+	//	Common::saveArray(TX1, "cTX1.txt");
+	//	Common::saveArray(a, "cA.txt");
+	//	Common::saveArray(c, "cC.txt");
+	//	Common::saveArray(mqdc[0], "cD.txt");
+	//	Common::saveArray(mqdc[1], "cDt.txt");
+	//	Common::saveArray(mqdc[2], "cDx.txt");
+	//	Common::saveArray(mqdc[3], "cDxx.txt");
+	//}
 	MatrixXd FAI = mqd[0];
 	MatrixXd FAI_t = mqd[1];
 	MatrixXd FAI_x = mqd[2];

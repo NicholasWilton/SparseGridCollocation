@@ -264,6 +264,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::MuSIKc(int upper, int lower, 
 	SmoothInitialU::u = smoothinitial[1].head(smoothinitial[1].rows());
 	p.Tdone = smoothinitial[2][0];
 	//p.Tdone = 0.1350;
+	cout << setprecision(16) << "Tdone=" << p.Tdone << endl;
 	p.inx1[0] = old1;
 	p.inx2[0] = old2;
 
@@ -750,7 +751,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::MuSIKcND(int upper, int lower
 			ss << n;
 			
 			MatrixXd U = interTests.at(idx).GetResult(ss.str());
-			wcout << U(1,0) << endl;
+			//wcout << U(1,0) << endl;
 			int coeff = Common::BinomialCoefficient(option.Underlying, 0);
 			U = U * coeff;
 			//wcout << U(1, 0) << endl;
@@ -763,7 +764,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::MuSIKcND(int upper, int lower
 				//wcout << V(1, 0) << endl;
 				coeff = (index % 2 == 0) ? Common::BinomialCoefficient(option.Underlying, dimension) : -Common::BinomialCoefficient(option.Underlying, dimension);
 				U = U + (coeff * V);
-				wcout << U(1, 0) << endl;
+				//wcout << U(1, 0) << endl;
 				index++;
 
 			}
