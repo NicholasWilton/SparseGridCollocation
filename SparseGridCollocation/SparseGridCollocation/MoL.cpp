@@ -528,7 +528,7 @@ SmoothInitial Leicester::MoL::EuroCallOptionND(double T, double Tdone, double Te
 		plot2 = TakeMeans(sorted2);
 		VectorXd vderi3 = plot2.col(1);
 
-		wcout << Common::printMatrix(vderi3) << endl;
+		//wcout << Common::printMatrix(vderi3) << endl;
 
 		double Ptop = vderi3.maxCoeff();
 		double Pend = vderi3.minCoeff();

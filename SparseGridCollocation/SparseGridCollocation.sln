@@ -112,6 +112,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dissertation", "Dissertatio
 		..\Dissertation\MuSiKc_Dissertation.tex = ..\Dissertation\MuSiKc_Dissertation.tex
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ThrustLib", "ThrustLib\ThrustLib.vcxproj", "{CC18DC60-DCD7-45E5-9744-C457F8EE5122}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -168,6 +170,14 @@ Global
 		{3397B60D-EEDD-48DE-8C0B-45ED96DCCA57}.Release|x64.Build.0 = Release|x64
 		{3397B60D-EEDD-48DE-8C0B-45ED96DCCA57}.Release|x86.ActiveCfg = Release|Win32
 		{3397B60D-EEDD-48DE-8C0B-45ED96DCCA57}.Release|x86.Build.0 = Release|Win32
+		{CC18DC60-DCD7-45E5-9744-C457F8EE5122}.Debug|x64.ActiveCfg = Debug|x64
+		{CC18DC60-DCD7-45E5-9744-C457F8EE5122}.Debug|x64.Build.0 = Debug|x64
+		{CC18DC60-DCD7-45E5-9744-C457F8EE5122}.Debug|x86.ActiveCfg = Debug|Win32
+		{CC18DC60-DCD7-45E5-9744-C457F8EE5122}.Debug|x86.Build.0 = Debug|Win32
+		{CC18DC60-DCD7-45E5-9744-C457F8EE5122}.Release|x64.ActiveCfg = Release|x64
+		{CC18DC60-DCD7-45E5-9744-C457F8EE5122}.Release|x64.Build.0 = Release|x64
+		{CC18DC60-DCD7-45E5-9744-C457F8EE5122}.Release|x86.ActiveCfg = Release|Win32
+		{CC18DC60-DCD7-45E5-9744-C457F8EE5122}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

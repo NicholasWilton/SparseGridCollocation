@@ -5,6 +5,7 @@ using Eigen::MatrixXd;
 using Eigen::VectorXd;
 using namespace std;
 using namespace Eigen;
+using namespace thrust;
 
 vector<MatrixXd> GaussianND(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C)
 {
@@ -111,7 +112,6 @@ __global__ void GaussianND_CUDA(double** result, double *TP, dim3 dTP, double *C
 	__syncthreads();
 	//printf("end mqd2_CUDA");
 }
-
 
 
 vector<MatrixXd> CudaRBF::Gaussian2D(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C)
@@ -252,7 +252,7 @@ vector<MatrixXd> CudaRBF::Gaussian2D(const MatrixXd &TP, const MatrixXd &CN, con
 	cudaFree(d_c);
 	cudaFree(d_tx);
 	cudaFree(d_cn);
-	cudaDeviceReset();
+	//cudaDeviceReset();
 	return {D, Dt, Dx, Dxx};
 }
 
@@ -269,144 +269,144 @@ VectorXd PushAndQueue(double push, VectorXd A, double queue)
 }
 
 
-int MethodOfLines::MoLiteration(double Tend, double Tdone, double dt, double *G, int GRows, int GCols, double *lamb, int lambRows, int lambCols, double inx2, double r, double K, MatrixXd A1, MatrixXd Aend, MatrixXd H)
-{
-	int count = 0;
-	while (Tend - Tdone > 1E-8)
-	{
-		Tdone += dt;
-		
-		int sizeG = GRows * GCols;
-		int sizeLamb = lambRows * lambCols;
-		int memG = sizeof(double) * sizeG;
-		int memLamb = sizeof(double) * sizeLamb;
-
-		double *d_G, *d_lamb, *d_FFF;
-		int sizeFFF = GRows * lambCols;
-		int memFFF = sizeof(double)* sizeFFF;
-
-		double *h_FFF = (double *)malloc(memFFF);
-		double *h_CUBLAS = (double *)malloc(memFFF);
-
-		checkCudaErrors(cudaMalloc((void **)&d_G, memG));
-		checkCudaErrors(cudaMalloc((void **)&d_lamb, memLamb));
-		checkCudaErrors(cudaMemcpy(d_G, G, memG, cudaMemcpyHostToDevice));
-		checkCudaErrors(cudaMemcpy(d_lamb, lamb, memLamb, cudaMemcpyHostToDevice));
-		checkCudaErrors(cudaMalloc((void **)&d_FFF, memFFF));
-
-		cublasHandle_t handle;
-		checkCudaErrors(cublasCreate(&handle));
-		const double alpha = 1.0;
-		const double beta = 1.0;
-		checkCudaErrors(cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, GRows, lambCols, GCols, &alpha, d_G, GRows, d_lamb, lambRows, &beta, d_FFF, GRows));
-		
-		checkCudaErrors(cudaMemcpy(h_FFF, d_FFF, memFFF, cudaMemcpyDeviceToHost));
-		printf("after cublasDgemm:\r\n");
-		//double i[] = h_FFF;
-		VectorXd FFF = Map<VectorXd >(h_FFF, GRows, lambCols);
-		VectorXd fff = PushAndQueue(0, FFF, inx2 - exp(-r*Tdone)*K);
-		printf("after PushAndQueue:\r\n");
-		MatrixXd HH(A1.cols(), A1.cols());
-		HH.row(0) = A1;
-		HH.middleRows(1, HH.rows() - 2) = H;
-		HH.row(HH.rows() - 1) = Aend;
-		printf("after HH construction:\r\n");
-		//LLT<MatrixXd> lltOfA(HH);
-		//lamb = lltOfA.solve(fff);
-
-		cusolverDnHandle_t cusolverH = NULL; 
-		cublasHandle_t cublasH = NULL; 
-		cublasStatus_t cublas_status = CUBLAS_STATUS_SUCCESS; 
-		cusolverStatus_t cusolver_status = CUSOLVER_STATUS_SUCCESS; 
-		cudaError_t cudaStat1 = cudaSuccess; 
-		cudaError_t cudaStat2 = cudaSuccess; 
-		cudaError_t cudaStat3 = cudaSuccess; 
-		cudaError_t cudaStat4 = cudaSuccess; 
-		const int m = HH.rows(); const int lda = m; const int ldb = m; const int nrhs = 1; // number of right hand side vectors
-		double *XC = new double[ldb*nrhs];
-		
-		double *d_A = NULL; // linear memory of GPU 
-		double *d_tau = NULL; // linear memory of GPU 
-		double *d_B = NULL; int *devInfo = NULL; // info in gpu (device copy) 
-		double *d_work = NULL; 
-		int lwork = 0; 
-		int info_gpu = 0; 
-		const double one = 1;
-
-		cusolver_status = cusolverDnCreate(&cusolverH); 
-		assert(CUSOLVER_STATUS_SUCCESS == cusolver_status); 
-		printf("after cusolver create:\r\n");
-		cublas_status = cublasCreate(&cublasH); 
-		assert(CUBLAS_STATUS_SUCCESS == cublas_status);
-		printf("after cublas create:\r\n");
-
-		cudaStat1 = cudaMalloc((void**)&d_A, sizeof(double) * lda * m); 
-		cudaStat2 = cudaMalloc((void**)&d_tau, sizeof(double) * m); 
-		cudaStat3 = cudaMalloc((void**)&d_B, sizeof(double) * ldb * nrhs); 
-		cudaStat4 = cudaMalloc((void**)&devInfo, sizeof(int)); 
-		assert(cudaSuccess == cudaStat1); 
-		assert(cudaSuccess == cudaStat2); 
-		assert(cudaSuccess == cudaStat3); 
-		assert(cudaSuccess == cudaStat4); 
-		cudaStat1 = cudaMemcpy(d_A, HH.data(), sizeof(double) * lda * m, cudaMemcpyHostToDevice); 
-		cudaStat2 = cudaMemcpy(d_B, fff.data(), sizeof(double) * ldb * nrhs, cudaMemcpyHostToDevice); 
-		assert(cudaSuccess == cudaStat1); assert(cudaSuccess == cudaStat2);
-
-		// step 3: query working space of geqrf and ormqr 
-		cusolver_status = cusolverDnDgeqrf_bufferSize( cusolverH, m, m, d_A, lda, &lwork); 
-		assert (cusolver_status == CUSOLVER_STATUS_SUCCESS); 
-		cudaStat1 = cudaMalloc((void**)&d_work, sizeof(double)*lwork); 
-		printf("after initialisation:\r\n");
-		assert(cudaSuccess == cudaStat1); 
-		// step 4: compute QR factorization 
-		cusolver_status = cusolverDnDgeqrf( cusolverH, m, m, d_A, lda, d_tau, d_work, lwork, devInfo); 
-		cudaStat1 = cudaDeviceSynchronize(); 
-		assert(CUSOLVER_STATUS_SUCCESS == cusolver_status); 
-		assert(cudaSuccess == cudaStat1); 
-		printf("after QR factorization:\r\n");
-		// check if QR is good or not 
-		cudaStat1 = cudaMemcpy(&info_gpu, devInfo, sizeof(int), cudaMemcpyDeviceToHost); 
-		assert(cudaSuccess == cudaStat1); 
-		printf("after geqrf: info_gpu = %d\n", info_gpu); 
-		assert(0 == info_gpu); 
-		// step 5: compute Q^T*B 
-		cusolver_status= cusolverDnDormqr( cusolverH, CUBLAS_SIDE_LEFT, CUBLAS_OP_T, m, nrhs, m, d_A, lda, d_tau, d_B, ldb, d_work, lwork, devInfo); 
-		cudaStat1 = cudaDeviceSynchronize(); 
-		assert(CUSOLVER_STATUS_SUCCESS == cusolver_status); 
-		assert(cudaSuccess == cudaStat1);
-
-		// check if QR is good or not 
-		cudaStat1 = cudaMemcpy(&info_gpu, devInfo, sizeof(int), cudaMemcpyDeviceToHost); 
-		assert(cudaSuccess == cudaStat1); 
-		printf("after ormqr: info_gpu = %d\n", info_gpu); 
-		assert(0 == info_gpu); 
-		// step 6: compute x = R \ Q^T*B 
-		cublas_status = cublasDtrsm( cublasH, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_UPPER, CUBLAS_OP_N, CUBLAS_DIAG_NON_UNIT, m, nrhs, &one, d_A, lda, d_B, ldb); 
-		cudaStat1 = cudaDeviceSynchronize(); assert(CUBLAS_STATUS_SUCCESS == cublas_status); 
-		assert(cudaSuccess == cudaStat1); 
-		cudaStat1 = cudaMemcpy(XC, d_B, sizeof(double)*ldb*nrhs, cudaMemcpyDeviceToHost); 
-		assert(cudaSuccess == cudaStat1); 
-		
-		/*printf("X = (matlab base-1)\n"); 
-		printMatrix(m, nrhs, XC, ldb, "X"); */
-
-		// free resources 
-		if (d_A ) cudaFree(d_A); 
-		if (d_tau ) cudaFree(d_tau); 
-		if (d_B ) cudaFree(d_B); 
-		if (devInfo) cudaFree(devInfo); 
-		if (d_work ) cudaFree(d_work); 
-		if (cublasH ) cublasDestroy(cublasH); 
-		if (cusolverH) cusolverDnDestroy(cusolverH); 
-		cudaDeviceReset();
-
-		
-		
-		count++;
-		printf("%i\r\n", count);
-	}
-    return 0;
-}
+//int MethodOfLines::MoLiteration(double Tend, double Tdone, double dt, double *G, int GRows, int GCols, double *lamb, int lambRows, int lambCols, double inx2, double r, double K, MatrixXd A1, MatrixXd Aend, MatrixXd H)
+//{
+//	int count = 0;
+//	while (Tend - Tdone > 1E-8)
+//	{
+//		Tdone += dt;
+//		
+//		int sizeG = GRows * GCols;
+//		int sizeLamb = lambRows * lambCols;
+//		int memG = sizeof(double) * sizeG;
+//		int memLamb = sizeof(double) * sizeLamb;
+//
+//		double *d_G, *d_lamb, *d_FFF;
+//		int sizeFFF = GRows * lambCols;
+//		int memFFF = sizeof(double)* sizeFFF;
+//
+//		double *h_FFF = (double *)malloc(memFFF);
+//		double *h_CUBLAS = (double *)malloc(memFFF);
+//
+//		checkCudaErrors(cudaMalloc((void **)&d_G, memG));
+//		checkCudaErrors(cudaMalloc((void **)&d_lamb, memLamb));
+//		checkCudaErrors(cudaMemcpy(d_G, G, memG, cudaMemcpyHostToDevice));
+//		checkCudaErrors(cudaMemcpy(d_lamb, lamb, memLamb, cudaMemcpyHostToDevice));
+//		checkCudaErrors(cudaMalloc((void **)&d_FFF, memFFF));
+//
+//		cublasHandle_t handle;
+//		checkCudaErrors(cublasCreate(&handle));
+//		const double alpha = 1.0;
+//		const double beta = 1.0;
+//		checkCudaErrors(cublasDgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, GRows, lambCols, GCols, &alpha, d_G, GRows, d_lamb, lambRows, &beta, d_FFF, GRows));
+//		
+//		checkCudaErrors(cudaMemcpy(h_FFF, d_FFF, memFFF, cudaMemcpyDeviceToHost));
+//		printf("after cublasDgemm:\r\n");
+//		//double i[] = h_FFF;
+//		VectorXd FFF = Map<VectorXd >(h_FFF, GRows, lambCols);
+//		VectorXd fff = PushAndQueue(0, FFF, inx2 - exp(-r*Tdone)*K);
+//		printf("after PushAndQueue:\r\n");
+//		MatrixXd HH(A1.cols(), A1.cols());
+//		HH.row(0) = A1;
+//		HH.middleRows(1, HH.rows() - 2) = H;
+//		HH.row(HH.rows() - 1) = Aend;
+//		printf("after HH construction:\r\n");
+//		//LLT<MatrixXd> lltOfA(HH);
+//		//lamb = lltOfA.solve(fff);
+//
+//		cusolverDnHandle_t cusolverH = NULL; 
+//		cublasHandle_t cublasH = NULL; 
+//		cublasStatus_t cublas_status = CUBLAS_STATUS_SUCCESS; 
+//		cusolverStatus_t cusolver_status = CUSOLVER_STATUS_SUCCESS; 
+//		cudaError_t cudaStat1 = cudaSuccess; 
+//		cudaError_t cudaStat2 = cudaSuccess; 
+//		cudaError_t cudaStat3 = cudaSuccess; 
+//		cudaError_t cudaStat4 = cudaSuccess; 
+//		const int m = HH.rows(); const int lda = m; const int ldb = m; const int nrhs = 1; // number of right hand side vectors
+//		double *XC = new double[ldb*nrhs];
+//		
+//		double *d_A = NULL; // linear memory of GPU 
+//		double *d_tau = NULL; // linear memory of GPU 
+//		double *d_B = NULL; int *devInfo = NULL; // info in gpu (device copy) 
+//		double *d_work = NULL; 
+//		int lwork = 0; 
+//		int info_gpu = 0; 
+//		const double one = 1;
+//
+//		cusolver_status = cusolverDnCreate(&cusolverH); 
+//		assert(CUSOLVER_STATUS_SUCCESS == cusolver_status); 
+//		printf("after cusolver create:\r\n");
+//		cublas_status = cublasCreate(&cublasH); 
+//		assert(CUBLAS_STATUS_SUCCESS == cublas_status);
+//		printf("after cublas create:\r\n");
+//
+//		cudaStat1 = cudaMalloc((void**)&d_A, sizeof(double) * lda * m); 
+//		cudaStat2 = cudaMalloc((void**)&d_tau, sizeof(double) * m); 
+//		cudaStat3 = cudaMalloc((void**)&d_B, sizeof(double) * ldb * nrhs); 
+//		cudaStat4 = cudaMalloc((void**)&devInfo, sizeof(int)); 
+//		assert(cudaSuccess == cudaStat1); 
+//		assert(cudaSuccess == cudaStat2); 
+//		assert(cudaSuccess == cudaStat3); 
+//		assert(cudaSuccess == cudaStat4); 
+//		cudaStat1 = cudaMemcpy(d_A, HH.data(), sizeof(double) * lda * m, cudaMemcpyHostToDevice); 
+//		cudaStat2 = cudaMemcpy(d_B, fff.data(), sizeof(double) * ldb * nrhs, cudaMemcpyHostToDevice); 
+//		assert(cudaSuccess == cudaStat1); assert(cudaSuccess == cudaStat2);
+//
+//		// step 3: query working space of geqrf and ormqr 
+//		cusolver_status = cusolverDnDgeqrf_bufferSize( cusolverH, m, m, d_A, lda, &lwork); 
+//		assert (cusolver_status == CUSOLVER_STATUS_SUCCESS); 
+//		cudaStat1 = cudaMalloc((void**)&d_work, sizeof(double)*lwork); 
+//		printf("after initialisation:\r\n");
+//		assert(cudaSuccess == cudaStat1); 
+//		// step 4: compute QR factorization 
+//		cusolver_status = cusolverDnDgeqrf( cusolverH, m, m, d_A, lda, d_tau, d_work, lwork, devInfo); 
+//		cudaStat1 = cudaDeviceSynchronize(); 
+//		assert(CUSOLVER_STATUS_SUCCESS == cusolver_status); 
+//		assert(cudaSuccess == cudaStat1); 
+//		printf("after QR factorization:\r\n");
+//		// check if QR is good or not 
+//		cudaStat1 = cudaMemcpy(&info_gpu, devInfo, sizeof(int), cudaMemcpyDeviceToHost); 
+//		assert(cudaSuccess == cudaStat1); 
+//		printf("after geqrf: info_gpu = %d\n", info_gpu); 
+//		assert(0 == info_gpu); 
+//		// step 5: compute Q^T*B 
+//		cusolver_status= cusolverDnDormqr( cusolverH, CUBLAS_SIDE_LEFT, CUBLAS_OP_T, m, nrhs, m, d_A, lda, d_tau, d_B, ldb, d_work, lwork, devInfo); 
+//		cudaStat1 = cudaDeviceSynchronize(); 
+//		assert(CUSOLVER_STATUS_SUCCESS == cusolver_status); 
+//		assert(cudaSuccess == cudaStat1);
+//
+//		// check if QR is good or not 
+//		cudaStat1 = cudaMemcpy(&info_gpu, devInfo, sizeof(int), cudaMemcpyDeviceToHost); 
+//		assert(cudaSuccess == cudaStat1); 
+//		printf("after ormqr: info_gpu = %d\n", info_gpu); 
+//		assert(0 == info_gpu); 
+//		// step 6: compute x = R \ Q^T*B 
+//		cublas_status = cublasDtrsm( cublasH, CUBLAS_SIDE_LEFT, CUBLAS_FILL_MODE_UPPER, CUBLAS_OP_N, CUBLAS_DIAG_NON_UNIT, m, nrhs, &one, d_A, lda, d_B, ldb); 
+//		cudaStat1 = cudaDeviceSynchronize(); assert(CUBLAS_STATUS_SUCCESS == cublas_status); 
+//		assert(cudaSuccess == cudaStat1); 
+//		cudaStat1 = cudaMemcpy(XC, d_B, sizeof(double)*ldb*nrhs, cudaMemcpyDeviceToHost); 
+//		assert(cudaSuccess == cudaStat1); 
+//		
+//		/*printf("X = (matlab base-1)\n"); 
+//		printMatrix(m, nrhs, XC, ldb, "X"); */
+//
+//		// free resources 
+//		if (d_A ) cudaFree(d_A); 
+//		if (d_tau ) cudaFree(d_tau); 
+//		if (d_B ) cudaFree(d_B); 
+//		if (devInfo) cudaFree(devInfo); 
+//		if (d_work ) cudaFree(d_work); 
+//		if (cublasH ) cublasDestroy(cublasH); 
+//		if (cusolverH) cusolverDnDestroy(cusolverH); 
+//		cudaDeviceReset();
+//
+//		
+//		
+//		count++;
+//		printf("%i\r\n", count);
+//	}
+//    return 0;
+//}
 
 void SetupLevel2(Eigen::MatrixXd &TX1, Eigen::MatrixXd &CN, Eigen::MatrixXd &A, Eigen::MatrixXd &C)
 {
@@ -480,15 +480,9 @@ void SetupLevel2(Eigen::MatrixXd &TX1, Eigen::MatrixXd &CN, Eigen::MatrixXd &A, 
 
 }
 
-void SetupLevel7(Eigen::MatrixXd &TX1, Eigen::MatrixXd &CN, Eigen::MatrixXd &A, Eigen::MatrixXd &C)
+MatrixXd GetTX7()
 {
-	TX1(325, 2);
-	CN(325, 2);
-	C(1, 2);
-	C << 1.73, 600;
-	A(2, 64);
-	A << 0;
-
+	MatrixXd TX1(325, 2);
 	TX1(0, 0) = 0;
 	TX1(1, 0) = 0;
 	TX1(2, 0) = 0;
@@ -1139,667 +1133,35 @@ void SetupLevel7(Eigen::MatrixXd &TX1, Eigen::MatrixXd &CN, Eigen::MatrixXd &A, 
 	TX1(322, 1) = 290.625;
 	TX1(323, 1) = 295.3125;
 	TX1(324, 1) = 300;
-	CN(0, 0) = 0;
-	CN(1, 0) = 0;
-	CN(2, 0) = 0;
-	CN(3, 0) = 0;
-	CN(4, 0) = 0;
-	CN(5, 0) = 0;
-	CN(6, 0) = 0;
-	CN(7, 0) = 0;
-	CN(8, 0) = 0;
-	CN(9, 0) = 0;
-	CN(10, 0) = 0;
-	CN(11, 0) = 0;
-	CN(12, 0) = 0;
-	CN(13, 0) = 0;
-	CN(14, 0) = 0;
-	CN(15, 0) = 0;
-	CN(16, 0) = 0;
-	CN(17, 0) = 0;
-	CN(18, 0) = 0;
-	CN(19, 0) = 0;
-	CN(20, 0) = 0;
-	CN(21, 0) = 0;
-	CN(22, 0) = 0;
-	CN(23, 0) = 0;
-	CN(24, 0) = 0;
-	CN(25, 0) = 0;
-	CN(26, 0) = 0;
-	CN(27, 0) = 0;
-	CN(28, 0) = 0;
-	CN(29, 0) = 0;
-	CN(30, 0) = 0;
-	CN(31, 0) = 0;
-	CN(32, 0) = 0;
-	CN(33, 0) = 0;
-	CN(34, 0) = 0;
-	CN(35, 0) = 0;
-	CN(36, 0) = 0;
-	CN(37, 0) = 0;
-	CN(38, 0) = 0;
-	CN(39, 0) = 0;
-	CN(40, 0) = 0;
-	CN(41, 0) = 0;
-	CN(42, 0) = 0;
-	CN(43, 0) = 0;
-	CN(44, 0) = 0;
-	CN(45, 0) = 0;
-	CN(46, 0) = 0;
-	CN(47, 0) = 0;
-	CN(48, 0) = 0;
-	CN(49, 0) = 0;
-	CN(50, 0) = 0;
-	CN(51, 0) = 0;
-	CN(52, 0) = 0;
-	CN(53, 0) = 0;
-	CN(54, 0) = 0;
-	CN(55, 0) = 0;
-	CN(56, 0) = 0;
-	CN(57, 0) = 0;
-	CN(58, 0) = 0;
-	CN(59, 0) = 0;
-	CN(60, 0) = 0;
-	CN(61, 0) = 0;
-	CN(62, 0) = 0;
-	CN(63, 0) = 0;
-	CN(64, 0) = 0;
-	CN(65, 0) = 0.21625;
-	CN(66, 0) = 0.21625;
-	CN(67, 0) = 0.21625;
-	CN(68, 0) = 0.21625;
-	CN(69, 0) = 0.21625;
-	CN(70, 0) = 0.21625;
-	CN(71, 0) = 0.21625;
-	CN(72, 0) = 0.21625;
-	CN(73, 0) = 0.21625;
-	CN(74, 0) = 0.21625;
-	CN(75, 0) = 0.21625;
-	CN(76, 0) = 0.21625;
-	CN(77, 0) = 0.21625;
-	CN(78, 0) = 0.21625;
-	CN(79, 0) = 0.21625;
-	CN(80, 0) = 0.21625;
-	CN(81, 0) = 0.21625;
-	CN(82, 0) = 0.21625;
-	CN(83, 0) = 0.21625;
-	CN(84, 0) = 0.21625;
-	CN(85, 0) = 0.21625;
-	CN(86, 0) = 0.21625;
-	CN(87, 0) = 0.21625;
-	CN(88, 0) = 0.21625;
-	CN(89, 0) = 0.21625;
-	CN(90, 0) = 0.21625;
-	CN(91, 0) = 0.21625;
-	CN(92, 0) = 0.21625;
-	CN(93, 0) = 0.21625;
-	CN(94, 0) = 0.21625;
-	CN(95, 0) = 0.21625;
-	CN(96, 0) = 0.21625;
-	CN(97, 0) = 0.21625;
-	CN(98, 0) = 0.21625;
-	CN(99, 0) = 0.21625;
-	CN(100, 0) = 0.21625;
-	CN(101, 0) = 0.21625;
-	CN(102, 0) = 0.21625;
-	CN(103, 0) = 0.21625;
-	CN(104, 0) = 0.21625;
-	CN(105, 0) = 0.21625;
-	CN(106, 0) = 0.21625;
-	CN(107, 0) = 0.21625;
-	CN(108, 0) = 0.21625;
-	CN(109, 0) = 0.21625;
-	CN(110, 0) = 0.21625;
-	CN(111, 0) = 0.21625;
-	CN(112, 0) = 0.21625;
-	CN(113, 0) = 0.21625;
-	CN(114, 0) = 0.21625;
-	CN(115, 0) = 0.21625;
-	CN(116, 0) = 0.21625;
-	CN(117, 0) = 0.21625;
-	CN(118, 0) = 0.21625;
-	CN(119, 0) = 0.21625;
-	CN(120, 0) = 0.21625;
-	CN(121, 0) = 0.21625;
-	CN(122, 0) = 0.21625;
-	CN(123, 0) = 0.21625;
-	CN(124, 0) = 0.21625;
-	CN(125, 0) = 0.21625;
-	CN(126, 0) = 0.21625;
-	CN(127, 0) = 0.21625;
-	CN(128, 0) = 0.21625;
-	CN(129, 0) = 0.21625;
-	CN(130, 0) = 0.432499999999999;
-	CN(131, 0) = 0.432499999999999;
-	CN(132, 0) = 0.432499999999999;
-	CN(133, 0) = 0.432499999999999;
-	CN(134, 0) = 0.432499999999999;
-	CN(135, 0) = 0.432499999999999;
-	CN(136, 0) = 0.432499999999999;
-	CN(137, 0) = 0.432499999999999;
-	CN(138, 0) = 0.432499999999999;
-	CN(139, 0) = 0.432499999999999;
-	CN(140, 0) = 0.432499999999999;
-	CN(141, 0) = 0.432499999999999;
-	CN(142, 0) = 0.432499999999999;
-	CN(143, 0) = 0.432499999999999;
-	CN(144, 0) = 0.432499999999999;
-	CN(145, 0) = 0.432499999999999;
-	CN(146, 0) = 0.432499999999999;
-	CN(147, 0) = 0.432499999999999;
-	CN(148, 0) = 0.432499999999999;
-	CN(149, 0) = 0.432499999999999;
-	CN(150, 0) = 0.432499999999999;
-	CN(151, 0) = 0.432499999999999;
-	CN(152, 0) = 0.432499999999999;
-	CN(153, 0) = 0.432499999999999;
-	CN(154, 0) = 0.432499999999999;
-	CN(155, 0) = 0.432499999999999;
-	CN(156, 0) = 0.432499999999999;
-	CN(157, 0) = 0.432499999999999;
-	CN(158, 0) = 0.432499999999999;
-	CN(159, 0) = 0.432499999999999;
-	CN(160, 0) = 0.432499999999999;
-	CN(161, 0) = 0.432499999999999;
-	CN(162, 0) = 0.432499999999999;
-	CN(163, 0) = 0.432499999999999;
-	CN(164, 0) = 0.432499999999999;
-	CN(165, 0) = 0.432499999999999;
-	CN(166, 0) = 0.432499999999999;
-	CN(167, 0) = 0.432499999999999;
-	CN(168, 0) = 0.432499999999999;
-	CN(169, 0) = 0.432499999999999;
-	CN(170, 0) = 0.432499999999999;
-	CN(171, 0) = 0.432499999999999;
-	CN(172, 0) = 0.432499999999999;
-	CN(173, 0) = 0.432499999999999;
-	CN(174, 0) = 0.432499999999999;
-	CN(175, 0) = 0.432499999999999;
-	CN(176, 0) = 0.432499999999999;
-	CN(177, 0) = 0.432499999999999;
-	CN(178, 0) = 0.432499999999999;
-	CN(179, 0) = 0.432499999999999;
-	CN(180, 0) = 0.432499999999999;
-	CN(181, 0) = 0.432499999999999;
-	CN(182, 0) = 0.432499999999999;
-	CN(183, 0) = 0.432499999999999;
-	CN(184, 0) = 0.432499999999999;
-	CN(185, 0) = 0.432499999999999;
-	CN(186, 0) = 0.432499999999999;
-	CN(187, 0) = 0.432499999999999;
-	CN(188, 0) = 0.432499999999999;
-	CN(189, 0) = 0.432499999999999;
-	CN(190, 0) = 0.432499999999999;
-	CN(191, 0) = 0.432499999999999;
-	CN(192, 0) = 0.432499999999999;
-	CN(193, 0) = 0.432499999999999;
-	CN(194, 0) = 0.432499999999999;
-	CN(195, 0) = 0.648749999999999;
-	CN(196, 0) = 0.648749999999999;
-	CN(197, 0) = 0.648749999999999;
-	CN(198, 0) = 0.648749999999999;
-	CN(199, 0) = 0.648749999999999;
-	CN(200, 0) = 0.648749999999999;
-	CN(201, 0) = 0.648749999999999;
-	CN(202, 0) = 0.648749999999999;
-	CN(203, 0) = 0.648749999999999;
-	CN(204, 0) = 0.648749999999999;
-	CN(205, 0) = 0.648749999999999;
-	CN(206, 0) = 0.648749999999999;
-	CN(207, 0) = 0.648749999999999;
-	CN(208, 0) = 0.648749999999999;
-	CN(209, 0) = 0.648749999999999;
-	CN(210, 0) = 0.648749999999999;
-	CN(211, 0) = 0.648749999999999;
-	CN(212, 0) = 0.648749999999999;
-	CN(213, 0) = 0.648749999999999;
-	CN(214, 0) = 0.648749999999999;
-	CN(215, 0) = 0.648749999999999;
-	CN(216, 0) = 0.648749999999999;
-	CN(217, 0) = 0.648749999999999;
-	CN(218, 0) = 0.648749999999999;
-	CN(219, 0) = 0.648749999999999;
-	CN(220, 0) = 0.648749999999999;
-	CN(221, 0) = 0.648749999999999;
-	CN(222, 0) = 0.648749999999999;
-	CN(223, 0) = 0.648749999999999;
-	CN(224, 0) = 0.648749999999999;
-	CN(225, 0) = 0.648749999999999;
-	CN(226, 0) = 0.648749999999999;
-	CN(227, 0) = 0.648749999999999;
-	CN(228, 0) = 0.648749999999999;
-	CN(229, 0) = 0.648749999999999;
-	CN(230, 0) = 0.648749999999999;
-	CN(231, 0) = 0.648749999999999;
-	CN(232, 0) = 0.648749999999999;
-	CN(233, 0) = 0.648749999999999;
-	CN(234, 0) = 0.648749999999999;
-	CN(235, 0) = 0.648749999999999;
-	CN(236, 0) = 0.648749999999999;
-	CN(237, 0) = 0.648749999999999;
-	CN(238, 0) = 0.648749999999999;
-	CN(239, 0) = 0.648749999999999;
-	CN(240, 0) = 0.648749999999999;
-	CN(241, 0) = 0.648749999999999;
-	CN(242, 0) = 0.648749999999999;
-	CN(243, 0) = 0.648749999999999;
-	CN(244, 0) = 0.648749999999999;
-	CN(245, 0) = 0.648749999999999;
-	CN(246, 0) = 0.648749999999999;
-	CN(247, 0) = 0.648749999999999;
-	CN(248, 0) = 0.648749999999999;
-	CN(249, 0) = 0.648749999999999;
-	CN(250, 0) = 0.648749999999999;
-	CN(251, 0) = 0.648749999999999;
-	CN(252, 0) = 0.648749999999999;
-	CN(253, 0) = 0.648749999999999;
-	CN(254, 0) = 0.648749999999999;
-	CN(255, 0) = 0.648749999999999;
-	CN(256, 0) = 0.648749999999999;
-	CN(257, 0) = 0.648749999999999;
-	CN(258, 0) = 0.648749999999999;
-	CN(259, 0) = 0.648749999999999;
-	CN(260, 0) = 0.864999999999999;
-	CN(261, 0) = 0.864999999999999;
-	CN(262, 0) = 0.864999999999999;
-	CN(263, 0) = 0.864999999999999;
-	CN(264, 0) = 0.864999999999999;
-	CN(265, 0) = 0.864999999999999;
-	CN(266, 0) = 0.864999999999999;
-	CN(267, 0) = 0.864999999999999;
-	CN(268, 0) = 0.864999999999999;
-	CN(269, 0) = 0.864999999999999;
-	CN(270, 0) = 0.864999999999999;
-	CN(271, 0) = 0.864999999999999;
-	CN(272, 0) = 0.864999999999999;
-	CN(273, 0) = 0.864999999999999;
-	CN(274, 0) = 0.864999999999999;
-	CN(275, 0) = 0.864999999999999;
-	CN(276, 0) = 0.864999999999999;
-	CN(277, 0) = 0.864999999999999;
-	CN(278, 0) = 0.864999999999999;
-	CN(279, 0) = 0.864999999999999;
-	CN(280, 0) = 0.864999999999999;
-	CN(281, 0) = 0.864999999999999;
-	CN(282, 0) = 0.864999999999999;
-	CN(283, 0) = 0.864999999999999;
-	CN(284, 0) = 0.864999999999999;
-	CN(285, 0) = 0.864999999999999;
-	CN(286, 0) = 0.864999999999999;
-	CN(287, 0) = 0.864999999999999;
-	CN(288, 0) = 0.864999999999999;
-	CN(289, 0) = 0.864999999999999;
-	CN(290, 0) = 0.864999999999999;
-	CN(291, 0) = 0.864999999999999;
-	CN(292, 0) = 0.864999999999999;
-	CN(293, 0) = 0.864999999999999;
-	CN(294, 0) = 0.864999999999999;
-	CN(295, 0) = 0.864999999999999;
-	CN(296, 0) = 0.864999999999999;
-	CN(297, 0) = 0.864999999999999;
-	CN(298, 0) = 0.864999999999999;
-	CN(299, 0) = 0.864999999999999;
-	CN(300, 0) = 0.864999999999999;
-	CN(301, 0) = 0.864999999999999;
-	CN(302, 0) = 0.864999999999999;
-	CN(303, 0) = 0.864999999999999;
-	CN(304, 0) = 0.864999999999999;
-	CN(305, 0) = 0.864999999999999;
-	CN(306, 0) = 0.864999999999999;
-	CN(307, 0) = 0.864999999999999;
-	CN(308, 0) = 0.864999999999999;
-	CN(309, 0) = 0.864999999999999;
-	CN(310, 0) = 0.864999999999999;
-	CN(311, 0) = 0.864999999999999;
-	CN(312, 0) = 0.864999999999999;
-	CN(313, 0) = 0.864999999999999;
-	CN(314, 0) = 0.864999999999999;
-	CN(315, 0) = 0.864999999999999;
-	CN(316, 0) = 0.864999999999999;
-	CN(317, 0) = 0.864999999999999;
-	CN(318, 0) = 0.864999999999999;
-	CN(319, 0) = 0.864999999999999;
-	CN(320, 0) = 0.864999999999999;
-	CN(321, 0) = 0.864999999999999;
-	CN(322, 0) = 0.864999999999999;
-	CN(323, 0) = 0.864999999999999;
-	CN(324, 0) = 0.864999999999999;
-	CN(0, 1) = 0;
-	CN(1, 1) = 4.6875;
-	CN(2, 1) = 9.375;
-	CN(3, 1) = 14.0625;
-	CN(4, 1) = 18.75;
-	CN(5, 1) = 23.4375;
-	CN(6, 1) = 28.125;
-	CN(7, 1) = 32.8125;
-	CN(8, 1) = 37.5;
-	CN(9, 1) = 42.1875;
-	CN(10, 1) = 46.875;
-	CN(11, 1) = 51.5625;
-	CN(12, 1) = 56.25;
-	CN(13, 1) = 60.9375;
-	CN(14, 1) = 65.625;
-	CN(15, 1) = 70.3125;
-	CN(16, 1) = 75;
-	CN(17, 1) = 79.6875;
-	CN(18, 1) = 84.375;
-	CN(19, 1) = 89.0625;
-	CN(20, 1) = 93.75;
-	CN(21, 1) = 98.4375;
-	CN(22, 1) = 103.125;
-	CN(23, 1) = 107.8125;
-	CN(24, 1) = 112.5;
-	CN(25, 1) = 117.1875;
-	CN(26, 1) = 121.875;
-	CN(27, 1) = 126.5625;
-	CN(28, 1) = 131.25;
-	CN(29, 1) = 135.9375;
-	CN(30, 1) = 140.625;
-	CN(31, 1) = 145.3125;
-	CN(32, 1) = 150;
-	CN(33, 1) = 154.6875;
-	CN(34, 1) = 159.375;
-	CN(35, 1) = 164.0625;
-	CN(36, 1) = 168.75;
-	CN(37, 1) = 173.4375;
-	CN(38, 1) = 178.125;
-	CN(39, 1) = 182.8125;
-	CN(40, 1) = 187.5;
-	CN(41, 1) = 192.1875;
-	CN(42, 1) = 196.875;
-	CN(43, 1) = 201.5625;
-	CN(44, 1) = 206.25;
-	CN(45, 1) = 210.9375;
-	CN(46, 1) = 215.625;
-	CN(47, 1) = 220.3125;
-	CN(48, 1) = 225;
-	CN(49, 1) = 229.6875;
-	CN(50, 1) = 234.375;
-	CN(51, 1) = 239.0625;
-	CN(52, 1) = 243.75;
-	CN(53, 1) = 248.4375;
-	CN(54, 1) = 253.125;
-	CN(55, 1) = 257.8125;
-	CN(56, 1) = 262.5;
-	CN(57, 1) = 267.1875;
-	CN(58, 1) = 271.875;
-	CN(59, 1) = 276.5625;
-	CN(60, 1) = 281.25;
-	CN(61, 1) = 285.9375;
-	CN(62, 1) = 290.625;
-	CN(63, 1) = 295.3125;
-	CN(64, 1) = 300;
-	CN(65, 1) = 0;
-	CN(66, 1) = 4.6875;
-	CN(67, 1) = 9.375;
-	CN(68, 1) = 14.0625;
-	CN(69, 1) = 18.75;
-	CN(70, 1) = 23.4375;
-	CN(71, 1) = 28.125;
-	CN(72, 1) = 32.8125;
-	CN(73, 1) = 37.5;
-	CN(74, 1) = 42.1875;
-	CN(75, 1) = 46.875;
-	CN(76, 1) = 51.5625;
-	CN(77, 1) = 56.25;
-	CN(78, 1) = 60.9375;
-	CN(79, 1) = 65.625;
-	CN(80, 1) = 70.3125;
-	CN(81, 1) = 75;
-	CN(82, 1) = 79.6875;
-	CN(83, 1) = 84.375;
-	CN(84, 1) = 89.0625;
-	CN(85, 1) = 93.75;
-	CN(86, 1) = 98.4375;
-	CN(87, 1) = 103.125;
-	CN(88, 1) = 107.8125;
-	CN(89, 1) = 112.5;
-	CN(90, 1) = 117.1875;
-	CN(91, 1) = 121.875;
-	CN(92, 1) = 126.5625;
-	CN(93, 1) = 131.25;
-	CN(94, 1) = 135.9375;
-	CN(95, 1) = 140.625;
-	CN(96, 1) = 145.3125;
-	CN(97, 1) = 150;
-	CN(98, 1) = 154.6875;
-	CN(99, 1) = 159.375;
-	CN(100, 1) = 164.0625;
-	CN(101, 1) = 168.75;
-	CN(102, 1) = 173.4375;
-	CN(103, 1) = 178.125;
-	CN(104, 1) = 182.8125;
-	CN(105, 1) = 187.5;
-	CN(106, 1) = 192.1875;
-	CN(107, 1) = 196.875;
-	CN(108, 1) = 201.5625;
-	CN(109, 1) = 206.25;
-	CN(110, 1) = 210.9375;
-	CN(111, 1) = 215.625;
-	CN(112, 1) = 220.3125;
-	CN(113, 1) = 225;
-	CN(114, 1) = 229.6875;
-	CN(115, 1) = 234.375;
-	CN(116, 1) = 239.0625;
-	CN(117, 1) = 243.75;
-	CN(118, 1) = 248.4375;
-	CN(119, 1) = 253.125;
-	CN(120, 1) = 257.8125;
-	CN(121, 1) = 262.5;
-	CN(122, 1) = 267.1875;
-	CN(123, 1) = 271.875;
-	CN(124, 1) = 276.5625;
-	CN(125, 1) = 281.25;
-	CN(126, 1) = 285.9375;
-	CN(127, 1) = 290.625;
-	CN(128, 1) = 295.3125;
-	CN(129, 1) = 300;
-	CN(130, 1) = 0;
-	CN(131, 1) = 4.6875;
-	CN(132, 1) = 9.375;
-	CN(133, 1) = 14.0625;
-	CN(134, 1) = 18.75;
-	CN(135, 1) = 23.4375;
-	CN(136, 1) = 28.125;
-	CN(137, 1) = 32.8125;
-	CN(138, 1) = 37.5;
-	CN(139, 1) = 42.1875;
-	CN(140, 1) = 46.875;
-	CN(141, 1) = 51.5625;
-	CN(142, 1) = 56.25;
-	CN(143, 1) = 60.9375;
-	CN(144, 1) = 65.625;
-	CN(145, 1) = 70.3125;
-	CN(146, 1) = 75;
-	CN(147, 1) = 79.6875;
-	CN(148, 1) = 84.375;
-	CN(149, 1) = 89.0625;
-	CN(150, 1) = 93.75;
-	CN(151, 1) = 98.4375;
-	CN(152, 1) = 103.125;
-	CN(153, 1) = 107.8125;
-	CN(154, 1) = 112.5;
-	CN(155, 1) = 117.1875;
-	CN(156, 1) = 121.875;
-	CN(157, 1) = 126.5625;
-	CN(158, 1) = 131.25;
-	CN(159, 1) = 135.9375;
-	CN(160, 1) = 140.625;
-	CN(161, 1) = 145.3125;
-	CN(162, 1) = 150;
-	CN(163, 1) = 154.6875;
-	CN(164, 1) = 159.375;
-	CN(165, 1) = 164.0625;
-	CN(166, 1) = 168.75;
-	CN(167, 1) = 173.4375;
-	CN(168, 1) = 178.125;
-	CN(169, 1) = 182.8125;
-	CN(170, 1) = 187.5;
-	CN(171, 1) = 192.1875;
-	CN(172, 1) = 196.875;
-	CN(173, 1) = 201.5625;
-	CN(174, 1) = 206.25;
-	CN(175, 1) = 210.9375;
-	CN(176, 1) = 215.625;
-	CN(177, 1) = 220.3125;
-	CN(178, 1) = 225;
-	CN(179, 1) = 229.6875;
-	CN(180, 1) = 234.375;
-	CN(181, 1) = 239.0625;
-	CN(182, 1) = 243.75;
-	CN(183, 1) = 248.4375;
-	CN(184, 1) = 253.125;
-	CN(185, 1) = 257.8125;
-	CN(186, 1) = 262.5;
-	CN(187, 1) = 267.1875;
-	CN(188, 1) = 271.875;
-	CN(189, 1) = 276.5625;
-	CN(190, 1) = 281.25;
-	CN(191, 1) = 285.9375;
-	CN(192, 1) = 290.625;
-	CN(193, 1) = 295.3125;
-	CN(194, 1) = 300;
-	CN(195, 1) = 0;
-	CN(196, 1) = 4.6875;
-	CN(197, 1) = 9.375;
-	CN(198, 1) = 14.0625;
-	CN(199, 1) = 18.75;
-	CN(200, 1) = 23.4375;
-	CN(201, 1) = 28.125;
-	CN(202, 1) = 32.8125;
-	CN(203, 1) = 37.5;
-	CN(204, 1) = 42.1875;
-	CN(205, 1) = 46.875;
-	CN(206, 1) = 51.5625;
-	CN(207, 1) = 56.25;
-	CN(208, 1) = 60.9375;
-	CN(209, 1) = 65.625;
-	CN(210, 1) = 70.3125;
-	CN(211, 1) = 75;
-	CN(212, 1) = 79.6875;
-	CN(213, 1) = 84.375;
-	CN(214, 1) = 89.0625;
-	CN(215, 1) = 93.75;
-	CN(216, 1) = 98.4375;
-	CN(217, 1) = 103.125;
-	CN(218, 1) = 107.8125;
-	CN(219, 1) = 112.5;
-	CN(220, 1) = 117.1875;
-	CN(221, 1) = 121.875;
-	CN(222, 1) = 126.5625;
-	CN(223, 1) = 131.25;
-	CN(224, 1) = 135.9375;
-	CN(225, 1) = 140.625;
-	CN(226, 1) = 145.3125;
-	CN(227, 1) = 150;
-	CN(228, 1) = 154.6875;
-	CN(229, 1) = 159.375;
-	CN(230, 1) = 164.0625;
-	CN(231, 1) = 168.75;
-	CN(232, 1) = 173.4375;
-	CN(233, 1) = 178.125;
-	CN(234, 1) = 182.8125;
-	CN(235, 1) = 187.5;
-	CN(236, 1) = 192.1875;
-	CN(237, 1) = 196.875;
-	CN(238, 1) = 201.5625;
-	CN(239, 1) = 206.25;
-	CN(240, 1) = 210.9375;
-	CN(241, 1) = 215.625;
-	CN(242, 1) = 220.3125;
-	CN(243, 1) = 225;
-	CN(244, 1) = 229.6875;
-	CN(245, 1) = 234.375;
-	CN(246, 1) = 239.0625;
-	CN(247, 1) = 243.75;
-	CN(248, 1) = 248.4375;
-	CN(249, 1) = 253.125;
-	CN(250, 1) = 257.8125;
-	CN(251, 1) = 262.5;
-	CN(252, 1) = 267.1875;
-	CN(253, 1) = 271.875;
-	CN(254, 1) = 276.5625;
-	CN(255, 1) = 281.25;
-	CN(256, 1) = 285.9375;
-	CN(257, 1) = 290.625;
-	CN(258, 1) = 295.3125;
-	CN(259, 1) = 300;
-	CN(260, 1) = 0;
-	CN(261, 1) = 4.6875;
-	CN(262, 1) = 9.375;
-	CN(263, 1) = 14.0625;
-	CN(264, 1) = 18.75;
-	CN(265, 1) = 23.4375;
-	CN(266, 1) = 28.125;
-	CN(267, 1) = 32.8125;
-	CN(268, 1) = 37.5;
-	CN(269, 1) = 42.1875;
-	CN(270, 1) = 46.875;
-	CN(271, 1) = 51.5625;
-	CN(272, 1) = 56.25;
-	CN(273, 1) = 60.9375;
-	CN(274, 1) = 65.625;
-	CN(275, 1) = 70.3125;
-	CN(276, 1) = 75;
-	CN(277, 1) = 79.6875;
-	CN(278, 1) = 84.375;
-	CN(279, 1) = 89.0625;
-	CN(280, 1) = 93.75;
-	CN(281, 1) = 98.4375;
-	CN(282, 1) = 103.125;
-	CN(283, 1) = 107.8125;
-	CN(284, 1) = 112.5;
-	CN(285, 1) = 117.1875;
-	CN(286, 1) = 121.875;
-	CN(287, 1) = 126.5625;
-	CN(288, 1) = 131.25;
-	CN(289, 1) = 135.9375;
-	CN(290, 1) = 140.625;
-	CN(291, 1) = 145.3125;
-	CN(292, 1) = 150;
-	CN(293, 1) = 154.6875;
-	CN(294, 1) = 159.375;
-	CN(295, 1) = 164.0625;
-	CN(296, 1) = 168.75;
-	CN(297, 1) = 173.4375;
-	CN(298, 1) = 178.125;
-	CN(299, 1) = 182.8125;
-	CN(300, 1) = 187.5;
-	CN(301, 1) = 192.1875;
-	CN(302, 1) = 196.875;
-	CN(303, 1) = 201.5625;
-	CN(304, 1) = 206.25;
-	CN(305, 1) = 210.9375;
-	CN(306, 1) = 215.625;
-	CN(307, 1) = 220.3125;
-	CN(308, 1) = 225;
-	CN(309, 1) = 229.6875;
-	CN(310, 1) = 234.375;
-	CN(311, 1) = 239.0625;
-	CN(312, 1) = 243.75;
-	CN(313, 1) = 248.4375;
-	CN(314, 1) = 253.125;
-	CN(315, 1) = 257.8125;
-	CN(316, 1) = 262.5;
-	CN(317, 1) = 267.1875;
-	CN(318, 1) = 271.875;
-	CN(319, 1) = 276.5625;
-	CN(320, 1) = 281.25;
-	CN(321, 1) = 285.9375;
-	CN(322, 1) = 290.625;
-	CN(323, 1) = 295.3125;
-	CN(324, 1) = 300;
+	return TX1;
+}
+void SetupLevel7(Eigen::MatrixXd &TX1, Eigen::MatrixXd &CN, Eigen::MatrixXd &A, Eigen::MatrixXd &C)
+{
+	
+	CN(325, 2);
+	//C(1, 2);
+	//C(0, 1) = 1.73;
+	//C(0, 2) = 600;
+	//A(1, 2);
+	//A(0, 1) = 2;
+	//A(0, 2) = 64;
+	
 }
 
 int main() {
 
-	MatrixXd TX1;
-	MatrixXd CN;
-	MatrixXd C;
-	MatrixXd A;
-
-	SetupLevel2(TX1, CN, A, C);
-	CudaRBF::Gaussian2D(TX1, CN, A, C);
+	MatrixXd TX1 = GetTX7();
+	MatrixXd CN = GetTX7();
+	MatrixXd C(1, 2);
+	MatrixXd A(1, 2);
+	C << 1.73,600;
+	A << 2, 64;
+	
+	for (int i = 0; i < 1; i++)
+	{
+		printf("i=%i", i);
+		CudaRBF::Gaussian2D(TX1, CN, A, C);
+	}
 
 	return 0;
 }

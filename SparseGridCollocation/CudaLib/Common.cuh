@@ -6,7 +6,7 @@
 #include <vector>
 #include <map>
 #include <iostream>
-#include <cublas_v2.h>
+//#include <cublas_v2.h>
 #include "./cuda_include/helper_cuda.h"
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
@@ -40,6 +40,9 @@ FAI_CUDA(double *FAI, double a, double *TP, int tpCol, double CN, double c, dim3
 // D = a * (B - c)
 extern __global__ void
 ScalarVectorDifference_CUDA(double *D, double a, double *B, double c, dim3 dimB);
+
+extern __global__ void
+ElementWiseMultiply_CUDA(double *C, double *A, double *B, int rows, int cols);
 
 extern __global__ void
 ElementWiseMultiply_CUDA(double *C, double *A, double *B, dim3 dimC);

@@ -7,10 +7,11 @@
 #include <vector>
 #include <map>
 #include <iostream>
-#include <cublas_v2.h>
+//#include <cublas_v2.h>
 #include "helper_cuda.h"
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
+#include <thrust/execution_policy.h>
 
 #include "Common.cuh"
 #include "Gaussian2d2.cuh"
@@ -46,8 +47,8 @@ Gaussian2d2_CUDA(double *D, double *Dt, double *Dx, double *Dxx, double *TP, dim
 	{
 		int test = 0;
 		//printf("mqd22_CUDA i=%i j =%i dimCN.y=%i\r\n", i, j, dimCN.y);
-		//dim3 threads(32, 32);
-		dim3 threads(8, 8);
+		dim3 threads(32, 32);
+		//dim3 threads(8, 8);
 		//dim3 grid(dimTP.x / threads.x, dimTP.y / threads.y);
 		int gridRows = 1 + (dimCN.y / threads.y);
 		//printf("rows=%i\r\n", gridRows);
@@ -105,11 +106,11 @@ Gaussian2d2_CUDA(double *D, double *Dt, double *Dx, double *Dxx, double *TP, dim
 		//__syncthreads();
 		gpuAssert << <1, 1 >> > (cudaPeekAtLastError(), __FILE__, __LINE__);
 		gpuAssert << <1, 1 >> > (cudaDeviceSynchronize(), __FILE__, __LINE__);
-		if (i == test)
-		{
-			printf("DColJ size=%f", sizeof(DColJ));
-			printMatrix_CUDA << <1, 1 >> > (DColJ, dim3(1, dimTP.y));
-		}
+		//if (i == test)
+		//{
+		//	printf("DColJ size=%f", sizeof(DColJ));
+		//	printMatrix_CUDA << <1, 1 >> > (DColJ, dim3(1, dimTP.y));
+		//}
 		/*
 		CALCULATE Dt
 		*/
@@ -262,28 +263,51 @@ Gaussian2d2_CUDA(double *D, double *Dt, double *Dx, double *Dxx, double *TP, dim
 		gpuAssert << <1, 1 >> > (cudaPeekAtLastError(), __FILE__, __LINE__);
 		gpuAssert << <1, 1 >> > (cudaDeviceSynchronize(), __FILE__, __LINE__);
 		//__syncthreads();
+		//if (i == test)
+		//{
+		//	printf("a5 size=%f", sizeof(a5));
+		//	printMatrix_CUDA << <1, 1 >> > (a5, dim3(1, dimTpCol1.y));
+		//	//__syncthreads();
+		//}
 
 		double *b5 = (double*)malloc(sizeof(double) * dimTP.y * 1);
 		MatrixAddScalar_CUDA << <1, threads >> > (b5, a5, -2 * sA / sC, dimTpCol1);
 		gpuAssert << <1, 1 >> > (cudaPeekAtLastError(), __FILE__, __LINE__);
 		gpuAssert << <1, 1 >> > (cudaDeviceSynchronize(), __FILE__, __LINE__);
 		//__syncthreads();
+		//if (i == test)
+		//{
+		//	printf("b5 size=%f", sizeof(b5));
+		//	printMatrix_CUDA << <1, 1 >> > (b5, dim3(1, dimTpCol1.y));
+		//	//__syncthreads();
+		//}
 		double *c5 = (double*)malloc(sizeof(double) * dimTP.y * 1);
 		double *sFAI = (double*)malloc(sizeof(double) * dimTP.y * 1);
-		ElementWiseMultiply_CUDA5 << <1, threads >> > (sFAI, FAI2, FAI1, dimTpCol1);
-		ElementWiseMultiply_CUDA2 << <1, threads >> > (c5, b5, sFAI, dimTpCol1);
+		ElementWiseMultiply_CUDA << <1, threads >> > (sFAI, FAI2, FAI1, dimTpCol1);
+		ElementWiseMultiply_CUDA << <1, threads >> > (c5, b5, sFAI, dimTpCol1);
 		gpuAssert << <1, 1 >> > (cudaPeekAtLastError(), __FILE__, __LINE__);
 		gpuAssert << <1, 1 >> > (cudaDeviceSynchronize(), __FILE__, __LINE__);
 		//__syncthreads();
-
+		//if (i == test)
+		//{
+		//	printf("c5 size=%f", sizeof(a5));
+		//	printMatrix_CUDA << <1, 1 >> > (c5, dim3(1, dimTpCol1.y));
+		//	//__syncthreads();
+		//}
 
 		double *DxxColJ = (double*)malloc(sizeof(double) * dimTP.y * 1);
 		/*double *sTPCol1 = (double*)malloc(sizeof(double) * ( dimTP.y +1) * 1);
 		sTPCol1[0] = dimTP.y;*/
 		double *sTPCol1 = (double*)malloc(sizeof(double) * (dimTP.y) * 1);
 		
-		ElementWiseMultiply_CUDA3 << <1, threads >> > (sTPCol1, tpCol1, tpCol1a, dimTpCol1);
-		ElementWiseMultiply_CUDA4 << <1, threads >> > (DxxColJ, sTPCol1, c5, dimTpCol1);
+		ElementWiseMultiply_CUDA << <1, threads >> > (sTPCol1, tpCol1, tpCol1a, dimTpCol1);
+		//if (i == test)
+		//{
+		//	printf("sTPCol1 size=%f", sizeof(sTPCol1));
+		//	printMatrix_CUDA << <1, 1 >> > (sTPCol1, dim3(1, dimTpCol1.y));
+		//	//__syncthreads();
+		//}
+		ElementWiseMultiply_CUDA << <1, threads >> > (DxxColJ, sTPCol1, c5, dimTpCol1);
 		gpuAssert << <1, 1 >> > (cudaPeekAtLastError(), __FILE__, __LINE__);
 		gpuAssert << <1, 1 >> > (cudaDeviceSynchronize(), __FILE__, __LINE__);
 		free(a5);
@@ -306,12 +330,12 @@ Gaussian2d2_CUDA(double *D, double *Dt, double *Dx, double *Dxx, double *TP, dim
 		__syncthreads();
 		gpuAssert << <1, 1 >> >(cudaPeekAtLastError(), __FILE__, __LINE__);
 		gpuAssert << <1, 1 >> >(cudaDeviceSynchronize(), __FILE__, __LINE__);
-		//if (i == test)
-		//{
-		//	printf("D size=%f\r\n", sizeof(D));
-		//	dumpMatrix_CUDA << <1, 1 >> > (D, dim3(dimTP.y, dimTP.y));
-		//	//__syncthreads();
-		//}
+		if (i == test)
+		{
+			printf("D size=%f\r\n", sizeof(D));
+			dumpMatrix_CUDA << <1, 1 >> > (D, dim3(dimTP.y, dimTP.y));
+			//__syncthreads();
+		}
 		__syncthreads();
 		SetColumn << <grids, threads >> >(Dt, i, DtColJ, dimResult);
 		gpuAssert << <1, 1 >> >(cudaPeekAtLastError(), __FILE__, __LINE__);
@@ -342,3 +366,7 @@ Gaussian2d2_CUDA(double *D, double *Dt, double *Dx, double *Dxx, double *TP, dim
 	}
 	__syncthreads();
 }
+
+
+
+

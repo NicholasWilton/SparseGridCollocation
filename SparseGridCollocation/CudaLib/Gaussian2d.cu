@@ -6,7 +6,7 @@
 #include <vector>
 #include <map>
 #include <iostream>
-#include <cublas_v2.h>
+//#include <cublas_v2.h>
 #include "helper_cuda.h"
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>

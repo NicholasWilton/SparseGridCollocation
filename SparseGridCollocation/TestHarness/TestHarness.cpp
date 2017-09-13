@@ -7,24 +7,24 @@
 #include ".\..\SparseGridCollocation\SmoothInitialX.h"
 #include ".\..\SparseGridCollocation\Params.h"
 #include ".\..\SparseGridCollocation\BasketOption.h"
-#include <ql/qldefines.hpp>
-#ifdef BOOST_MSVC
-#  include <ql/auto_link.hpp>
-#endif
-#include <ql/quantlib.hpp>
-#include <ql/instruments/vanillaoption.hpp>
-#include <ql/pricingengines/vanilla/mceuropeanengine.hpp>
-#include <ql/pricingengines/basket/mceuropeanbasketengine.hpp>
+//#include <ql/qldefines.hpp>
+//#ifdef BOOST_MSVC
+//#  include <ql/auto_link.hpp>
+//#endif
+//#include <ql/quantlib.hpp>
+//#include <ql/instruments/vanillaoption.hpp>
+//#include <ql/pricingengines/vanilla/mceuropeanengine.hpp>
+//#include <ql/pricingengines/basket/mceuropeanbasketengine.hpp>
 #include <iostream>
 #include <boost/timer.hpp>
 
 
-using namespace QuantLib;
+//using namespace QuantLib;
 using namespace Eigen;
 using namespace std;
 using namespace Leicester;
 namespace l = Leicester;
-namespace ql = QuantLib;
+//namespace ql = QuantLib;
 
 void CheckResults(double precision,
 	vector<vector<MatrixXd>> item2,
@@ -351,108 +351,108 @@ void CompareInterpolation(map<string, vector<vector<MatrixXd>>> expected, map<st
 	}
 };
 
-void QuantlibBenchMark(Params p, VectorXd x)
-{
-	VectorXd mcBasket = VectorXd::Zero(10000);
-	VectorXd mcEuroCall = VectorXd::Zero(10000);
-	VectorXd apEuroCall = VectorXd::Zero(10000);
-
-	for (int i = 0; i < 10000; i++)
-	{
-		boost::timer timer;
-		std::cout << "\r" << "MC S=" << x[i];
-		// set up dates
-		Calendar calendar = TARGET();
-		Date todaysDate(01, Jan, 2000);
-		Date settlementDate(01, Jan, 2000);
-		Settings::instance().evaluationDate() = todaysDate;
-		// our options
-		QuantLib::Option::Type type(QuantLib::Option::Call);
-
-		Real underlying = x[i];
-		Real strike = p.K;
-		Spread dividendYield = 0.00;
-		Rate riskFreeRate = p.r;
-		Volatility volatility = p.sigma;
-		Date maturity(01, Jan, 2001);
-		DayCounter dayCounter = Actual365Fixed();
-
-		//boost::shared_ptr<Exercise> europeanExercise(new EuropeanExercise(maturity));
-
-		Handle<Quote> underlyingH(boost::shared_ptr<Quote>(new SimpleQuote(underlying)));
-
-		Handle<YieldTermStructure> flatTermStructure(boost::shared_ptr<YieldTermStructure>(
-			new FlatForward(settlementDate, riskFreeRate, dayCounter)));
-
-		Handle<YieldTermStructure> flatDividendTS(boost::shared_ptr<YieldTermStructure>(
-			new FlatForward(settlementDate, dividendYield, dayCounter)));
-
-		Handle<BlackVolTermStructure> flatVolTS(boost::shared_ptr<BlackVolTermStructure>(
-			new BlackConstantVol(settlementDate, calendar, volatility,
-				dayCounter)));
-
-		boost::shared_ptr<PlainVanillaPayoff> payoff(new PlainVanillaPayoff(type, strike));
-
-		boost::shared_ptr<BasketPayoff> basketPayoff(new AverageBasketPayoff(payoff, 1));
-
-		boost::shared_ptr<BlackScholesMertonProcess> bsmProcess(new BlackScholesMertonProcess(underlyingH, flatDividendTS,
-			flatTermStructure, flatVolTS));
-
-		boost::shared_ptr<Exercise> exercise(new EuropeanExercise(maturity));
-		ql::BasketOption basketOption(basketPayoff, exercise);
-		ql::VanillaOption euroCallOption(payoff, exercise);
-		ql::VanillaOption apEuroCallOption(payoff, exercise);
-
-		Size timeSteps;
-		timeSteps = 1;
-		string method = "MC (crude)";
-		Size mcSeed = 42;
-		std::vector<boost::shared_ptr<StochasticProcess1D> > procs;
-		procs.push_back(bsmProcess);
-
-		//ql::Matrix correlationMatrix(2, 2, 0);
-		//for (Integer j = 0; j < 2; j++) {
-		//	correlationMatrix[j][j] = 1.0;
-		//}
-		ql::Matrix correlationMatrix(1, 1, 0);
-		for (Integer j = 0; j < 1; j++) {
-			correlationMatrix[j][j] = 1.0;
-		}
-
-		boost::shared_ptr<StochasticProcessArray> processArray(new StochasticProcessArray(procs, correlationMatrix));
-
-		boost::shared_ptr<PricingEngine> mcengine1;
-		mcengine1 = MakeMCEuropeanBasketEngine<PseudoRandom, QuantLib::GaussianStatistics>(processArray)
-			.withStepsPerYear(1)
-			.withSamples(10000)
-			.withSeed(42);
-
-		boost::shared_ptr<PricingEngine> mcengine2;
-		mcengine2 = MakeMCEuropeanEngine<PseudoRandom>(bsmProcess)
-			.withStepsPerYear(1)
-			.withSamples(10000)
-			.withSeed(42);
-
-		
-		basketOption.setPricingEngine(mcengine1);
-		euroCallOption.setPricingEngine(mcengine2);
-
-
-		apEuroCallOption.setPricingEngine(boost::shared_ptr<PricingEngine>(
-			new AnalyticEuropeanEngine(bsmProcess)));
-
-		mcBasket[i] = basketOption.NPV();
-		mcEuroCall[i] = euroCallOption.NPV();
-		if (x[i] <= 0)
-			apEuroCall[i] = 0;
-		else
-			apEuroCall[i] = apEuroCallOption.NPV();
-	}
-
-	Common::saveArray(apEuroCall, "QAPEuroCall.txt");
-	Common::saveArray(mcEuroCall, "MCEuroCall.txt");
-	Common::saveArray(mcBasket, "MCBasket.txt");
-}
+//void QuantlibBenchMark(Params p, VectorXd x)
+//{
+//	VectorXd mcBasket = VectorXd::Zero(10000);
+//	VectorXd mcEuroCall = VectorXd::Zero(10000);
+//	VectorXd apEuroCall = VectorXd::Zero(10000);
+//
+//	for (int i = 0; i < 10000; i++)
+//	{
+//		boost::timer timer;
+//		std::cout << "\r" << "MC S=" << x[i];
+//		// set up dates
+//		Calendar calendar = TARGET();
+//		Date todaysDate(01, Jan, 2000);
+//		Date settlementDate(01, Jan, 2000);
+//		Settings::instance().evaluationDate() = todaysDate;
+//		// our options
+//		QuantLib::Option::Type type(QuantLib::Option::Call);
+//
+//		Real underlying = x[i];
+//		Real strike = p.K;
+//		Spread dividendYield = 0.00;
+//		Rate riskFreeRate = p.r;
+//		Volatility volatility = p.sigma;
+//		Date maturity(01, Jan, 2001);
+//		DayCounter dayCounter = Actual365Fixed();
+//
+//		//boost::shared_ptr<Exercise> europeanExercise(new EuropeanExercise(maturity));
+//
+//		Handle<Quote> underlyingH(boost::shared_ptr<Quote>(new SimpleQuote(underlying)));
+//
+//		Handle<YieldTermStructure> flatTermStructure(boost::shared_ptr<YieldTermStructure>(
+//			new FlatForward(settlementDate, riskFreeRate, dayCounter)));
+//
+//		Handle<YieldTermStructure> flatDividendTS(boost::shared_ptr<YieldTermStructure>(
+//			new FlatForward(settlementDate, dividendYield, dayCounter)));
+//
+//		Handle<BlackVolTermStructure> flatVolTS(boost::shared_ptr<BlackVolTermStructure>(
+//			new BlackConstantVol(settlementDate, calendar, volatility,
+//				dayCounter)));
+//
+//		boost::shared_ptr<PlainVanillaPayoff> payoff(new PlainVanillaPayoff(type, strike));
+//
+//		boost::shared_ptr<BasketPayoff> basketPayoff(new AverageBasketPayoff(payoff, 1));
+//
+//		boost::shared_ptr<BlackScholesMertonProcess> bsmProcess(new BlackScholesMertonProcess(underlyingH, flatDividendTS,
+//			flatTermStructure, flatVolTS));
+//
+//		boost::shared_ptr<Exercise> exercise(new EuropeanExercise(maturity));
+//		ql::BasketOption basketOption(basketPayoff, exercise);
+//		ql::VanillaOption euroCallOption(payoff, exercise);
+//		ql::VanillaOption apEuroCallOption(payoff, exercise);
+//
+//		Size timeSteps;
+//		timeSteps = 1;
+//		string method = "MC (crude)";
+//		Size mcSeed = 42;
+//		std::vector<boost::shared_ptr<StochasticProcess1D> > procs;
+//		procs.push_back(bsmProcess);
+//
+//		//ql::Matrix correlationMatrix(2, 2, 0);
+//		//for (Integer j = 0; j < 2; j++) {
+//		//	correlationMatrix[j][j] = 1.0;
+//		//}
+//		ql::Matrix correlationMatrix(1, 1, 0);
+//		for (Integer j = 0; j < 1; j++) {
+//			correlationMatrix[j][j] = 1.0;
+//		}
+//
+//		boost::shared_ptr<StochasticProcessArray> processArray(new StochasticProcessArray(procs, correlationMatrix));
+//
+//		boost::shared_ptr<PricingEngine> mcengine1;
+//		mcengine1 = MakeMCEuropeanBasketEngine<PseudoRandom, QuantLib::GaussianStatistics>(processArray)
+//			.withStepsPerYear(1)
+//			.withSamples(10000)
+//			.withSeed(42);
+//
+//		boost::shared_ptr<PricingEngine> mcengine2;
+//		mcengine2 = MakeMCEuropeanEngine<PseudoRandom>(bsmProcess)
+//			.withStepsPerYear(1)
+//			.withSamples(10000)
+//			.withSeed(42);
+//
+//		
+//		basketOption.setPricingEngine(mcengine1);
+//		euroCallOption.setPricingEngine(mcengine2);
+//
+//
+//		apEuroCallOption.setPricingEngine(boost::shared_ptr<PricingEngine>(
+//			new AnalyticEuropeanEngine(bsmProcess)));
+//
+//		mcBasket[i] = basketOption.NPV();
+//		mcEuroCall[i] = euroCallOption.NPV();
+//		if (x[i] <= 0)
+//			apEuroCall[i] = 0;
+//		else
+//			apEuroCall[i] = apEuroCallOption.NPV();
+//	}
+//
+//	Common::saveArray(apEuroCall, "QAPEuroCall.txt");
+//	Common::saveArray(mcEuroCall, "MCEuroCall.txt");
+//	Common::saveArray(mcBasket, "MCBasket.txt");
+//}
 
 int main(){
 	Params p;
@@ -465,7 +465,7 @@ int main(){
 	p.sigma = 0.15;
 	p.theta = 0.5;
 	//Set this to vary dimensions:
-	int assets = 2;
+	int assets = 1;
 	p.inx1 = VectorXd::Zero(assets);
 	VectorXd inx2(assets);
 	inx2.fill(3.0 * p.K);
@@ -480,9 +480,9 @@ int main(){
 	TX.col(1) = x;
 	EuropeanCallOption apOption(p.K, p.T);
 	VectorXd AP = apOption.Price(TX, p.r, p.sigma);
-	Common::saveArray(AP, "APEuroCall.txt");
+	//Common::saveArray(AP, "APEuroCall.txt");
+	//Common::saveArray(x, "S0.txt");
 
-	Common::saveArray(x, "S0.txt");
 	//QuantlibBenchMark(p, x);
 
 
@@ -490,27 +490,27 @@ int main(){
 	l::BasketOption option(100.0,1,correlation);
 	SparseGridCollocation* test = new SparseGridCollocation();
 
-	vector<MatrixXd> MuSiKcBasket = test->MuSIKcND(10, 0, option, p);
-	//vector<MatrixXd> MuSiKc = test->MuSIKc(10, 0, p);
+	//vector<MatrixXd> MuSiKcBasket = test->MuSIKcND(10, 0, option, p);
+	vector<MatrixXd> MuSiKc = test->MuSIKc(10, 0, p);
 	
 	
 
 	//wcout << "MuSIK-c ND result:" << endl;
 	//wcout << Common::printMatrix(result[0]) << endl;
-	wcout << "MuSIK-c ND RMS error:" << endl;
-	wcout << Common::printMatrix(MuSiKcBasket[1]) << endl;
-	wcout << "MuSIK-c ND MAX error:" << endl;
-	wcout << Common::printMatrix(MuSiKcBasket[2]) << endl;
+	//wcout << "MuSIK-c ND RMS error:" << endl;
+	//wcout << Common::printMatrix(MuSiKcBasket[1]) << endl;
+	//wcout << "MuSIK-c ND MAX error:" << endl;
+	//wcout << Common::printMatrix(MuSiKcBasket[2]) << endl;
 	//wcout << getchar() << endl;
 
 
 	//wcout << "MuSIK-c result:" << endl;
 	//wcout << Common::printMatrix(result[0]) << endl;
-	//wcout << "MuSIK-c RMS error:" << endl;
-	//wcout << Common::printMatrix(MuSiKc[1]) << endl;
-	//wcout << "MuSIK-c MAX error:" << endl;
-	//wcout << Common::printMatrix(MuSiKc[2]) << endl;
-	//wcout << getchar() << endl;
+	wcout << "MuSIK-c RMS error:" << endl;
+	wcout << Common::printMatrix(MuSiKc[1]) << endl;
+	wcout << "MuSIK-c MAX error:" << endl;
+	wcout << Common::printMatrix(MuSiKc[2]) << endl;
+	wcout << getchar() << endl;
 
 	//wcout << "MuSIK-c vs MuSIK-c basket:" << endl;
 	//Common::checkMatrix(MuSiKc[0], MuSiKcBasket[0]);
