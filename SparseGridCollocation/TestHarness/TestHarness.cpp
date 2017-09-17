@@ -491,7 +491,7 @@ int main(){
 	SparseGridCollocation* test = new SparseGridCollocation();
 
 	//vector<MatrixXd> MuSiKcBasket = test->MuSIKcND(10, 0, option, p);
-	vector<MatrixXd> MuSiKc = test->MuSIKc(10, 0, p);
+	vector<MatrixXd> MuSiKc = test->MuSIKc(5, 0, p);
 	
 	
 
@@ -510,7 +510,7 @@ int main(){
 	wcout << Common::printMatrix(MuSiKc[1]) << endl;
 	wcout << "MuSIK-c MAX error:" << endl;
 	wcout << Common::printMatrix(MuSiKc[2]) << endl;
-	wcout << getchar() << endl;
+	//wcout << getchar() << endl;
 
 	//wcout << "MuSIK-c vs MuSIK-c basket:" << endl;
 	//Common::checkMatrix(MuSiKc[0], MuSiKcBasket[0]);
@@ -626,7 +626,7 @@ int main(){
 
 	//}
 
-	wcout << getchar() << endl;
+	//wcout << getchar() << endl;
 	return 0;
 }
 

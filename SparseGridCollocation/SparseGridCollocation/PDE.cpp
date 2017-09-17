@@ -4,6 +4,8 @@
 #include "Common.h"
 #include "MatrixXdm.h"
 #include "kernel.h"
+#include "Gaussian2d.h"
+
 
 //#include "CppUnitTest.h"
 //using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -25,11 +27,12 @@ MatrixXd Leicester::PDE::BlackScholes(const MatrixXd &node, double r, double sig
 	int N = node.rows();
 	int ch2 = TX2.size();
 	MatrixXd U2 = MatrixXd::Ones(N, ch2);
-
+	ThrustLib::Gaussian cudaGaussian(node);
 	for (int j = 0; j < ch2; j++)
 	{
-		vector<MatrixXd> mqd = RBF::Gaussian2D(node, TX2[j], A2[j], C2[j]);
+		//vector<MatrixXd> mqd = RBF::Gaussian2D(node, TX2[j], A2[j], C2[j]);
 		//vector<MatrixXd> mqd = CudaRBF::Gaussian2D(node, TX2[j], A2[j], C2[j]);
+		vector<MatrixXd> mqd = cudaGaussian.Gaussian2d(TX2[j], A2[j], C2[j]);
 		MatrixXd a = mqd[1] * lambda2[j];
 		MatrixXd b = (pow(sigma, 2) / 2) * mqd[3] * lambda2[j];
 		MatrixXd c = r * mqd[2] * lambda2[j];
@@ -40,8 +43,9 @@ MatrixXd Leicester::PDE::BlackScholes(const MatrixXd &node, double r, double sig
 	MatrixXd U3 = MatrixXd::Ones(N, ch3);
 	for (int j = 0; j < ch3; j++)
 	{
-		vector<MatrixXd> mqd = RBF::Gaussian2D(node, TX3[j], A3[j], C3[j]);
+		//vector<MatrixXd> mqd = RBF::Gaussian2D(node, TX3[j], A3[j], C3[j]);
 		//vector<MatrixXd> mqd = CudaRBF::Gaussian2D(node, TX3[j], A3[j], C3[j]);
+		vector<MatrixXd> mqd = cudaGaussian.Gaussian2d(TX3[j], A3[j], C3[j]);
 		MatrixXd a = mqd[1] * lambda3[j];
 		MatrixXd b = (pow(sigma, 2) / 2) * mqd[3] * lambda3[j];
 		MatrixXd c = r * mqd[2] * lambda3[j];

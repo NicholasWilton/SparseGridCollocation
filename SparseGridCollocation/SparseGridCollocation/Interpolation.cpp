@@ -14,6 +14,7 @@
 
 //#include "CppUnitTest.h"
 //using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+using namespace ThrustLib;
 
 
 vector<vector<MatrixXd>> Leicester::Interpolation::getResult()
@@ -55,10 +56,15 @@ void Leicester::Interpolation::interpolateGeneric(string prefix, double coef, do
 
 	vector<thread> threads;
 	//cout << "N.rows()=" << N.rows() << endl;
+	
+
 	for (int i = 0; i < N.rows(); i++)
 	{
-		threads.push_back(std::thread(&Interpolation::shapelambda2DGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
-		shapelambda2DGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
+		MatrixXd TX1 = GenerateNodes(coef, tsec, inx1, inx2, N.row(i));
+		ThrustLib::Gaussian cudaGaussian(TX1, TX1);
+		threads.push_back(std::thread(&Interpolation::shapelambda2DGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation, TX1, cudaGaussian));
+		//wcout << Common::printMatrix(N.row(i)) << endl;
+		//shapelambda2DGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation, TX1, cudaGaussian);
 	}
 
 
@@ -213,22 +219,11 @@ VectorXd Leicester::Interpolation::Replicate(VectorXd v, int totalLength, int du
 	}
 	return Result;
 }
-void Leicester::Interpolation::shapelambda2DGeneric(string prefix, int threadId, double coef, double tsec, double r, double sigma, double T, double E, double inx1, double inx2, MatrixXd N,
-	vector<string> keys, const map<string, vector<vector<MatrixXd>> > * state)
+MatrixXd Leicester::Interpolation::GenerateNodes(double coef, double tsec, double inx1, double inx2, MatrixXd N)
 {
-	map<string, vector<vector<MatrixXd>>> vInterpolation = *state;
-
-	double num = N.prod();
-
 	VectorXd t = VectorXd::LinSpaced(N(0, 0), 0, tsec);
 	VectorXd x = VectorXd::LinSpaced(N(0, 1), inx1, inx2);
-	double h1 = coef*tsec;
-	double h2 = coef*(inx2 - inx1);
-
-	MatrixXd c(1, 2);
-	c << h1, h2;
-	MatrixXd a = N.array() - 1;
-
+	
 	MatrixXd XXX = t.replicate(1, x.rows());
 	MatrixXd YYY = x.replicate(1, t.rows());
 	//wcout << Common::printMatrix(YYY) << endl;
@@ -242,24 +237,39 @@ void Leicester::Interpolation::shapelambda2DGeneric(string prefix, int threadId,
 
 	MatrixXd TX1(XXX.rows() * XXX.cols(), 2);
 	TX1 << xxx, yyy;
+	return TX1;
+}
+
+void Leicester::Interpolation::shapelambda2DGeneric(string prefix, int threadId, double coef, double tsec, double r, double sigma, double T, double E, double inx1, double inx2, MatrixXd N,
+	vector<string> keys, const map<string, vector<vector<MatrixXd>> > * state, MatrixXd TP, Gaussian cudaGaussian)
+{
+	map<string, vector<vector<MatrixXd>>> vInterpolation = *state;
+
+	double num = N.prod();
+	double h1 = coef*tsec;
+	double h2 = coef*(inx2 - inx1);
+	MatrixXd c(1, 2);
+	c << h1, h2;
+	MatrixXd a = N.array() - 1;
+
 	//wcout << Common::printMatrix(TX1) << endl;
-	vector<MatrixXd> mqd = RBF::Gaussian2D(TX1, TX1, a, c);
+	vector<MatrixXd> mqd = RBF::Gaussian2D(TP, TP, a, c);
 	//Common::saveArray(TX1, "cTX1.txt");
 	//Common::saveArray(a, "cA.txt");
 	//Common::saveArray(c, "cC.txt");
 	
 	//vector<MatrixXd> mqdc = CudaRBF::Gaussian2D(TX1, TX1, a, c);
-	if(threadId ==0)
-		vector<MatrixXd> mqdc = ThrustLib::Gaussian::Gaussian2d(TX1, TX1, a, c);
+	//if(threadId ==0)
+	vector<MatrixXd> mqdc = cudaGaussian.Gaussian2d(a, c);
 	//wcout << Common::printMatrix(mqd[0].col(0)) << endl;
 	//wcout << Common::printMatrix(mqdc[0]) << endl;
 	
 	//wcout << "D" << endl;
 	
-	//MatrixXd d = mqdc[0].rowwise().reverse();
-	//MatrixXd dt = mqdc[1].rowwise().reverse();
-	//MatrixXd dx = mqdc[2].rowwise().reverse();
-	//MatrixXd dxx = mqdc[3].rowwise().reverse();
+	MatrixXd d = mqdc[0];
+	MatrixXd dt = mqdc[1];
+	MatrixXd dx = mqdc[2];
+	MatrixXd dxx = mqdc[3];
 	//dxx = dxx.colwise().reverse();
 	
 	//bool f1 = Common::checkMatrix(mqd[0], d, 0.001, false);
@@ -271,22 +281,26 @@ void Leicester::Interpolation::shapelambda2DGeneric(string prefix, int threadId,
 	//bool f4 = Common::checkMatrix(mqd[3], dxx, 0.001, false);
 	//if (!f1 | !f2 | !f3 | !f4)
 	//{
-	//	Common::saveArray(TX1, "cTX1.txt");
+	//	Common::saveArray(TP, "cTX1.txt");
 	//	Common::saveArray(a, "cA.txt");
 	//	Common::saveArray(c, "cC.txt");
 	//	Common::saveArray(d, "cD.txt");
 	//	Common::saveArray(dt, "cDt.txt");
 	//	Common::saveArray(dx, "cDx.txt");
 	//	Common::saveArray(dxx, "cDxx.txt");
-	//	Common::saveArray(mqdc[0], "cD1.txt");
-	//	Common::saveArray(mqdc[1], "cDt1.txt");
-	//	Common::saveArray(mqdc[2], "cDx1.txt");
-	//	Common::saveArray(mqdc[3], "cDxx1.txt");
+	//	Common::saveArray(mqd[0], "cD1.txt");
+	//	Common::saveArray(mqd[1], "cDt1.txt");
+	//	Common::saveArray(mqd[2], "cDx1.txt");
+	//	Common::saveArray(mqd[3], "cDxx1.txt");
 	//}
-	MatrixXd FAI = mqd[0];
-	MatrixXd FAI_t = mqd[1];
-	MatrixXd FAI_x = mqd[2];
-	MatrixXd FAI_xx = mqd[3];
+	//MatrixXd FAI = mqd[0];
+	//MatrixXd FAI_t = mqd[1];
+	//MatrixXd FAI_x = mqd[2];
+	//MatrixXd FAI_xx = mqd[3];
+	MatrixXd FAI = d;
+	MatrixXd FAI_t = dt;
+	MatrixXd FAI_x = dx;
+	MatrixXd FAI_xx = dxx;
 
 	MatrixXd pa = (sigma * sigma * FAI_xx.array() / 2); //sigma^2/2 d^2V/dV^2
 	MatrixXd pb = r*FAI_x.array() - r*FAI.array();// r dV/dx - rV
@@ -300,26 +314,26 @@ void Leicester::Interpolation::shapelambda2DGeneric(string prefix, int threadId,
 		string k2 = keys[s + 1];
 		//cout << "key:" << k1 << endl;
 		//cout << "key:" << k2 << endl;
-		u -= PDE::BlackScholes(TX1, r, sigma,
+		u -= PDE::BlackScholes(TP, r, sigma,
 			vInterpolation[k1][0], vInterpolation[k1][1], vInterpolation[k1][2], vInterpolation[k1][3],
 			vInterpolation[k2][0], vInterpolation[k2][1], vInterpolation[k2][2], vInterpolation[k2][3]);
 	}
 
 	for (int i = 0; i < num; i++)
 	{
-		if (abs(TX1(i, 1) - inx1) < DBL_EPSILON || abs(TX1(i, 1) - inx2) < DBL_EPSILON)
+		if (abs(TP(i, 1) - inx1) < DBL_EPSILON || abs(TP(i, 1) - inx2) < DBL_EPSILON)
 		{
 			P.row(i) = FAI.row(i);
 			//double max = (Double(TX1(i, 1)) - Double(E) * Double(exp(-r * (T - TX1(i, 0))))).value();
-			double max = (Double(TX1(i, 1)) - Double(E) * Double(exp(-r * (T - TX1(i, 0))))).value();
+			double max = (Double(TP(i, 1)) - Double(E) * Double(exp(-r * (T - TP(i, 0))))).value();
 			u(i) = 0;
 			double sub = 0;
 			for (int s = 0; s < keys.size(); s += 2)
 			{
 				string k1 = keys[s];
 				string k2 = keys[s + 1];
-				double a = Test::inner(TX1(i, 0), TX1(i, 1), vInterpolation[k2][0], vInterpolation[k2][1], vInterpolation[k2][2], vInterpolation[k2][3]);
-				double b = Test::inner(TX1(i, 0), TX1(i, 1), vInterpolation[k1][0], vInterpolation[k1][1], vInterpolation[k1][2], vInterpolation[k1][3]);
+				double a = Test::inner(TP(i, 0), TP(i, 1), vInterpolation[k2][0], vInterpolation[k2][1], vInterpolation[k2][2], vInterpolation[k2][3]);
+				double b = Test::inner(TP(i, 0), TP(i, 1), vInterpolation[k1][0], vInterpolation[k1][1], vInterpolation[k1][2], vInterpolation[k1][3]);
 				sub += (a - b);
 			}
 
@@ -329,7 +343,7 @@ void Leicester::Interpolation::shapelambda2DGeneric(string prefix, int threadId,
 				u(i) = 0 - sub;
 		}
 
-		if (abs(TX1(i, 0) - tsec) < DBL_EPSILON)
+		if (abs(TP(i, 0) - tsec) < DBL_EPSILON)
 		{
 			P.row(i) = FAI.row(i);
 			double sub = 0;
@@ -337,16 +351,16 @@ void Leicester::Interpolation::shapelambda2DGeneric(string prefix, int threadId,
 			{
 				string k1 = keys[s];
 				string k2 = keys[s + 1];
-				double a = Test::inner(TX1(i, 0), TX1(i, 1), vInterpolation[k2][0], vInterpolation[k2][1], vInterpolation[k2][2], vInterpolation[k2][3]);
-				double b = Test::inner(TX1(i, 0), TX1(i, 1), vInterpolation[k1][0], vInterpolation[k1][1], vInterpolation[k1][2], vInterpolation[k1][3]);
+				double a = Test::inner(TP(i, 0), TP(i, 1), vInterpolation[k2][0], vInterpolation[k2][1], vInterpolation[k2][2], vInterpolation[k2][3]);
+				double b = Test::inner(TP(i, 0), TP(i, 1), vInterpolation[k1][0], vInterpolation[k1][1], vInterpolation[k1][2], vInterpolation[k1][3]);
 				sub += (a - b);
 			}
 
-			double d = PPP::Calculate(TX1.row(i)) - sub;
+			double d = PPP::Calculate(TP.row(i)) - sub;
 			u(i) = d;
 		}
 	}
-	MatrixXd tx = TX1;
+	MatrixXd tx = TP;
 
 	PartialPivLU<MatrixXd> lu = PartialPivLU<MatrixXd>(P);
 

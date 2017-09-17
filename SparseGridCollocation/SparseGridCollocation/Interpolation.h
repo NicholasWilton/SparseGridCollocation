@@ -1,5 +1,6 @@
 #pragma once
 #include "stdafx.h"
+#include "Gaussian2d.h"
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 //using Eigen::Map;
@@ -7,6 +8,8 @@ using Eigen::UpLoType;
 using Eigen::PartialPivLU;
 using namespace std;
 //using std::Map;
+using namespace ThrustLib;
+
 namespace Leicester
 {
 	class API Interpolation
@@ -41,9 +44,11 @@ namespace Leicester
 		void interpolateGenericND(string prefix, double coef, double tsec, int b, int d, MatrixXd inx1, MatrixXd inx2, double r, double sigma, double T, double E,
 			vector<string> keys, const  map<string, vector<vector<MatrixXd>> > * vInterpolation);
 		void shapelambda2DGeneric(string prefix, int threadId, double coef, double tsec, double r, double sigma, double T, double E, double inx1, double inx2, MatrixXd N,
-			vector<string> keys, const map<string, vector<vector<MatrixXd>> > * state);
+			vector<string> keys, const map<string, vector<vector<MatrixXd>> > * state, MatrixXd TP, Gaussian cudaGaussian);
 		void shapelambdaNDGeneric(string prefix, int threadId, double coef, double tsec, double r, double sigma, double T, double E, MatrixXd inx1, MatrixXd inx2, MatrixXd N,
 			vector<string> keys, const  map<string, vector<vector<MatrixXd>> > * vInterpolation);
+
+		MatrixXd GenerateNodes(double coef, double tsec, double inx1, double inx2, MatrixXd N);
 	};
 
 }
