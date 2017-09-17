@@ -1,9 +1,13 @@
 #pragma once
-class API Distributions
+namespace Leicester
 {
-public:
-	Distributions();
-	~Distributions();
-	static double Distributions::normCDF(double value);
-};
+	namespace Common
+	{
+		class API Distributions
+		{
+		public:
+			static double Distributions::normCDF(double value);
+		};
+	}
+}
 

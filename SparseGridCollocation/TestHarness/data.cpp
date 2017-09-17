@@ -1,17 +1,18 @@
 #include "stdafx.h"
 #include <iostream>
+using namespace Leicester::Common;
 
 MatrixXd data::GetTX()
 {
 	MatrixXd TX(10000, 2);
 	Load("TX.txt", TX);
-	//cout << Common::printMatrixA(TX) << endl;
+	//cout << Utility::printMatrixA(TX) << endl;
 	return TX;
 };
 
 MatrixXd data::GetLamb2()
 {
-	MatrixXd result = Common::ReadBinary("interpolation_2_0_0.dat", 9, 1);
+	MatrixXd result = Utility::ReadBinary("interpolation_2_0_0.dat", 9, 1);
 	return result;
 };
 
@@ -20,11 +21,11 @@ MatrixXd data::GetLamb3(int n)
 	MatrixXd result;
 	if (n == 1)
 	{
-		result = Common::ReadBinary("interpolation_3_0_0.dat", 15, 1);
+		result = Utility::ReadBinary("interpolation_3_0_0.dat", 15, 1);
 	}
 	if (n == 2)
 	{
-		result = Common::ReadBinary("interpolation_3_0_1.dat", 15, 1);
+		result = Utility::ReadBinary("interpolation_3_0_1.dat", 15, 1);
 	}
 	return result;
 };
@@ -34,11 +35,11 @@ MatrixXd data::GetLamb_3(int n)
 	MatrixXd result(15, 1);
 	if (n == 1)
 	{
-		result = Common::ReadBinary("interpolation__3_0_0.dat", 15, 1);
+		result = Utility::ReadBinary("interpolation__3_0_0.dat", 15, 1);
 	}
 	if (n == 2)
 	{
-		result = Common::ReadBinary("interpolation__3_0_1.dat", 15, 1);
+		result = Utility::ReadBinary("interpolation__3_0_1.dat", 15, 1);
 	}
 	return result;
 };
@@ -49,17 +50,17 @@ MatrixXd data::GetLamb4(int n)
 	if (n == 1)
 	{
 		result = MatrixXd(27, 1);
-		result = Common::ReadBinary("interpolation_4_0_0.dat", 27, 1);
+		result = Utility::ReadBinary("interpolation_4_0_0.dat", 27, 1);
 	}
 	if (n == 2)
 	{
 		result = MatrixXd(25, 1);
-		result = Common::ReadBinary("interpolation_4_0_1.dat", 25, 1);
+		result = Utility::ReadBinary("interpolation_4_0_1.dat", 25, 1);
 	}
 	if (n == 3)
 	{
 		result = MatrixXd(27, 1);
-		result = Common::ReadBinary("interpolation_4_0_2.dat", 27, 1);
+		result = Utility::ReadBinary("interpolation_4_0_2.dat", 27, 1);
 	}
 	return result;
 };
@@ -70,17 +71,17 @@ MatrixXd data::GetLamb_4(int n)
 	if (n == 1)
 	{
 		result = MatrixXd(27, 1);
-		result = Common::ReadBinary("interpolation__4_0_0.dat", 27, 1);
+		result = Utility::ReadBinary("interpolation__4_0_0.dat", 27, 1);
 	}
 	if (n == 2)
 	{
 		result = MatrixXd(25, 1);
-		result = Common::ReadBinary("interpolation__4_0_1.dat", 25, 1);
+		result = Utility::ReadBinary("interpolation__4_0_1.dat", 25, 1);
 	}
 	if (n == 3)
 	{
 		result = MatrixXd(27, 1);
-		result = Common::ReadBinary("interpolation__4_0_2.dat", 27, 1);
+		result = Utility::ReadBinary("interpolation__4_0_2.dat", 27, 1);
 	}
 	return result;
 };
@@ -91,22 +92,22 @@ MatrixXd data::GetLamb5(int n)
 	if (n == 1)
 	{
 		result = MatrixXd(51, 1);
-		result = Common::ReadBinary("interpolation_5_0_0.dat", 51, 1);
+		result = Utility::ReadBinary("interpolation_5_0_0.dat", 51, 1);
 	}
 	if (n == 2)
 	{
 		result = MatrixXd(45, 1);
-		result = Common::ReadBinary("interpolation_5_0_1.dat", 45, 1);
+		result = Utility::ReadBinary("interpolation_5_0_1.dat", 45, 1);
 	}
 	if (n == 3)
 	{
 		result = MatrixXd(45, 1);
-		result = Common::ReadBinary("interpolation_5_0_2.dat", 45, 1);
+		result = Utility::ReadBinary("interpolation_5_0_2.dat", 45, 1);
 	}
 	if (n == 4)
 	{
 		result = MatrixXd(51, 1);
-		result = Common::ReadBinary("interpolation_5_0_3.dat", 51, 1);
+		result = Utility::ReadBinary("interpolation_5_0_3.dat", 51, 1);
 	}
 	return result;
 };
@@ -117,22 +118,22 @@ MatrixXd data::GetLamb_5(int n)
 	if (n == 1)
 	{
 		result = MatrixXd(51, 1);
-		result = Common::ReadBinary("interpolation__5_0_0.dat", 51, 1);
+		result = Utility::ReadBinary("interpolation__5_0_0.dat", 51, 1);
 	}
 	if (n == 2)
 	{
 		result = MatrixXd(45, 1);
-		result = Common::ReadBinary("interpolation__5_0_1.dat", 45, 1);
+		result = Utility::ReadBinary("interpolation__5_0_1.dat", 45, 1);
 	}
 	if (n == 3)
 	{
 		result = MatrixXd(45, 1);
-		result = Common::ReadBinary("interpolation__5_0_2.dat", 45, 1);
+		result = Utility::ReadBinary("interpolation__5_0_2.dat", 45, 1);
 	}
 	if (n == 4)
 	{
 		result = MatrixXd(51, 1);
-		result = Common::ReadBinary("interpolation__5_0_3.dat", 51, 1);
+		result = Utility::ReadBinary("interpolation__5_0_3.dat", 51, 1);
 	}
 	return result;
 };
@@ -143,27 +144,27 @@ MatrixXd data::GetLamb6(int n)
 	if (n == 1)
 	{
 		result = MatrixXd(99, 1);
-		result = Common::ReadBinary("interpolation_6_0_0.dat", 99, 1);
+		result = Utility::ReadBinary("interpolation_6_0_0.dat", 99, 1);
 	}
 	if (n == 2)
 	{
 		result = MatrixXd(85, 1);
-		result = Common::ReadBinary("interpolation_6_0_1.dat", 85, 1);
+		result = Utility::ReadBinary("interpolation_6_0_1.dat", 85, 1);
 	}
 	if (n == 3)
 	{
 		result = MatrixXd(81, 1);
-		result = Common::ReadBinary("interpolation_6_0_2.dat", 81, 1);
+		result = Utility::ReadBinary("interpolation_6_0_2.dat", 81, 1);
 	}
 	if (n == 4)
 	{
 		result = MatrixXd(85, 1);
-		result = Common::ReadBinary("interpolation_6_0_3.dat", 85, 1);
+		result = Utility::ReadBinary("interpolation_6_0_3.dat", 85, 1);
 	}
 	if (n == 5)
 	{
 		result = MatrixXd(99, 1);
-		result = Common::ReadBinary("interpolation_6_0_4.dat", 99, 1);
+		result = Utility::ReadBinary("interpolation_6_0_4.dat", 99, 1);
 	}
 
 	return result;
@@ -175,27 +176,27 @@ MatrixXd data::GetLamb_6(int n)
 	if (n == 1)
 	{
 		result = MatrixXd(99, 1);
-		result = Common::ReadBinary("interpolation__6_0_0.dat", 99, 1);
+		result = Utility::ReadBinary("interpolation__6_0_0.dat", 99, 1);
 	}
 	if (n == 2)
 	{
 		result = MatrixXd(85, 1);
-		result = Common::ReadBinary("interpolation__6_0_1.dat", 85, 1);
+		result = Utility::ReadBinary("interpolation__6_0_1.dat", 85, 1);
 	}
 	if (n == 3)
 	{
 		result = MatrixXd(81, 1);
-		result = Common::ReadBinary("interpolation__6_0_2.dat", 81, 1);
+		result = Utility::ReadBinary("interpolation__6_0_2.dat", 81, 1);
 	}
 	if (n == 4)
 	{
 		result = MatrixXd(85, 1);
-		result = Common::ReadBinary("interpolation__6_0_3.dat", 85, 1);
+		result = Utility::ReadBinary("interpolation__6_0_3.dat", 85, 1);
 	}
 	if (n == 5)
 	{
 		result = MatrixXd(99, 1);
-		result = Common::ReadBinary("interpolation__6_0_4.dat", 99, 1);
+		result = Utility::ReadBinary("interpolation__6_0_4.dat", 99, 1);
 	}
 
 	return result;
@@ -207,32 +208,32 @@ MatrixXd data::GetLamb7(int n)
 	if (n == 1)
 	{
 		result = MatrixXd(195, 1);
-		result = Common::ReadBinary("interpolation_7_0_0.dat", 195, 1);
+		result = Utility::ReadBinary("interpolation_7_0_0.dat", 195, 1);
 	}
 	if (n == 2)
 	{
 		result = MatrixXd(165, 1);
-		result = Common::ReadBinary("interpolation_7_0_1.dat", 165, 1);
+		result = Utility::ReadBinary("interpolation_7_0_1.dat", 165, 1);
 	}
 	if (n == 3)
 	{
 		result = MatrixXd(153, 1);
-		result = Common::ReadBinary("interpolation_7_0_2.dat", 153, 1);
+		result = Utility::ReadBinary("interpolation_7_0_2.dat", 153, 1);
 	}
 	if (n == 4)
 	{
 		result = MatrixXd(153, 1);
-		result = Common::ReadBinary("interpolation_7_0_3.dat", 153, 1);
+		result = Utility::ReadBinary("interpolation_7_0_3.dat", 153, 1);
 	}
 	if (n == 5)
 	{
 		result = MatrixXd(165, 1);
-		result = Common::ReadBinary("interpolation_7_0_4.dat", 165, 1);
+		result = Utility::ReadBinary("interpolation_7_0_4.dat", 165, 1);
 	}
 	if (n == 6)
 	{
 		result = MatrixXd(195, 1);
-		result = Common::ReadBinary("interpolation_7_0_5.dat", 195, 1);
+		result = Utility::ReadBinary("interpolation_7_0_5.dat", 195, 1);
 	}
 
 	return result;
@@ -244,32 +245,32 @@ MatrixXd data::GetLamb_7(int n)
 	if (n == 1)
 	{
 		result = MatrixXd(195, 1);
-		result = Common::ReadBinary("interpolation__7_0_0.dat", 195, 1);
+		result = Utility::ReadBinary("interpolation__7_0_0.dat", 195, 1);
 	}
 	if (n == 2)
 	{
 		result = MatrixXd(165, 1);
-		result = Common::ReadBinary("interpolation__7_0_1.dat", 165, 1);
+		result = Utility::ReadBinary("interpolation__7_0_1.dat", 165, 1);
 	}
 	if (n == 3)
 	{
 		result = MatrixXd(153, 1);
-		result = Common::ReadBinary("interpolation__7_0_2.dat", 153, 1);
+		result = Utility::ReadBinary("interpolation__7_0_2.dat", 153, 1);
 	}
 	if (n == 4)
 	{
 		result = MatrixXd(153, 1);
-		result = Common::ReadBinary("interpolation__7_0_3.dat", 153, 1);
+		result = Utility::ReadBinary("interpolation__7_0_3.dat", 153, 1);
 	}
 	if (n == 5)
 	{
 		result = MatrixXd(165, 1);
-		result = Common::ReadBinary("interpolation__7_0_4.dat", 165, 1);
+		result = Utility::ReadBinary("interpolation__7_0_4.dat", 165, 1);
 	}
 	if (n == 6)
 	{
 		result = MatrixXd(195, 1);
-		result = Common::ReadBinary("interpolation__7_0_5.dat", 195, 1);
+		result = Utility::ReadBinary("interpolation__7_0_5.dat", 195, 1);
 	}
 
 	return result;
@@ -281,37 +282,37 @@ MatrixXd data::GetLamb8(int n)
 	if (n == 1)
 	{
 		result = MatrixXd(387, 1);
-		result = Common::ReadBinary("interpolation_8_0_0.dat", 387, 1);
+		result = Utility::ReadBinary("interpolation_8_0_0.dat", 387, 1);
 	}
 	if (n == 2)
 	{
 		result = MatrixXd(325, 1);
-		result = Common::ReadBinary("interpolation_8_0_1.dat", 325, 1);
+		result = Utility::ReadBinary("interpolation_8_0_1.dat", 325, 1);
 	}
 	if (n == 3)
 	{
 		result = MatrixXd(297, 1);
-		result = Common::ReadBinary("interpolation_8_0_2.dat", 297, 1);
+		result = Utility::ReadBinary("interpolation_8_0_2.dat", 297, 1);
 	}
 	if (n == 4)
 	{
 		result = MatrixXd(289, 1);
-		result = Common::ReadBinary("interpolation_8_0_3.dat", 289, 1);
+		result = Utility::ReadBinary("interpolation_8_0_3.dat", 289, 1);
 	}
 	if (n == 5)
 	{
 		result = MatrixXd(297, 1);
-		result = Common::ReadBinary("interpolation_8_0_4.dat", 297, 1);
+		result = Utility::ReadBinary("interpolation_8_0_4.dat", 297, 1);
 	}
 	if (n == 6)
 	{
 		result = MatrixXd(325, 1);
-		result = Common::ReadBinary("interpolation_8_0_5.dat", 325, 1);
+		result = Utility::ReadBinary("interpolation_8_0_5.dat", 325, 1);
 	}
 	if (n == 7)
 	{
 		result = MatrixXd(387, 1);
-		result = Common::ReadBinary("interpolation_8_0_6.dat", 387, 1);
+		result = Utility::ReadBinary("interpolation_8_0_6.dat", 387, 1);
 	}
 
 	return result;
@@ -323,37 +324,37 @@ MatrixXd data::GetLamb_8(int n)
 	if (n == 1)
 	{
 		result = MatrixXd(387, 1);
-		result = Common::ReadBinary("interpolation__8_0_0.dat", 387, 1);
+		result = Utility::ReadBinary("interpolation__8_0_0.dat", 387, 1);
 	}
 	if (n == 2)
 	{
 		result = MatrixXd(325, 1);
-		result = Common::ReadBinary("interpolation__8_0_1.dat", 325, 1);
+		result = Utility::ReadBinary("interpolation__8_0_1.dat", 325, 1);
 	}
 	if (n == 3)
 	{
 		result = MatrixXd(297, 1);
-		result = Common::ReadBinary("interpolation__8_0_2.dat", 297, 1);
+		result = Utility::ReadBinary("interpolation__8_0_2.dat", 297, 1);
 	}
 	if (n == 4)
 	{
 		result = MatrixXd(289, 1);
-		result = Common::ReadBinary("interpolation__8_0_3.dat", 289, 1);
+		result = Utility::ReadBinary("interpolation__8_0_3.dat", 289, 1);
 	}
 	if (n == 5)
 	{
 		result = MatrixXd(297, 1);
-		result = Common::ReadBinary("interpolation__8_0_4.dat", 297, 1);
+		result = Utility::ReadBinary("interpolation__8_0_4.dat", 297, 1);
 	}
 	if (n == 6)
 	{
 		result = MatrixXd(325, 1);
-		result = Common::ReadBinary("interpolation__8_0_5.dat", 325, 1);
+		result = Utility::ReadBinary("interpolation__8_0_5.dat", 325, 1);
 	}
 	if (n == 7)
 	{
 		result = MatrixXd(387, 1);
-		result = Common::ReadBinary("interpolation__8_0_6.dat", 387, 1);
+		result = Utility::ReadBinary("interpolation__8_0_6.dat", 387, 1);
 	}
 
 	return result;
@@ -365,42 +366,42 @@ MatrixXd data::GetLamb9(int n)
 	if (n == 1)
 	{
 		result = MatrixXd(771, 1);
-		result = Common::ReadBinary("interpolation_9_0_0.dat", 771, 1);
+		result = Utility::ReadBinary("interpolation_9_0_0.dat", 771, 1);
 	}
 	if (n == 2)
 	{
 		result = MatrixXd(645, 1);
-		result = Common::ReadBinary("interpolation_9_0_1.dat", 645, 1);
+		result = Utility::ReadBinary("interpolation_9_0_1.dat", 645, 1);
 	}
 	if (n == 3)
 	{
 		result = MatrixXd(585, 1);
-		result = Common::ReadBinary("interpolation_9_0_2.dat", 585, 1);
+		result = Utility::ReadBinary("interpolation_9_0_2.dat", 585, 1);
 	}
 	if (n == 4)
 	{
 		result = MatrixXd(561, 1);
-		result = Common::ReadBinary("interpolation_9_0_3.dat", 561, 1);
+		result = Utility::ReadBinary("interpolation_9_0_3.dat", 561, 1);
 	}
 	if (n == 5)
 	{
 		result = MatrixXd(561, 1);
-		result = Common::ReadBinary("interpolation_9_0_4.dat", 561, 1);
+		result = Utility::ReadBinary("interpolation_9_0_4.dat", 561, 1);
 	}
 	if (n == 6)
 	{
 		result = MatrixXd(585, 1);
-		result = Common::ReadBinary("interpolation_9_0_5.dat", 585, 1);
+		result = Utility::ReadBinary("interpolation_9_0_5.dat", 585, 1);
 	}
 	if (n == 7)
 	{
 		result = MatrixXd(645, 1);
-		result = Common::ReadBinary("interpolation_9_0_6.dat", 645, 1);
+		result = Utility::ReadBinary("interpolation_9_0_6.dat", 645, 1);
 	}
 	if (n == 8)
 	{
 		result = MatrixXd(771, 1);
-		result = Common::ReadBinary("interpolation_9_0_7.dat", 771, 1);
+		result = Utility::ReadBinary("interpolation_9_0_7.dat", 771, 1);
 	}
 
 	return result;
@@ -412,42 +413,42 @@ MatrixXd data::GetLamb_9(int n)
 	if (n == 1)
 	{
 		result = MatrixXd(771, 1);
-		result = Common::ReadBinary("interpolation__9_0_0.dat", 771, 1);
+		result = Utility::ReadBinary("interpolation__9_0_0.dat", 771, 1);
 	}
 	if (n == 2)
 	{
 		result = MatrixXd(645, 1);
-		result = Common::ReadBinary("interpolation__9_0_1.dat", 645, 1);
+		result = Utility::ReadBinary("interpolation__9_0_1.dat", 645, 1);
 	}
 	if (n == 3)
 	{
 		result = MatrixXd(585, 1);
-		result = Common::ReadBinary("interpolation__9_0_2.dat", 585, 1);
+		result = Utility::ReadBinary("interpolation__9_0_2.dat", 585, 1);
 	}
 	if (n == 4)
 	{
 		result = MatrixXd(561, 1);
-		result = Common::ReadBinary("interpolation__9_0_3.dat", 561, 1);
+		result = Utility::ReadBinary("interpolation__9_0_3.dat", 561, 1);
 	}
 	if (n == 5)
 	{
 		result = MatrixXd(561, 1);
-		result = Common::ReadBinary("interpolation__9_0_4.dat", 561, 1);
+		result = Utility::ReadBinary("interpolation__9_0_4.dat", 561, 1);
 	}
 	if (n == 6)
 	{
 		result = MatrixXd(585, 1);
-		result = Common::ReadBinary("interpolation__9_0_5.dat", 585, 1);
+		result = Utility::ReadBinary("interpolation__9_0_5.dat", 585, 1);
 	}
 	if (n == 7)
 	{
 		result = MatrixXd(645, 1);
-		result = Common::ReadBinary("interpolation__9_0_6.dat", 645, 1);
+		result = Utility::ReadBinary("interpolation__9_0_6.dat", 645, 1);
 	}
 	if (n == 8)
 	{
 		result = MatrixXd(771, 1);
-		result = Common::ReadBinary("interpolation__9_0_7.dat", 771, 1);
+		result = Utility::ReadBinary("interpolation__9_0_7.dat", 771, 1);
 	}
 
 	return result;
@@ -459,47 +460,47 @@ MatrixXd data::GetLamb10(int n)
 	if (n == 1)
 	{
 		result = MatrixXd(1539, 1);
-		result = Common::ReadBinary("interpolation_10_0_0.dat", 1539, 1);
+		result = Utility::ReadBinary("interpolation_10_0_0.dat", 1539, 1);
 	}
 	if (n == 2)
 	{
 		result = MatrixXd(1285, 1);
-		result = Common::ReadBinary("interpolation_10_0_1.dat", 1285, 1);
+		result = Utility::ReadBinary("interpolation_10_0_1.dat", 1285, 1);
 	}
 	if (n == 3)
 	{
 		result = MatrixXd(1161, 1);
-		result = Common::ReadBinary("interpolation_10_0_2.dat", 1161, 1);
+		result = Utility::ReadBinary("interpolation_10_0_2.dat", 1161, 1);
 	}
 	if (n == 4)
 	{
 		result = MatrixXd(1105, 1);
-		result = Common::ReadBinary("interpolation_10_0_3.dat", 1105, 1);
+		result = Utility::ReadBinary("interpolation_10_0_3.dat", 1105, 1);
 	}
 	if (n == 5)
 	{
 		result = MatrixXd(1089, 1);
-		result = Common::ReadBinary("interpolation_10_0_4.dat", 1089, 1);
+		result = Utility::ReadBinary("interpolation_10_0_4.dat", 1089, 1);
 	}
 	if (n == 6)
 	{
 		result = MatrixXd(1105, 1);
-		result = Common::ReadBinary("interpolation_10_0_5.dat", 1105, 1);
+		result = Utility::ReadBinary("interpolation_10_0_5.dat", 1105, 1);
 	}
 	if (n == 7)
 	{
 		result = MatrixXd(1161, 1);
-		result = Common::ReadBinary("interpolation_10_0_6.dat", 1161, 1);
+		result = Utility::ReadBinary("interpolation_10_0_6.dat", 1161, 1);
 	}
 	if (n == 8)
 	{
 		result = MatrixXd(1285, 1);
-		result = Common::ReadBinary("interpolation_10_0_7.dat", 1285, 1);
+		result = Utility::ReadBinary("interpolation_10_0_7.dat", 1285, 1);
 	}
 	if (n == 9)
 	{
 		result = MatrixXd(1539, 1);
-		result = Common::ReadBinary("interpolation_10_0_8.dat", 1539, 1);
+		result = Utility::ReadBinary("interpolation_10_0_8.dat", 1539, 1);
 	}
 
 	return result;
@@ -511,47 +512,47 @@ MatrixXd data::GetLamb_10(int n)
 	if (n == 1)
 	{
 		result = MatrixXd(1539, 1);
-		result = Common::ReadBinary("interpolation__10_0_0.dat", 1539, 1);
+		result = Utility::ReadBinary("interpolation__10_0_0.dat", 1539, 1);
 	}
 	if (n == 2)
 	{
 		result = MatrixXd(1285, 1);
-		result = Common::ReadBinary("interpolation__10_0_1.dat", 1285, 1);
+		result = Utility::ReadBinary("interpolation__10_0_1.dat", 1285, 1);
 	}
 	if (n == 3)
 	{
 		result = MatrixXd(1161, 1);
-		result = Common::ReadBinary("interpolation__10_0_2.dat", 1161, 1);
+		result = Utility::ReadBinary("interpolation__10_0_2.dat", 1161, 1);
 	}
 	if (n == 4)
 	{
 		result = MatrixXd(1105, 1);
-		result = Common::ReadBinary("interpolation__10_0_3.dat", 1105, 1);
+		result = Utility::ReadBinary("interpolation__10_0_3.dat", 1105, 1);
 	}
 	if (n == 5)
 	{
 		result = MatrixXd(1089, 1);
-		result = Common::ReadBinary("interpolation__10_0_4.dat", 1089, 1);
+		result = Utility::ReadBinary("interpolation__10_0_4.dat", 1089, 1);
 	}
 	if (n == 6)
 	{
 		result = MatrixXd(1105, 1);
-		result = Common::ReadBinary("interpolation__10_0_5.dat", 1105, 1);
+		result = Utility::ReadBinary("interpolation__10_0_5.dat", 1105, 1);
 	}
 	if (n == 7)
 	{
 		result = MatrixXd(1161, 1);
-		result = Common::ReadBinary("interpolation__10_0_6.dat", 1161, 1);
+		result = Utility::ReadBinary("interpolation__10_0_6.dat", 1161, 1);
 	}
 	if (n == 8)
 	{
 		result = MatrixXd(1285, 1);
-		result = Common::ReadBinary("interpolation__10_0_7.dat", 1285, 1);
+		result = Utility::ReadBinary("interpolation__10_0_7.dat", 1285, 1);
 	}
 	if (n == 9)
 	{
 		result = MatrixXd(1539, 1);
-		result = Common::ReadBinary("interpolation__10_0_8.dat", 1539, 1);
+		result = Utility::ReadBinary("interpolation__10_0_8.dat", 1539, 1);
 	}
 	return result;
 };

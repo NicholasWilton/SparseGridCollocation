@@ -32,23 +32,30 @@ using Eigen::VectorXd;
 
 using namespace Eigen;
 
-
-class API MethodOfLines
+namespace Leicester
 {
-public:
-	//static int MoLiteration(double Tend, double Tdone, double dt, double *G, int GRows, int GCols, double *lamb, int lambRows, int lambCols, double inx2, double r, double K, MatrixXd A1, MatrixXd Aend, MatrixXd H);
-};
+	namespace CudaLib
+	{
 
-class API CudaRBF
-{
-public:
-	static vector<MatrixXd> Gaussian2D(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C);
-};
+		class API MethodOfLines
+		{
+		public:
+			//static int MoLiteration(double Tend, double Tdone, double dt, double *G, int GRows, int GCols, double *lamb, int lambRows, int lambCols, double inx2, double r, double K, MatrixXd A1, MatrixXd Aend, MatrixXd H);
+		};
 
-class API ThrustRBF
-{
-public:
-	static vector<MatrixXd> Gaussian2D(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C);
-};
+		class API CudaRBF
+		{
+		public:
+			static vector<MatrixXd> Gaussian2D(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C);
+		};
+
+		class API ThrustRBF
+		{
+		public:
+			static vector<MatrixXd> Gaussian2D(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C);
+		};
+		
+	}
+}
 
 void SetupLevel7(Eigen::MatrixXd &TX1, Eigen::MatrixXd &CN);

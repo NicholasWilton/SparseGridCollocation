@@ -2,10 +2,10 @@
 <FileVersion>1</FileVersion>
 <CodeXL>
     <ProjectName>TestHarness</ProjectName>
-    <ApplicationPath>C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\x64\Release\TestHarness.exe</ApplicationPath>
+    <ApplicationPath>C:\Users\User\Source\Repos\SparseGridCollocation4\SparseGridCollocation\x64\Release\TestHarness.exe</ApplicationPath>
     <StoreApp>no</StoreApp>
-    <WorkingDirectory>C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\x64\Release</WorkingDirectory>
-    <SourceFilesDirectory>C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\Common;C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\TestHarness;C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\SparseGridCollocation</SourceFilesDirectory>
+    <WorkingDirectory>C:\Users\User\Source\Repos\SparseGridCollocation4\SparseGridCollocation\TestHarness</WorkingDirectory>
+    <SourceFilesDirectory>C:\Users\User\Source\Repos\SparseGridCollocation4\SparseGridCollocation\TestHarness</SourceFilesDirectory>
     <SourceCodeRootDirectory>CodeXLEmptyString</SourceCodeRootDirectory>
     <ApplicationArguments>CodeXLEmptyString</ApplicationArguments>
     <LastActiveMode>Profile Mode</LastActiveMode>
@@ -86,16 +86,16 @@
                 <utilMask>0</utilMask>
             </Session>
             <Session type="Profile">
-                <profileName>Jul-19-2017_22-59</profileName>
-                <profilePath>C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\SparseGridCollocation.profile_ProfilerOutput\Jul-19-2017_22-59\Jul-19-2017_22-59.cxlcpdb</profilePath>
+                <profileName>Sep-17-2017_21-20</profileName>
+                <profilePath>C:\Users\User\AppData\Roaming\CodeXL\TestHarness_ProfilerOutput\Sep-17-2017_21-20\Sep-17-2017_21-20.cxlcpdb</profilePath>
                 <profileType>Time-based Sampling</profileType>
                 <isImported>0</isImported>
-                <launchTarget>C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\x64\Release\TestHarness.exe</launchTarget>
+                <launchTarget>C:\Users\User\Source\Repos\SparseGridCollocation4\SparseGridCollocation\x64\Release\TestHarness.exe</launchTarget>
                 <commandArguments />
-                <workingDir>C:\Users\User\Source\Repos\SparseGridCollocation\SparseGridCollocation\x64\Release</workingDir>
+                <workingDir>C:\Users\User\Source\Repos\SparseGridCollocation4\SparseGridCollocation\TestHarness</workingDir>
                 <envVariables />
-                <startTime>Jul-19-2017_22-59-27</startTime>
-                <endTime>Jul-19-2017_23-02-09</endTime>
+                <startTime>Sep-17-2017_21-20-52</startTime>
+                <endTime>Sep-17-2017_21-23-50</endTime>
                 <startAffinity>15</startAffinity>
                 <css>T</css>
                 <cssInterval>1</cssInterval>
@@ -109,7 +109,7 @@
                 <startDelay>0</startDelay>
                 <startPaused>F</startPaused>
                 <profileEntire>T</profileEntire>
-                <duration>158</duration>
+                <duration>176</duration>
                 <terminateProcess>F</terminateProcess>
                 <msInterval>1.000000</msInterval>
                 <EventCount>0</EventCount>

@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <tchar.h>
 #include "..\include\eigen-eigen-67e894c6cd8f\Eigen\StdVector"
-#include "..\SparseGridCollocation\SparseGridCollocation.h"
+#include "..\SparseGridCollocation\Algorithm.h"
 #include "Math.h"
 #include <fstream>
 #include <iostream>
@@ -23,7 +23,7 @@
 #include <memory>
 #include <iomanip>
 
-#include ".\..\Common\Common.h"
+#include ".\..\Common\Utility.h"
 #include "data.h"
 #include "Interpolation.h"
 #include ".\..\SparseGridCollocation\Option.h"

@@ -2,30 +2,32 @@
 #include "EuropeanCallOption.h"
 #include "Distributions.h"
 
-Leicester::EuropeanCallOption::EuropeanCallOption()
+using namespace Leicester::Common;
+
+Leicester::SparseGridCollocation::EuropeanCallOption::EuropeanCallOption()
 {
 }
 
-Leicester::EuropeanCallOption::EuropeanCallOption(double strike, double maturity)
+Leicester::SparseGridCollocation::EuropeanCallOption::EuropeanCallOption(double strike, double maturity)
 {
 	this->Strike = strike;
 	this->Maturity = maturity;
 }
 
 
-Leicester::EuropeanCallOption::~EuropeanCallOption()
+Leicester::SparseGridCollocation::EuropeanCallOption::~EuropeanCallOption()
 {
 }
 
 
-VectorXd Leicester::EuropeanCallOption::PayOffFunction(VectorXd S)
+VectorXd Leicester::SparseGridCollocation::EuropeanCallOption::PayOffFunction(VectorXd S)
 {
 	VectorXd delta = S.array() - this->Strike;
 	VectorXd result = (delta.array() > 0).select(delta, 0);
 	return result;
 }
 
-MatrixXd Leicester::EuropeanCallOption::Price(const MatrixXd &X, double r, double sigma)
+MatrixXd Leicester::SparseGridCollocation::EuropeanCallOption::Price(const MatrixXd &X, double r, double sigma)
 {
 	double strike = this->Strike;
 	double maturity = this->Maturity;

@@ -1,38 +1,56 @@
 #include "stdafx.h"
 #include "PDE.h"
 #include "RBF.h"
-#include "Common.h"
+#include "Utility.h"
 #include "MatrixXdm.h"
 #include "kernel.h"
 #include "Gaussian2d.h"
+#include "Common.h"
 
 
 //#include "CppUnitTest.h"
 //using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+using namespace Leicester::Common;
+using namespace Leicester::ThrustLib;
 
-
-Leicester::PDE::PDE()
+Leicester::SparseGridCollocation::PDE::PDE()
 {
 }
 
 
-Leicester::PDE::~PDE()
+Leicester::SparseGridCollocation::PDE::~PDE()
 {
 }
 
-MatrixXd Leicester::PDE::BlackScholes(const MatrixXd &node, double r, double sigma,
+MatrixXd Leicester::SparseGridCollocation::PDE::BlackScholes(const MatrixXd &node, double r, double sigma,
 	const vector<MatrixXd> &lambda2, const vector<MatrixXd> &TX2, const vector<MatrixXd> &C2, const vector<MatrixXd> &A2,
 	const vector<MatrixXd> &lambda3, const vector<MatrixXd> &TX3, const vector<MatrixXd> &C3, const vector<MatrixXd> A3)
 {
 	int N = node.rows();
 	int ch2 = TX2.size();
 	MatrixXd U2 = MatrixXd::Ones(N, ch2);
-	ThrustLib::Gaussian cudaGaussian(node);
+	unsigned int memory = node.rows() * node.cols() * sizeof(double) * 6;
+	MemoryInfo mi = ThrustLib::Common::GetMemory();
+	ThrustLib::Gaussian* cudaGaussian = NULL;
+	if (mi.free > memory)
+		cudaGaussian = new Gaussian(node);
+	
 	for (int j = 0; j < ch2; j++)
 	{
-		//vector<MatrixXd> mqd = RBF::Gaussian2D(node, TX2[j], A2[j], C2[j]);
-		//vector<MatrixXd> mqd = CudaRBF::Gaussian2D(node, TX2[j], A2[j], C2[j]);
-		vector<MatrixXd> mqd = cudaGaussian.Gaussian2d(TX2[j], A2[j], C2[j]);
+
+		vector<MatrixXd> mqd;
+		//if there is free memory then do RBF interpolation gpu else on the cpu
+		if (cudaGaussian != NULL & (j % 2 == 0))
+		{
+			wcout << "Sending matrix size=" << memory << " bytes to GPU" << endl;
+			mqd = cudaGaussian->Gaussian2d(TX2[j], A2[j], C2[j]);
+		}
+		else
+		{
+			wcout << "Sending matrix size=" << memory << " bytes to CPU" << endl;
+			mqd = RBF::Gaussian2D(node, TX2[j], A2[j], C2[j]);;
+		}
+
 		MatrixXd a = mqd[1] * lambda2[j];
 		MatrixXd b = (pow(sigma, 2) / 2) * mqd[3] * lambda2[j];
 		MatrixXd c = r * mqd[2] * lambda2[j];
@@ -43,9 +61,19 @@ MatrixXd Leicester::PDE::BlackScholes(const MatrixXd &node, double r, double sig
 	MatrixXd U3 = MatrixXd::Ones(N, ch3);
 	for (int j = 0; j < ch3; j++)
 	{
-		//vector<MatrixXd> mqd = RBF::Gaussian2D(node, TX3[j], A3[j], C3[j]);
-		//vector<MatrixXd> mqd = CudaRBF::Gaussian2D(node, TX3[j], A3[j], C3[j]);
-		vector<MatrixXd> mqd = cudaGaussian.Gaussian2d(TX3[j], A3[j], C3[j]);
+		vector<MatrixXd> mqd;
+		//if there is free memory then do RBF interpolation gpu else on the cpu
+		if (cudaGaussian != NULL & (j % 2 == 0))
+		{
+			wcout << "Sending matrix size=" << memory << " bytes to GPU" << endl;
+			mqd = cudaGaussian->Gaussian2d(TX3[j], A3[j], C3[j]);
+		}
+		else
+		{
+			wcout << "Sending matrix size=" << memory << " bytes to CPU" << endl;
+			mqd = RBF::Gaussian2D(node, TX3[j], A3[j], C3[j]);;
+		}
+
 		MatrixXd a = mqd[1] * lambda3[j];
 		MatrixXd b = (pow(sigma, 2) / 2) * mqd[3] * lambda3[j];
 		MatrixXd c = r * mqd[2] * lambda3[j];
@@ -59,7 +87,7 @@ MatrixXd Leicester::PDE::BlackScholes(const MatrixXd &node, double r, double sig
 	return output;
 }
 
-MatrixXd Leicester::PDE::BlackScholesNd(const MatrixXd &node, double r, double sigma, vector<string> keys, const map<string, vector<vector<MatrixXd>> > * state)
+MatrixXd Leicester::SparseGridCollocation::PDE::BlackScholesNd(const MatrixXd &node, double r, double sigma, vector<string> keys, const map<string, vector<vector<MatrixXd>> > * state)
 {
 	int N = node.rows();
 	vector<MatrixXd> Us;
@@ -114,7 +142,7 @@ MatrixXd Leicester::PDE::BlackScholesNd(const MatrixXd &node, double r, double s
 	MatrixXd output= MatrixXd::Zero(Us[0].rows(), 1);;
 	for (int i = 0; i < Us.size(); i++)
 	{
-		int coeff = Common::BinomialCoefficient(n-1, i);
+		int coeff = Leicester::Common::Utility::BinomialCoefficient(n-1, i);
 		MatrixXd U = Us[i];
 		VectorXd sum = U.rowwise().sum();
 		//Common::saveArray(sum, "sum.txt");

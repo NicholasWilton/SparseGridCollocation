@@ -5,12 +5,15 @@ using Eigen::RowVectorXd;
 
 namespace Leicester
 {
-	class PPP
+	namespace SparseGridCollocation
 	{
-	public:
+		class PPP
+		{
+		public:
 
-		static double Calculate(const RowVectorXd &X);
-		//static VectorXd U();
-		//static VectorXd X();
-	};
+			static double Calculate(const RowVectorXd &X);
+			//static VectorXd U();
+			//static VectorXd X();
+		};
+	}
 }

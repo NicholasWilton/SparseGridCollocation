@@ -14,8 +14,14 @@
 using namespace std;
 using namespace thrust;
 
-__global__ void test();
+namespace Leicester
+{
+	namespace CudaLib
+	{
+		__global__ void test();
 
 
-__global__ void
-Gaussian2d_CUDA(double *D, double *Dt, double *Dx, double *Dxx, double *TP, int TPx, int TPy, double *CN, int CNx, int CNy, double *A, int Ax, int Ay, double *C, int Cx, int Cy);
+		__global__ void
+			Gaussian2d_CUDA(double *D, double *Dt, double *Dx, double *Dxx, double *TP, int TPx, int TPy, double *CN, int CNx, int CNy, double *A, int Ax, int Ay, double *C, int Cx, int Cy);
+	}
+}

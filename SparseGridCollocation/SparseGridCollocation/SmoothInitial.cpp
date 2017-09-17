@@ -1,10 +1,10 @@
 #include "stdafx.h"
 #include "SmoothInitial.h"
 
-Leicester::SmoothInitial::SmoothInitial()
+Leicester::SparseGridCollocation::SmoothInitial::SmoothInitial()
 {}
 
-Leicester::SmoothInitial::SmoothInitial(double T, MatrixXd TestNodes, VectorXd Lambda, VectorXd C)
+Leicester::SparseGridCollocation::SmoothInitial::SmoothInitial(double T, MatrixXd TestNodes, VectorXd Lambda, VectorXd C)
 {
 	this->T = T;
 	this->TestNodes = TestNodes;
@@ -13,6 +13,6 @@ Leicester::SmoothInitial::SmoothInitial(double T, MatrixXd TestNodes, VectorXd L
 }
 
 
-Leicester::SmoothInitial::~SmoothInitial()
+Leicester::SparseGridCollocation::SmoothInitial::~SmoothInitial()
 {
 }

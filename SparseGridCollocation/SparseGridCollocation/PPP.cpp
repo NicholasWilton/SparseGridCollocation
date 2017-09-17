@@ -2,7 +2,7 @@
 #include "PPP.h"
 #include "SmoothInitialU.h"
 #include "SmoothInitialX.h"
-#include "SparseGridCollocation.h"
+#include "Algorithm.h"
 #include "Common.h"
 
 using Eigen::Matrix;
@@ -12,7 +12,7 @@ using Eigen::RowVectorXd;
 using Eigen::UpLoType;
 using namespace std;
 
-double Leicester::PPP::Calculate(const RowVectorXd &X)
+double Leicester::SparseGridCollocation::PPP::Calculate(const RowVectorXd &X)
 {
 	VectorXd x1 = SmoothInitialX::X();
 	VectorXd U1 = SmoothInitialU::U();

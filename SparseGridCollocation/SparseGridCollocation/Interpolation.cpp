@@ -14,36 +14,36 @@
 
 //#include "CppUnitTest.h"
 //using namespace Microsoft::VisualStudio::CppUnitTestFramework;
-using namespace ThrustLib;
+using namespace Leicester::ThrustLib;
 
 
-vector<vector<MatrixXd>> Leicester::Interpolation::getResult()
+vector<vector<MatrixXd>> Leicester::SparseGridCollocation::Interpolation::getResult()
 {
 	return result;
 }
 
-MatrixXd Leicester::Interpolation::getLambda(int id)
+MatrixXd Leicester::SparseGridCollocation::Interpolation::getLambda(int id)
 {
 	return Lambda[id];
 }
-MatrixXd Leicester::Interpolation::getTX(int id)
+MatrixXd Leicester::SparseGridCollocation::Interpolation::getTX(int id)
 {
 	return TX[id];
 }
-MatrixXd Leicester::Interpolation::getC(int id)
+MatrixXd Leicester::SparseGridCollocation::Interpolation::getC(int id)
 {
 	return C[id];
 }
-MatrixXd Leicester::Interpolation::getA(int id)
+MatrixXd Leicester::SparseGridCollocation::Interpolation::getA(int id)
 {
 	return A[id];
 }
-MatrixXd Leicester::Interpolation::getU(int id)
+MatrixXd Leicester::SparseGridCollocation::Interpolation::getU(int id)
 {
 	return U[id];
 }
 
-void Leicester::Interpolation::interpolateGeneric(string prefix, double coef, double tsec, int b, int d, double inx1, double inx2, double r, double sigma, double T, double E,
+void Leicester::SparseGridCollocation::Interpolation::interpolateGeneric(string prefix, double coef, double tsec, int b, int d, double inx1, double inx2, double r, double sigma, double T, double E,
 	vector<string> keys, const map<string, vector<vector<MatrixXd>> > *vInterpolation)
 {
 	Lambda.clear();
@@ -61,8 +61,20 @@ void Leicester::Interpolation::interpolateGeneric(string prefix, double coef, do
 	for (int i = 0; i < N.rows(); i++)
 	{
 		MatrixXd TX1 = GenerateNodes(coef, tsec, inx1, inx2, N.row(i));
-		ThrustLib::Gaussian cudaGaussian(TX1, TX1);
-		threads.push_back(std::thread(&Interpolation::shapelambda2DGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation, TX1, cudaGaussian));
+		unsigned int memory = TX1.rows() * TX1.cols() * sizeof(double) * 6; //TN, CN, D, Dt, Dx, Dxx
+		MemoryInfo mi = ThrustLib::Common::GetMemory();
+		//if there is free memory then do RBF interpolation gpu else on the cpu
+		if (mi.free > memory)
+		{
+			wcout << "Sending matrix size=" << memory << " bytes to GPU" << endl;
+			ThrustLib::Gaussian cudaGaussian(TX1, TX1);
+			threads.push_back(std::thread(&Interpolation::shapelambda2DGenericC, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation, TX1, cudaGaussian));
+		}
+		else
+		{
+			wcout << "Sending matrix size=" << memory << " bytes to CPU" << endl;
+			threads.push_back(std::thread(&Interpolation::shapelambda2DGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation, TX1));
+		}
 		//wcout << Common::printMatrix(N.row(i)) << endl;
 		//shapelambda2DGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation, TX1, cudaGaussian);
 	}
@@ -89,7 +101,7 @@ void Leicester::Interpolation::interpolateGeneric(string prefix, double coef, do
 
 }
 
-void Leicester::Interpolation::interpolateGenericND(string prefix, double coef, double tsec, int b, int d, MatrixXd inx1, MatrixXd inx2, double r, double sigma, double T, double E,
+void Leicester::SparseGridCollocation::Interpolation::interpolateGenericND(string prefix, double coef, double tsec, int b, int d, MatrixXd inx1, MatrixXd inx2, double r, double sigma, double T, double E,
 	vector<string> keys, const map<string, vector<vector<MatrixXd>> > *vInterpolation)
 {
 	Lambda.clear();
@@ -130,7 +142,7 @@ void Leicester::Interpolation::interpolateGenericND(string prefix, double coef, 
 	
 }
 
-MatrixXd Leicester::Interpolation::primeNMatrix(int b, int d)
+MatrixXd Leicester::SparseGridCollocation::Interpolation::primeNMatrix(int b, int d)
 {
 	MatrixXd L = subnumber(b, d);
 	int ch = L.rows();
@@ -143,7 +155,7 @@ MatrixXd Leicester::Interpolation::primeNMatrix(int b, int d)
 	return N;
 }
 
-MatrixXd Leicester::Interpolation::subnumber(int b, int d)
+MatrixXd Leicester::SparseGridCollocation::Interpolation::subnumber(int b, int d)
 {
 	MatrixXd L;
 
@@ -185,7 +197,7 @@ MatrixXd Leicester::Interpolation::subnumber(int b, int d)
 typedef Eigen::SparseMatrix<double> SpMat;
 
 ///Copy v into result successfively until result is filled i.e. v =[1,2] totalength = 4 => result = [1,2,1,2]
-VectorXd Leicester::Interpolation::Replicate(VectorXd v, int totalLength)
+VectorXd Leicester::SparseGridCollocation::Interpolation::Replicate(VectorXd v, int totalLength)
 {
 	VectorXd Result(totalLength);
 	for (int i = 0; i < totalLength; i += v.size())
@@ -197,7 +209,7 @@ VectorXd Leicester::Interpolation::Replicate(VectorXd v, int totalLength)
 	}
 	return Result;
 }
-VectorXd Leicester::Interpolation::Replicate(VectorXd v, int totalLength, int dup)
+VectorXd Leicester::SparseGridCollocation::Interpolation::Replicate(VectorXd v, int totalLength, int dup)
 {
 	VectorXd Result(totalLength);
 	
@@ -219,7 +231,7 @@ VectorXd Leicester::Interpolation::Replicate(VectorXd v, int totalLength, int du
 	}
 	return Result;
 }
-MatrixXd Leicester::Interpolation::GenerateNodes(double coef, double tsec, double inx1, double inx2, MatrixXd N)
+MatrixXd Leicester::SparseGridCollocation::Interpolation::GenerateNodes(double coef, double tsec, double inx1, double inx2, MatrixXd N)
 {
 	VectorXd t = VectorXd::LinSpaced(N(0, 0), 0, tsec);
 	VectorXd x = VectorXd::LinSpaced(N(0, 1), inx1, inx2);
@@ -240,7 +252,7 @@ MatrixXd Leicester::Interpolation::GenerateNodes(double coef, double tsec, doubl
 	return TX1;
 }
 
-void Leicester::Interpolation::shapelambda2DGeneric(string prefix, int threadId, double coef, double tsec, double r, double sigma, double T, double E, double inx1, double inx2, MatrixXd N,
+void Leicester::SparseGridCollocation::Interpolation::shapelambda2DGenericC(string prefix, int threadId, double coef, double tsec, double r, double sigma, double T, double E, double inx1, double inx2, MatrixXd N,
 	vector<string> keys, const map<string, vector<vector<MatrixXd>> > * state, MatrixXd TP, Gaussian cudaGaussian)
 {
 	map<string, vector<vector<MatrixXd>>> vInterpolation = *state;
@@ -253,7 +265,7 @@ void Leicester::Interpolation::shapelambda2DGeneric(string prefix, int threadId,
 	MatrixXd a = N.array() - 1;
 
 	//wcout << Common::printMatrix(TX1) << endl;
-	vector<MatrixXd> mqd = RBF::Gaussian2D(TP, TP, a, c);
+	//vector<MatrixXd> mqd = RBF::Gaussian2D(TP, TP, a, c);
 	//Common::saveArray(TX1, "cTX1.txt");
 	//Common::saveArray(a, "cA.txt");
 	//Common::saveArray(c, "cC.txt");
@@ -390,7 +402,107 @@ void Leicester::Interpolation::shapelambda2DGeneric(string prefix, int threadId,
 	U[threadId] = u;
 
 }
-void Leicester::Interpolation::shapelambdaNDGeneric(string prefix, int threadId, double coef, double tsec, double r, double sigma, double T, double E, MatrixXd inx1, MatrixXd inx2, MatrixXd N,
+
+void Leicester::SparseGridCollocation::Interpolation::shapelambda2DGeneric(string prefix, int threadId, double coef, double tsec, double r, double sigma, double T, double E, double inx1, double inx2, MatrixXd N,
+	vector<string> keys, const map<string, vector<vector<MatrixXd>> > * state, MatrixXd TP)
+{
+	map<string, vector<vector<MatrixXd>>> vInterpolation = *state;
+
+	double num = N.prod();
+	double h1 = coef*tsec;
+	double h2 = coef*(inx2 - inx1);
+	MatrixXd c(1, 2);
+	c << h1, h2;
+	MatrixXd a = N.array() - 1;
+
+	vector<MatrixXd> mqd = RBF::Gaussian2D(TP, TP, a, c);
+
+	ShapeLambda2D(mqd, sigma, r, num, keys, TP, vInterpolation, inx1, inx2, E, T, tsec, threadId, c, a);
+
+}
+
+void Leicester::SparseGridCollocation::Interpolation::ShapeLambda2D(vector<MatrixXd> &mqd, double sigma, double &r, double num,
+	vector<string> &keys, MatrixXd &TP, map<string, vector<vector<MatrixXd>>> &vInterpolation, 
+	double inx1, double inx2, double E, double T, double tsec, int &threadId, MatrixXd &c, MatrixXd &a)
+{
+	MatrixXd phi = mqd[0];
+	MatrixXd phi_t = mqd[1];
+	MatrixXd phi_x = mqd[2];
+	MatrixXd phi_xx = mqd[3];
+
+	MatrixXd pa = (sigma * sigma * phi_xx.array() / 2); //sigma^2/2 d^2V/dV^2
+	MatrixXd pb = r*phi_x.array() - r*phi.array();// r dV/dx - rV
+	MatrixXd P = phi_t.array() + pa.array() + pb.array(); //dV/dt + ... + ...
+
+	VectorXd u = MatrixXd::Zero(num, 1);
+	for (int s = 0; s < keys.size(); s += 2)
+	{
+		string k1 = keys[s];
+		string k2 = keys[s + 1];
+		u -= PDE::BlackScholes(TP, r, sigma,
+			vInterpolation[k1][0], vInterpolation[k1][1], vInterpolation[k1][2], vInterpolation[k1][3],
+			vInterpolation[k2][0], vInterpolation[k2][1], vInterpolation[k2][2], vInterpolation[k2][3]);
+	}
+
+	for (int i = 0; i < num; i++)
+	{
+		if (abs(TP(i, 1) - inx1) < DBL_EPSILON || abs(TP(i, 1) - inx2) < DBL_EPSILON)
+		{
+			P.row(i) = phi.row(i);
+			double max = (Double(TP(i, 1)) - Double(E) * Double(exp(-r * (T - TP(i, 0))))).value();
+			u(i) = 0;
+			double sub = 0;
+			for (int s = 0; s < keys.size(); s += 2)
+			{
+				string k1 = keys[s];
+				string k2 = keys[s + 1];
+				double a = Test::inner(TP(i, 0), TP(i, 1), vInterpolation[k2][0], vInterpolation[k2][1], vInterpolation[k2][2], vInterpolation[k2][3]);
+				double b = Test::inner(TP(i, 0), TP(i, 1), vInterpolation[k1][0], vInterpolation[k1][1], vInterpolation[k1][2], vInterpolation[k1][3]);
+				sub += (a - b);
+			}
+
+			if (max > 0)
+				u(i) = max - sub;
+			else
+				u(i) = 0 - sub;
+		}
+
+		if (abs(TP(i, 0) - tsec) < DBL_EPSILON)
+		{
+			P.row(i) = phi.row(i);
+			double sub = 0;
+			for (int s = 0; s < keys.size(); s += 2)
+			{
+				string k1 = keys[s];
+				string k2 = keys[s + 1];
+				double a = Test::inner(TP(i, 0), TP(i, 1), vInterpolation[k2][0], vInterpolation[k2][1], vInterpolation[k2][2], vInterpolation[k2][3]);
+				double b = Test::inner(TP(i, 0), TP(i, 1), vInterpolation[k1][0], vInterpolation[k1][1], vInterpolation[k1][2], vInterpolation[k1][3]);
+				sub += (a - b);
+			}
+
+			double d = PPP::Calculate(TP.row(i)) - sub;
+			u(i) = d;
+		}
+	}
+	MatrixXd tx = TP;
+
+	PartialPivLU<MatrixXd> lu = PartialPivLU<MatrixXd>(P);
+
+	MatrixXd J = lu.matrixLU().triangularView<UpLoType::Upper>();
+	MatrixXd F = lu.matrixLU().triangularView<UpLoType::UnitLower>();
+	MatrixXd Fa = lu.permutationP().transpose() * F;
+
+	MatrixXd Jlamda = Fa.lu().solve(u);
+	MatrixXd l = J.lu().solve(Jlamda);
+
+	Lambda[threadId] = l;
+	TX[threadId] = tx;
+	C[threadId] = c;
+	A[threadId] = a;
+	U[threadId] = u;
+}
+
+void Leicester::SparseGridCollocation::Interpolation::shapelambdaNDGeneric(string prefix, int threadId, double coef, double tsec, double r, double sigma, double T, double E, MatrixXd inx1, MatrixXd inx2, MatrixXd N,
 	vector<string> keys, const map<string, vector<vector<MatrixXd>> > * state)
 {
 	map<string, vector<vector<MatrixXd>>> vInterpolation = * state;

@@ -33,9 +33,6 @@
     <ClInclude Include="SmoothInitialX.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SparseGridCollocation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RBF.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -78,6 +75,9 @@
     <ClInclude Include="SmoothInitial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Algorithm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -90,9 +90,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PPP.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SparseGridCollocation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RBF.cpp">
@@ -129,6 +126,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SmoothInitial.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Algorithm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

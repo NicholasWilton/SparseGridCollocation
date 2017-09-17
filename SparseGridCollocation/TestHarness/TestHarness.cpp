@@ -24,6 +24,8 @@ using namespace Eigen;
 using namespace std;
 using namespace Leicester;
 namespace l = Leicester;
+using namespace Leicester::Common;
+using namespace Leicester::SparseGridCollocation;
 //namespace ql = QuantLib;
 
 void CheckResults(double precision,
@@ -56,7 +58,7 @@ void CheckResults(double precision,
 		MatrixXd actual = item[count2];
 
 		MatrixXd expected = data::GetLamb2();
-		if (!Common::checkMatrix(expected, actual, precision, false))
+		if (!Utility::checkMatrix(expected, actual, precision, false))
 			cout << "check Lamb2 " << count2 + 1 << " failed" << endl;
 		else
 			cout << "check Lamb2 " << count2 + 1 << " passed" << endl;
@@ -71,13 +73,13 @@ void CheckResults(double precision,
 
 		MatrixXd actual = item[count2];
 		MatrixXd expected = data::GetLamb3(count2 + 1);
-		if (!Common::checkMatrix(expected, actual, precision, false))
+		if (!Utility::checkMatrix(expected, actual, precision, false))
 			cout << "check Lamb3 " << count2 + 1 << " failed" << endl;
 		else
 			cout << "check Lamb3 " << count2 + 1 << " passed" << endl;
 	}
 	//correct to 13 sf
-	//Common::checkMatrix(U0, u[0]);
+	//Utility::checkMatrix(U0, u[0]);
 
 	item = item_3[0];
 	count2 = 0;
@@ -87,7 +89,7 @@ void CheckResults(double precision,
 		MatrixXd actual = item[count2];
 
 		MatrixXd expected = data::GetLamb_3(count2 + 1);
-		if (!Common::checkMatrix(expected, actual, precision, false))
+		if (!Utility::checkMatrix(expected, actual, precision, false))
 			cout << "check Lamb_3 " << count2 + 1 << " failed" << endl;
 		else
 			cout << "check Lamb_3 " << count2 + 1 << " passed" << endl;
@@ -102,13 +104,13 @@ void CheckResults(double precision,
 
 		MatrixXd actual = item[count2];
 		MatrixXd expected = data::GetLamb4(count2 + 1);
-		if (!Common::checkMatrix(expected, actual, precision, false))
+		if (!Utility::checkMatrix(expected, actual, precision, false))
 			cout << "check Lamb4 " << count2 + 1 << " failed" << endl;
 		else
 			cout << "check Lamb4 " << count2 + 1 << " passed" << endl;
 	}
 
-	//Common::checkMatrix(U1, u[1]);
+	//Utility::checkMatrix(U1, u[1]);
 
 	item = item_4[0];
 	count2 = 0;
@@ -118,7 +120,7 @@ void CheckResults(double precision,
 		MatrixXd actual = item[count2];
 
 		MatrixXd expected = data::GetLamb_4(count2 + 1);
-		if (!Common::checkMatrix(expected, actual, precision, false))
+		if (!Utility::checkMatrix(expected, actual, precision, false))
 			cout << "check Lamb_4 " << count2 + 1 << " failed" << endl;
 		else
 			cout << "check Lamb_4 " << count2 + 1 << " passed" << endl;
@@ -133,7 +135,7 @@ void CheckResults(double precision,
 
 		MatrixXd actual = item[count2];
 		MatrixXd expected = data::GetLamb5(count2 + 1);
-		if (!Common::checkMatrix(expected, actual, precision, false))
+		if (!Utility::checkMatrix(expected, actual, precision, false))
 			cout << "check Lamb5 " << count2 + 1 << " failed" << endl;
 		else
 			cout << "check Lamb5 " << count2 + 1 << " passed" << endl;
@@ -147,7 +149,7 @@ void CheckResults(double precision,
 		MatrixXd actual = item[count2];
 
 		MatrixXd expected = data::GetLamb_5(count2 + 1);
-		if (!Common::checkMatrix(expected, actual, precision, false))
+		if (!Utility::checkMatrix(expected, actual, precision, false))
 			cout << "check Lamb_5 " << count2 + 1 << " failed" << endl;
 		else
 			cout << "check Lamb_5 " << count2 + 1 << " passed" << endl;
@@ -162,7 +164,7 @@ void CheckResults(double precision,
 
 		MatrixXd actual = item[count2];
 		MatrixXd expected = data::GetLamb6(count2 + 1);
-		if (!Common::checkMatrix(expected, actual, precision, false))
+		if (!Utility::checkMatrix(expected, actual, precision, false))
 			cout << "check Lamb6 " << count2 + 1 << " failed" << endl;
 		else
 			cout << "check Lamb6 " << count2 + 1 << " passed" << endl;
@@ -176,7 +178,7 @@ void CheckResults(double precision,
 		MatrixXd actual = item[count2];
 
 		MatrixXd expected = data::GetLamb_6(count2 + 1);
-		if (!Common::checkMatrix(expected, actual, precision, false))
+		if (!Utility::checkMatrix(expected, actual, precision, false))
 			cout << "check Lamb_6 " << count2 + 1 << " failed" << endl;
 		else
 			cout << "check Lamb_6 " << count2 + 1 << " passed" << endl;
@@ -191,7 +193,7 @@ void CheckResults(double precision,
 
 		MatrixXd actual = item[count2];
 		MatrixXd expected = data::GetLamb7(count2 + 1);
-		if (!Common::checkMatrix(expected, actual, precision, false))
+		if (!Utility::checkMatrix(expected, actual, precision, false))
 			cout << "check Lamb7 " << count2 + 1 << " failed" << endl;
 		else
 			cout << "check Lamb7 " << count2 + 1 << " passed" << endl;
@@ -205,7 +207,7 @@ void CheckResults(double precision,
 		MatrixXd actual = item[count2];
 
 		MatrixXd expected = data::GetLamb_7(count2 + 1);
-		if (!Common::checkMatrix(expected, actual, precision, false))
+		if (!Utility::checkMatrix(expected, actual, precision, false))
 			cout << "check Lamb_7 " << count2 + 1 << " failed" << endl;
 		else
 			cout << "check Lamb_7 " << count2 + 1 << " passed" << endl;
@@ -220,7 +222,7 @@ void CheckResults(double precision,
 
 		MatrixXd actual = item[count2];
 		MatrixXd expected = data::GetLamb8(count2 + 1);
-		if (!Common::checkMatrix(expected, actual, precision, false))
+		if (!Utility::checkMatrix(expected, actual, precision, false))
 			cout << "check Lamb8 " << count2 + 1 << " failed" << endl;
 		else
 			cout << "check Lamb8 " << count2 + 1 << " passed" << endl;
@@ -234,7 +236,7 @@ void CheckResults(double precision,
 		MatrixXd actual = item[count2];
 
 		MatrixXd expected = data::GetLamb_8(count2 + 1);
-		if (!Common::checkMatrix(expected, actual, precision, false))
+		if (!Utility::checkMatrix(expected, actual, precision, false))
 			cout << "check Lamb_8 " << count2 + 1 << " failed" << endl;
 		else
 			cout << "check Lamb_8 " << count2 + 1 << " passed" << endl;
@@ -249,7 +251,7 @@ void CheckResults(double precision,
 
 		MatrixXd actual = item[count2];
 		MatrixXd expected = data::GetLamb9(count2 + 1);
-		if (!Common::checkMatrix(expected, actual, precision, false))
+		if (!Utility::checkMatrix(expected, actual, precision, false))
 			cout << "check Lamb9 " << count2 + 1 << " failed" << endl;
 		else
 			cout << "check Lamb9 " << count2 + 1 << " passed" << endl;
@@ -263,7 +265,7 @@ void CheckResults(double precision,
 		MatrixXd actual = item[count2];
 
 		MatrixXd expected = data::GetLamb_9(count2 + 1);
-		if (!Common::checkMatrix(expected, actual, precision, false))
+		if (!Utility::checkMatrix(expected, actual, precision, false))
 			cout << "check Lamb_9 " << count2 + 1 << " failed" << endl;
 		else
 			cout << "check Lamb_9 " << count2 + 1 << " passed" << endl;
@@ -278,7 +280,7 @@ void CheckResults(double precision,
 
 		MatrixXd actual = item[count2];
 		MatrixXd expected = data::GetLamb10(count2 + 1);
-		if (!Common::checkMatrix(expected, actual, precision, false))
+		if (!Utility::checkMatrix(expected, actual, precision, false))
 			cout << "check Lamb10 " << count2 + 1 << " failed" << endl;
 		else
 			cout << "check Lamb10 " << count2 + 1 << " passed" << endl;
@@ -292,7 +294,7 @@ void CheckResults(double precision,
 		MatrixXd actual = item[count2];
 
 		MatrixXd expected = data::GetLamb_10(count2 + 1);
-		if (!Common::checkMatrix(expected, actual, precision, false))
+		if (!Utility::checkMatrix(expected, actual, precision, false))
 			cout << "check Lamb_10 " << count2 + 1 << " failed" << endl;
 		else
 			cout << "check Lamb_10 " << count2 + 1 << " passed" << endl;
@@ -307,7 +309,7 @@ void CheckResults(double precision,
 
 		MatrixXd actual = item[count2];
 		MatrixXd expected = data::GetLamb11(count2 + 1);
-		if (!Common::checkMatrix(expected, actual, precision, false))
+		if (!Utility::checkMatrix(expected, actual, precision, false))
 			cout << "check Lamb11 " << count2 + 1 << " failed" << endl;
 		else
 			cout << "check Lamb11 " << count2 + 1 << " passed" << endl;
@@ -340,7 +342,7 @@ void CompareInterpolation(map<string, vector<vector<MatrixXd>>> expected, map<st
 			{
 				cout << "checking key:\'" << itemE.first << "\' vector<> " << count1 << " matrix:" << count2 << endl;
 				auto mA = vecA[count2];
-				Common::checkMatrix(mE, mA, 0.0000000001);
+				Utility::checkMatrix(mE, mA, 0.0000000001);
 				count2++;
 			}
 			count1++;
@@ -449,9 +451,9 @@ void CompareInterpolation(map<string, vector<vector<MatrixXd>>> expected, map<st
 //			apEuroCall[i] = apEuroCallOption.NPV();
 //	}
 //
-//	Common::saveArray(apEuroCall, "QAPEuroCall.txt");
-//	Common::saveArray(mcEuroCall, "MCEuroCall.txt");
-//	Common::saveArray(mcBasket, "MCBasket.txt");
+//	Utility::saveArray(apEuroCall, "QAPEuroCall.txt");
+//	Utility::saveArray(mcEuroCall, "MCEuroCall.txt");
+//	Utility::saveArray(mcBasket, "MCBasket.txt");
 //}
 
 int main(){
@@ -480,47 +482,47 @@ int main(){
 	TX.col(1) = x;
 	EuropeanCallOption apOption(p.K, p.T);
 	VectorXd AP = apOption.Price(TX, p.r, p.sigma);
-	//Common::saveArray(AP, "APEuroCall.txt");
-	//Common::saveArray(x, "S0.txt");
+	//Utility::saveArray(AP, "APEuroCall.txt");
+	//Utility::saveArray(x, "S0.txt");
 
 	//QuantlibBenchMark(p, x);
 
 
-	vector<l::Option> portfolio = { EuropeanCallOption(100.0, 1), EuropeanCallOption(200.0, 1) };
-	l::BasketOption option(100.0,1,correlation);
-	SparseGridCollocation* test = new SparseGridCollocation();
+	vector<Option> portfolio = { EuropeanCallOption(100.0, 1), EuropeanCallOption(200.0, 1) };
+	BasketOption option(100.0,1,correlation);
+	Algorithm* test = new Algorithm();
 
 	//vector<MatrixXd> MuSiKcBasket = test->MuSIKcND(10, 0, option, p);
-	vector<MatrixXd> MuSiKc = test->MuSIKc(5, 0, p);
+	vector<MatrixXd> MuSiKc = test->MuSIKc(10, 0, p);
 	
 	
 
 	//wcout << "MuSIK-c ND result:" << endl;
-	//wcout << Common::printMatrix(result[0]) << endl;
+	//wcout << Utility::printMatrix(result[0]) << endl;
 	//wcout << "MuSIK-c ND RMS error:" << endl;
-	//wcout << Common::printMatrix(MuSiKcBasket[1]) << endl;
+	//wcout << Utility::printMatrix(MuSiKcBasket[1]) << endl;
 	//wcout << "MuSIK-c ND MAX error:" << endl;
-	//wcout << Common::printMatrix(MuSiKcBasket[2]) << endl;
+	//wcout << Utility::printMatrix(MuSiKcBasket[2]) << endl;
 	//wcout << getchar() << endl;
 
 
 	//wcout << "MuSIK-c result:" << endl;
-	//wcout << Common::printMatrix(result[0]) << endl;
+	//wcout << Utility::printMatrix(result[0]) << endl;
 	wcout << "MuSIK-c RMS error:" << endl;
-	wcout << Common::printMatrix(MuSiKc[1]) << endl;
+	wcout << Utility::printMatrix(MuSiKc[1]) << endl;
 	wcout << "MuSIK-c MAX error:" << endl;
-	wcout << Common::printMatrix(MuSiKc[2]) << endl;
+	wcout << Utility::printMatrix(MuSiKc[2]) << endl;
 	//wcout << getchar() << endl;
 
 	//wcout << "MuSIK-c vs MuSIK-c basket:" << endl;
-	//Common::checkMatrix(MuSiKc[0], MuSiKcBasket[0]);
-	//Common::saveArray(MuSiKc[0], "MuSiKc.txt");
-	//Common::saveArray(MuSiKcBasket[0], "MuSiKcBasket.txt");
+	//Utility::checkMatrix(MuSiKc[0], MuSiKcBasket[0]);
+	//Utility::saveArray(MuSiKc[0], "MuSiKc.txt");
+	//Utility::saveArray(MuSiKcBasket[0], "MuSiKcBasket.txt");
 
 	//wcout << "SIK-c RMS error:" << endl;
-	//wcout << Common::printMatrix(SiKc[1]) << endl;
+	//wcout << Utility::printMatrix(SiKc[1]) << endl;
 	//wcout << "SIK-c MAX error:" << endl;
-	//wcout << Common::printMatrix(SiKc[2]) << endl;
+	//wcout << Utility::printMatrix(SiKc[2]) << endl;
 
 	//wcout << getchar() << endl;
 
@@ -549,7 +551,7 @@ int main(){
 	//uMax << 6.55956979634471, 3.70216720531096, 1.42734558657324, 0.416600021955134, 0.114733914477483, 0.0293262625138198, 0.00765938580167358, 0.00198337219728728, 0.000513094949184278;
 
 	//MatrixXd t = data::GetTX();
-	//Common::printMatrixA(t);
+	//Utility::printMatrixA(t);
 
 	////vector<MatrixXd> result = test->MuSIKGeneric(11);
 	//auto u = test->GetU();
@@ -618,7 +620,7 @@ int main(){
 	//		{
 	//			stringstream ss;
 	//			ss << "interpolation_" << i.first << "_" << count << "_" << count1 << ".dat";
-	//			Common::WriteToBinary(ss.str(), m);
+	//			Utility::WriteToBinary(ss.str(), m);
 	//			count1++;
 	//		}
 	//		count++;

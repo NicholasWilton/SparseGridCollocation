@@ -16,16 +16,16 @@
 
 
 
-Leicester::Test::Test()
+Leicester::SparseGridCollocation::Test::Test()
 {
 }
 
 
-Leicester::Test::~Test()
+Leicester::SparseGridCollocation::Test::~Test()
 {
 }
 
-double Leicester::Test::inner(double t, double x, const vector<MatrixXd> &lamb, const vector<MatrixXd> &TX, const vector<MatrixXd> &C, const vector<MatrixXd> &A)
+double Leicester::SparseGridCollocation::Test::inner(double t, double x, const vector<MatrixXd> &lamb, const vector<MatrixXd> &TX, const vector<MatrixXd> &C, const vector<MatrixXd> &A)
 {
 
 	int ch = TX.size();
@@ -66,7 +66,7 @@ double Leicester::Test::inner(double t, double x, const vector<MatrixXd> &lamb, 
 }
 
 //TXYZ should be a row vector for the N dimension matrix
-double Leicester::Test::innerND(MatrixXd TXYZ, const vector<MatrixXd> &lamb, const vector<MatrixXd> &TX, const vector<MatrixXd> &C, const vector<MatrixXd> &A)
+double Leicester::SparseGridCollocation::Test::innerND(MatrixXd TXYZ, const vector<MatrixXd> &lamb, const vector<MatrixXd> &TX, const vector<MatrixXd> &C, const vector<MatrixXd> &A)
 {
 
 	int ch = TX.size();
@@ -101,7 +101,7 @@ double Leicester::Test::innerND(MatrixXd TXYZ, const vector<MatrixXd> &lamb, con
 }
 
 
-VectorXd Leicester::Test::inter(MatrixXd X, vector<MatrixXd> lamb, vector<MatrixXd> TX, vector<MatrixXd> C, vector<MatrixXd> A)
+VectorXd Leicester::SparseGridCollocation::Test::inter(MatrixXd X, vector<MatrixXd> lamb, vector<MatrixXd> TX, vector<MatrixXd> C, vector<MatrixXd> A)
 {
 	// This is used to calculate values on final testing points
 	//ch = length(TX);

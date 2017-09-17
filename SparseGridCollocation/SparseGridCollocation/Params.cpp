@@ -2,11 +2,11 @@
 #include "Params.h"
 
 
-Leicester::Params::Params()
+Leicester::SparseGridCollocation::Params::Params()
 {
 }
 
 
-Leicester::Params::~Params()
+Leicester::SparseGridCollocation::Params::~Params()
 {
 }

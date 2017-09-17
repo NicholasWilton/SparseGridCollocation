@@ -12,9 +12,9 @@ using Eigen::RowVectorXd;
 using Eigen::UpLoType;
 using namespace std;
 
-VectorXd Leicester::SmoothInitialX::x;
+VectorXd Leicester::SparseGridCollocation::SmoothInitialX::x;
 
-VectorXd Leicester::SmoothInitialX::X()
+VectorXd Leicester::SparseGridCollocation::SmoothInitialX::X()
 {
 	if (x.size() == 0)
 	{

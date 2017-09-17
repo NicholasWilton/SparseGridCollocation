@@ -2,16 +2,16 @@
 #include "TestNodes.h"
 
 
-Leicester::TestNodes::TestNodes()
+Leicester::SparseGridCollocation::TestNodes::TestNodes()
 {
 }
 
 
-Leicester::TestNodes::~TestNodes()
+Leicester::SparseGridCollocation::TestNodes::~TestNodes()
 {
 }
 
-MatrixXd Leicester::TestNodes::GenerateTestNodes(VectorXd lowerLimits, VectorXd upperLimits, MatrixXd N, double coef)
+MatrixXd Leicester::SparseGridCollocation::TestNodes::GenerateTestNodes(VectorXd lowerLimits, VectorXd upperLimits, MatrixXd N, double coef)
 {
 	vector<VectorXd> linearGrid;
 	int product = 1;
@@ -39,7 +39,7 @@ MatrixXd Leicester::TestNodes::GenerateTestNodes(VectorXd lowerLimits, VectorXd 
 	return TXYZ;
 }
 
-MatrixXd Leicester::TestNodes::GenerateTestNodes(double timeLowerLimit, double timeUpperLimit, VectorXd lowerLimits, VectorXd upperLimits, MatrixXd N, double coef)
+MatrixXd Leicester::SparseGridCollocation::TestNodes::GenerateTestNodes(double timeLowerLimit, double timeUpperLimit, VectorXd lowerLimits, VectorXd upperLimits, MatrixXd N, double coef)
 {
 	vector<VectorXd> linearGrid;
 	int product = 1;
@@ -77,7 +77,7 @@ MatrixXd Leicester::TestNodes::GenerateTestNodes(double timeLowerLimit, double t
 	return TXYZ;
 }
 
-vector<MatrixXd> Leicester::TestNodes::GenerateTestNodes(int nodes, VectorXd lowerLimits, VectorXd upperLimits, int dimensions)
+vector<MatrixXd> Leicester::SparseGridCollocation::TestNodes::GenerateTestNodes(int nodes, VectorXd lowerLimits, VectorXd upperLimits, int dimensions)
 {
 	vector<VectorXd> linearGrid;
 	int product = 1;
@@ -111,7 +111,7 @@ vector<MatrixXd> Leicester::TestNodes::GenerateTestNodes(int nodes, VectorXd low
 	return { TXYZGrid, TXYZNodes };
 }
 
-MatrixXd Leicester::TestNodes::CartesianProduct(MatrixXd grid)
+MatrixXd Leicester::SparseGridCollocation::TestNodes::CartesianProduct(MatrixXd grid)
 {
 	int product = 1;
 	int dimensions = grid.cols();
@@ -133,7 +133,7 @@ MatrixXd Leicester::TestNodes::CartesianProduct(MatrixXd grid)
 	return TXYZNodes;
 }
 
-VectorXd Leicester::TestNodes::Replicate(VectorXd v, int totalLength, int dup)
+VectorXd Leicester::SparseGridCollocation::TestNodes::Replicate(VectorXd v, int totalLength, int dup)
 {
 	VectorXd Result(totalLength);
 

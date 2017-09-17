@@ -2,16 +2,7 @@
 #include "MatrixUtil.h"
 
 
-MatrixUtil::MatrixUtil()
-{
-}
-
-
-MatrixUtil::~MatrixUtil()
-{
-}
-
-VectorXd MatrixUtil::Diff(MatrixXd m)
+VectorXd Leicester::Common::MatrixUtil::Diff(MatrixXd m)
 {
 	VectorXd result(m.rows() - 1);
 	for (int i = 0; i < m.rows() - 1; i++)
@@ -26,7 +17,7 @@ VectorXd MatrixUtil::Diff(MatrixXd m)
 	return result;
 }
 
-MatrixXd MatrixUtil::PushAndQueueRows(double push , MatrixXd A, double queue)
+MatrixXd Leicester::Common::MatrixUtil::PushAndQueueRows(double push , MatrixXd A, double queue)
 {
 	MatrixXd result(A.rows() + 2, A.cols());
 
@@ -43,7 +34,7 @@ MatrixXd MatrixUtil::PushAndQueueRows(double push , MatrixXd A, double queue)
 
 }
 
-MatrixXd MatrixUtil::PushRows(MatrixXd A, double push)
+MatrixXd Leicester::Common::MatrixUtil::PushRows(MatrixXd A, double push)
 {
 	MatrixXd result(A.rows() + 1, A.cols());
 	
@@ -59,7 +50,7 @@ MatrixXd MatrixUtil::PushRows(MatrixXd A, double push)
 
 }
 
-MatrixXd MatrixUtil::QueueRows(MatrixXd A, double queue)
+MatrixXd Leicester::Common::MatrixUtil::QueueRows(MatrixXd A, double queue)
 {
 	MatrixXd result(A.rows() + 1, A.cols());
 
@@ -74,7 +65,7 @@ MatrixXd MatrixUtil::QueueRows(MatrixXd A, double queue)
 	return result;
 }
 
-MatrixXd MatrixUtil::Select(MatrixXd A, double notEqual)
+MatrixXd Leicester::Common::MatrixUtil::Select(MatrixXd A, double notEqual)
 {
 	
 	vector<vector<double>> inter;

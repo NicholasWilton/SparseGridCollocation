@@ -4,16 +4,16 @@
 #include "Common.h"
 #include <iomanip>
 
-Leicester::RBF::RBF()
+Leicester::SparseGridCollocation::RBF::RBF()
 {
 }
 
 
-Leicester::RBF::~RBF()
+Leicester::SparseGridCollocation::RBF::~RBF()
 {
 }
 
-VectorXd Leicester::RBF::exp(const VectorXd &v)
+VectorXd Leicester::SparseGridCollocation::RBF::exp(const VectorXd &v)
 {
 	VectorXd result(v.rows());
 	for (int i = 0; i < v.size(); i++)
@@ -23,7 +23,7 @@ VectorXd Leicester::RBF::exp(const VectorXd &v)
 	return result;
 }
 
-vector<MatrixXd> Leicester::RBF::Gaussian2D(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C)
+vector<MatrixXd> Leicester::SparseGridCollocation::RBF::Gaussian2D(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C)
 {
 	vector<MatrixXd> result;
 	int Num = CN.rows();
@@ -82,7 +82,7 @@ vector<MatrixXd> Leicester::RBF::Gaussian2D(const MatrixXd &TP, const MatrixXd &
 	return result;
 }
 
-vector<MatrixXd> Leicester::RBF::GaussianND(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C)
+vector<MatrixXd> Leicester::SparseGridCollocation::RBF::GaussianND(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C)
 {
 	vector<MatrixXd> result;// V, Vt, Vx Vxy
 	int Num = CN.rows();
@@ -176,7 +176,7 @@ vector<MatrixXd> Leicester::RBF::GaussianND(const MatrixXd &TP, const MatrixXd &
 	return Derivatives;
 }
 
-vector<MatrixXd> Leicester::RBF::GaussianND_ODE(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C)
+vector<MatrixXd> Leicester::SparseGridCollocation::RBF::GaussianND_ODE(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C)
 {
 	vector<MatrixXd> result;// V, Vt, Vx Vxy
 	int Num = CN.rows();
@@ -263,7 +263,7 @@ vector<MatrixXd> Leicester::RBF::GaussianND_ODE(const MatrixXd &TP, const Matrix
 	return Derivatives;
 }
 
-vector<MatrixXd> Leicester::RBF::MultiQuadric1D(const MatrixXd &x, double xc, const double c)
+vector<MatrixXd> Leicester::SparseGridCollocation::RBF::MultiQuadric1D(const MatrixXd &x, double xc, const double c)
 {
 	//wcout << setprecision(25) << c << endl;
 	vector<MatrixXd> result;
@@ -294,7 +294,7 @@ vector<MatrixXd> Leicester::RBF::MultiQuadric1D(const MatrixXd &x, double xc, co
 	return result;
 }
 
-vector<MatrixXd> Leicester::RBF::MultiQuadric2D(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C)
+vector<MatrixXd> Leicester::SparseGridCollocation::RBF::MultiQuadric2D(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C)
 {
 	vector<MatrixXd> result;
 	int Num = CN.rows();
@@ -341,7 +341,7 @@ vector<MatrixXd> Leicester::RBF::MultiQuadric2D(const MatrixXd &TP, const Matrix
 	return result;
 }
 
-vector<MatrixXd> Leicester::RBF::MultiQuadricND_ODE(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C)
+vector<MatrixXd> Leicester::SparseGridCollocation::RBF::MultiQuadricND_ODE(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C)
 {
 	vector<MatrixXd> result;
 	int Num = CN.rows();
@@ -389,7 +389,7 @@ vector<MatrixXd> Leicester::RBF::MultiQuadricND_ODE(const MatrixXd &TP, const Ma
 	return Derivatives;
 }
 
-vector<vector<MatrixXd>> Leicester::RBF::MultiQuadricND(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C)
+vector<vector<MatrixXd>> Leicester::SparseGridCollocation::RBF::MultiQuadricND(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C)
 {
 	vector<MatrixXd> result;// V, Vt, Vx Vxy
 	int Num = CN.rows();
@@ -466,7 +466,7 @@ vector<vector<MatrixXd>> Leicester::RBF::MultiQuadricND(const MatrixXd &TP, cons
 	return { {D}, D_first, D_second_diag, D_second_half };
 }
 
-VectorXd Leicester::RBF::PhiProduct(vector<VectorXd> PhiN, int n)
+VectorXd Leicester::SparseGridCollocation::RBF::PhiProduct(vector<VectorXd> PhiN, int n)
 {
 	VectorXd result = VectorXd::Ones(PhiN[0].rows(), PhiN[0].cols());
 	int count = 0;

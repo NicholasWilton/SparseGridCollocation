@@ -5,18 +5,20 @@ using Eigen::MatrixXd;
 
 namespace Leicester
 {
-	class API SmoothInitial
+	namespace SparseGridCollocation
 	{
-	public:
-		SmoothInitial();
-		SmoothInitial(double T, MatrixXd TestNodes, VectorXd Lambda, VectorXd C);
-		~SmoothInitial();
-		double T;
-		MatrixXd TestNodes;
-		VectorXd Lambda;
-		MatrixXd C;
-		VectorXd S;
-		VectorXd U;
-	};
+		class API SmoothInitial
+		{
+		public:
+			SmoothInitial();
+			SmoothInitial(double T, MatrixXd TestNodes, VectorXd Lambda, VectorXd C);
+			~SmoothInitial();
+			double T;
+			MatrixXd TestNodes;
+			VectorXd Lambda;
+			MatrixXd C;
+			VectorXd S;
+			VectorXd U;
+		};
+	}
 }
-

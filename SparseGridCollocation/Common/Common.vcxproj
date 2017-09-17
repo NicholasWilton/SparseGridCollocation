@@ -140,7 +140,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Common.h" />
+    <ClInclude Include="Utility.h" />
     <ClInclude Include="Distributions.h" />
     <ClInclude Include="MatrixUtil.h" />
     <ClInclude Include="Sort.h" />
@@ -149,7 +149,7 @@
     <ClInclude Include="VectorUtil.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Common.cpp" />
+    <ClCompile Include="Utility.cpp" />
     <ClCompile Include="Distributions.cpp" />
     <ClCompile Include="dllmain.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>

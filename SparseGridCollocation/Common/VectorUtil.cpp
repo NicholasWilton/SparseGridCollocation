@@ -5,17 +5,7 @@ using namespace Eigen;
 using namespace std;
 
 
-VectorUtil::VectorUtil()
-{
-}
-
-
-VectorUtil::~VectorUtil()
-{
-}
-
-
-VectorXd VectorUtil::Diff(VectorXd A)
+VectorXd Leicester::Common::VectorUtil::Diff(VectorXd A)
 {
 	VectorXd result(A.rows() - 1);
 	for (int i = 0; i < A.rows() - 1; i++)
@@ -26,7 +16,7 @@ VectorXd VectorUtil::Diff(VectorXd A)
 
 }
 
-VectorXd VectorUtil::Push(VectorXd A, double push)
+VectorXd Leicester::Common::VectorUtil::Push(VectorXd A, double push)
 {
 	VectorXd result(A.rows() + 1);
 	result[0] = push;
@@ -39,7 +29,7 @@ VectorXd VectorUtil::Push(VectorXd A, double push)
 
 }
 
-VectorXd VectorUtil::Queue(VectorXd A, double queue)
+VectorXd Leicester::Common::VectorUtil::Queue(VectorXd A, double queue)
 {
 	VectorXd result(A.rows() + 1);
 
@@ -51,7 +41,7 @@ VectorXd VectorUtil::Queue(VectorXd A, double queue)
 	return result;
 }
 
-VectorXd VectorUtil::PushAndQueue(double push, VectorXd A, double queue)
+VectorXd Leicester::Common::VectorUtil::PushAndQueue(double push, VectorXd A, double queue)
 {
 	VectorXd result(A.rows() + 2);
 	result[0] = push;
@@ -63,7 +53,7 @@ VectorXd VectorUtil::PushAndQueue(double push, VectorXd A, double queue)
 	return result;
 }
 
-VectorXd VectorUtil::Select(VectorXd A, double notEqual)
+VectorXd Leicester::Common::VectorUtil::Select(VectorXd A, double notEqual)
 {
 	vector<double> inter;
 	for (int i = 0; i < A.rows(); i++)

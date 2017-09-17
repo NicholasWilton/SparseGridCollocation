@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Common.h"
+#include "Utility.h"
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -18,16 +18,8 @@ using namespace std;
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #endif // UNITTEST
 
-Common::Common()
-{
-}
 
-
-Common::~Common()
-{
-}
-
-void Common::Logger(string message)
+void Leicester::Common::Utility::Logger(string message)
 {
 #ifdef UNITTEST
 	Logger::WriteMessage(message);
@@ -35,7 +27,7 @@ void Common::Logger(string message)
 	cout << message << endl;
 }
 
-void Common::Logger(wstring message)
+void Leicester::Common::Utility::Logger(wstring message)
 {
 #if defined(UNITTEST)
 	Logger::WriteMessage(message);
@@ -43,7 +35,7 @@ void Common::Logger(wstring message)
 	wcout << message << endl;
 }
 
-wstring Common::printMatrix(MatrixXd m)
+wstring Leicester::Common::Utility::printMatrix(MatrixXd m)
 {
 	int cols = m.cols();
 	int rows = m.rows();
@@ -64,7 +56,7 @@ wstring Common::printMatrix(MatrixXd m)
 	return ss.str();
 }
 
-wstring Common::printMatrixHexW(MatrixXd m)
+wstring Leicester::Common::Utility::printMatrixHexW(MatrixXd m)
 {
 	int cols = m.cols();
 	int rows = m.rows();
@@ -85,7 +77,7 @@ wstring Common::printMatrixHexW(MatrixXd m)
 	return ss.str();
 }
 
-string Common::printMatrixHexA(MatrixXd m)
+string Leicester::Common::Utility::printMatrixHexA(MatrixXd m)
 {
 	int cols = m.cols();
 	int rows = m.rows();
@@ -106,7 +98,7 @@ string Common::printMatrixHexA(MatrixXd m)
 	return ss.str();
 }
 
-std::wstring Common::double2hexstrW(double x) {
+std::wstring Leicester::Common::Utility::double2hexstrW(double x) {
 
 	union
 	{
@@ -123,7 +115,7 @@ std::wstring Common::double2hexstrW(double x) {
 
 }
 
-std::string Common::double2hexstrA(double d) {
+std::string Leicester::Common::Utility::double2hexstrA(double d) {
 
 	char buffer[25] = { 0 };
 
@@ -132,7 +124,7 @@ std::string Common::double2hexstrA(double d) {
 	return buffer;
 }
 
-double Common::hexastr2doubleA(const std::string& s) {
+double Leicester::Common::Utility::hexastr2doubleA(const std::string& s) {
 
 	double d = 0.0;
 
@@ -141,7 +133,7 @@ double Common::hexastr2doubleA(const std::string& s) {
 	return d;
 }
 
-string Common::printMatrixA(MatrixXd m)
+string Leicester::Common::Utility::printMatrixA(MatrixXd m)
 {
 	int cols = m.cols();
 	int rows = m.rows();
@@ -155,7 +147,7 @@ string Common::printMatrixA(MatrixXd m)
 	return ss.str();
 }
 
-double Common::prod(vector<double> x)
+double Leicester::Common::Utility::prod(vector<double> x)
 {
 	double prod = 1.0;
 
@@ -165,7 +157,7 @@ double Common::prod(vector<double> x)
 }
 
 
-vector<double> Common::linspace(double a, double b, size_t N)
+vector<double> Leicester::Common::Utility::linspace(double a, double b, size_t N)
 {
 	double h = (b - a) / (N - 1);
 	vector<double> xs(N);
@@ -176,18 +168,18 @@ vector<double> Common::linspace(double a, double b, size_t N)
 	return xs;
 }
 
-bool Common::checkMatrix(MatrixXd expected, MatrixXd actual)
+bool Leicester::Common::Utility::checkMatrix(MatrixXd expected, MatrixXd actual)
 {
 
-	return Common::checkMatrix(expected, actual, DBL_EPSILON, true);
+	return Leicester::Common::Utility::checkMatrix(expected, actual, DBL_EPSILON, true);
 }
 
-bool Common::checkMatrix(MatrixXd expected, MatrixXd actual, double precision)
+bool Leicester::Common::Utility::checkMatrix(MatrixXd expected, MatrixXd actual, double precision)
 {
-	return Common::checkMatrix(expected, actual, precision, true);
+	return Leicester::Common::Utility::checkMatrix(expected, actual, precision, true);
 }
 
-bool Common::checkMatrix(MatrixXd expected, MatrixXd actual, double precision, bool print)
+bool Leicester::Common::Utility::checkMatrix(MatrixXd expected, MatrixXd actual, double precision, bool print)
 {
 	bool result = true;
 	int cols = expected.cols();
@@ -220,7 +212,7 @@ bool Common::checkMatrix(MatrixXd expected, MatrixXd actual, double precision, b
 	return result;
 }
 
-void Common::WriteToBinary(string fileName, MatrixXd matrix)
+void Leicester::Common::Utility::WriteToBinary(string fileName, MatrixXd matrix)
 {
 	char cCurrentPath[FILENAME_MAX];
 	string path = _getcwd(cCurrentPath, sizeof(cCurrentPath));
@@ -240,7 +232,7 @@ void Common::WriteToBinary(string fileName, MatrixXd matrix)
 	fout.close();
 };
 
-void Common::WriteToString(string fileName, MatrixXd matrix)
+void Leicester::Common::Utility::WriteToString(string fileName, MatrixXd matrix)
 {
 	char cCurrentPath[FILENAME_MAX];
 	string path = _getcwd(cCurrentPath, sizeof(cCurrentPath));
@@ -263,7 +255,7 @@ void Common::WriteToString(string fileName, MatrixXd matrix)
 	fout.close();
 };
 
-bool Common::saveArray(MatrixXd A, const std::string& file_path)
+bool Leicester::Common::Utility::saveArray(MatrixXd A, const std::string& file_path)
 {
 	//size_t length = rows * cols;
 	std::ofstream os(file_path.c_str());
@@ -285,7 +277,7 @@ bool Common::saveArray(MatrixXd A, const std::string& file_path)
 	return true;
 }
 
-MatrixXd Common::ReadBinary(string fileName, int rows, int cols)
+MatrixXd Leicester::Common::Utility::ReadBinary(string fileName, int rows, int cols)
 {
 
 	double value;
@@ -316,7 +308,7 @@ MatrixXd Common::ReadBinary(string fileName, int rows, int cols)
 	return result;
 };
 
-MatrixXd Common::ReadBinary(string path, string fileName, int rows, int cols)
+MatrixXd Leicester::Common::Utility::ReadBinary(string path, string fileName, int rows, int cols)
 {
 
 	double value;
@@ -346,38 +338,8 @@ MatrixXd Common::ReadBinary(string path, string fileName, int rows, int cols)
 	return result;
 };
 
-//typedef number<cpp_dec_float<14> > cpp_dec_float_14;
-//typedef number<cpp_dec_float<15> > cpp_dec_float_15;
-//typedef number<cpp_dec_float<16> > cpp_dec_float_16;
-//typedef number<cpp_dec_float<17> > cpp_dec_float_17;
-//typedef number<cpp_dec_float<18> > cpp_dec_float_18;
-//typedef number<cpp_dec_float<19> > cpp_dec_float_19;
-//typedef number<cpp_dec_float<20> > cpp_dec_float_20;
-//
-//MatrixXd Common::mult(MatrixXd &a, MatrixXd &b)
-//{
-//	MatrixXd result(a.rows(), b.cols());
-//
-//	//assume a & b are compatible
-//	for (int i = 0; i < a.rows(); i++)
-//		for (int j = 0; j < b.cols(); j++)
-//		{
-//			cpp_dec_float_16 sum = 0;
-//			for (int x = 0; x < a.cols(); x++)
-//			{
-//				cpp_dec_float_16 l = a(i, x);
-//				cpp_dec_float_16 r = b(x, j);
-//				sum = sum + (l * r);
-//
-//
-//			}
-//			result(i, j) = (double)sum;
-//		}
-//	return result;
-//
-//};
 
-std::map<string, double> Common::LoadMock()
+std::map<string, double> Leicester::Common::Utility::LoadMock()
 {
 	int n = 500000;
 	//Data xx;
@@ -419,12 +381,12 @@ std::map<string, double> Common::LoadMock()
 	return result;
 }
 
-map<string, double> Common::mock;
+map<string, double> Leicester::Common::Utility::mock;
 
-double Common::innerMock(string key, int thread, int num, int sub)
+double Leicester::Common::Utility::innerMock(string key, int thread, int num, int sub)
 {
-	if (Common::mock.size() == 0)
-		Common::mock = LoadMock();
+	if (Leicester::Common::Utility::mock.size() == 0)
+		Leicester::Common::Utility::mock = Leicester::Common::Utility::LoadMock();
 	stringstream ss;
 	int k;
 	if (key == "4")
@@ -464,17 +426,17 @@ double Common::innerMock(string key, int thread, int num, int sub)
 	else*/
 	ss << k << '_' << thread + 1 << '_' << num + 1 << '_' << sub;
 
-	double r = mock[ss.str()];
+	double r = Leicester::Common::Utility::mock[ss.str()];
 	return r;
 }
 
 //n Choose i or nCi
-int Common::BinomialCoefficient(int n, int i)
+int Leicester::Common::Utility::BinomialCoefficient(int n, int i)
 {
 	return Factorial(n) / (Factorial(n - i) * Factorial(i));
 }
 
-int Common::Factorial(int n)
+int Leicester::Common::Utility::Factorial(int n)
 {
 	if (n == 0)
 		return 1;

@@ -4,12 +4,15 @@
 using Eigen::VectorXd;
 namespace Leicester
 {
-	class API SmoothInitialU
+	namespace SparseGridCollocation
 	{
-	public:
+		class API SmoothInitialU
+		{
+		public:
 
-		static VectorXd U();
-		static VectorXd u;
+			static VectorXd U();
+			static VectorXd u;
 
-	};
+		};
+	}
 }

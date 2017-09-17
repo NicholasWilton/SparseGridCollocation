@@ -21,7 +21,7 @@ using namespace thrust;
 
 
 __global__ void
-matrixMul_CUDA(double *C, double *A, double *B, int wA, int wB)
+Leicester::CudaLib::matrixMul_CUDA(double *C, double *A, double *B, int wA, int wB)
 {
 	// Block index
 	int bx = blockIdx.x;
@@ -80,7 +80,7 @@ matrixMul_CUDA(double *C, double *A, double *B, int wA, int wB)
 	C[c + wB * ty + tx] = Csub;
 }
 
-int matrixMultiply(int block_size, double * h_A, dim3 &dimsA, double * h_B, dim3 &dimsB)
+int Leicester::CudaLib::matrixMultiply(int block_size, double * h_A, dim3 &dimsA, double * h_B, dim3 &dimsB)
 {
 	// Allocate host memory for matrices A and B
 	unsigned int size_A = dimsA.x * dimsA.y;
@@ -168,7 +168,7 @@ int matrixMultiply(int block_size, double * h_A, dim3 &dimsA, double * h_B, dim3
 }
 
 __global__ void
-dumpMatrix_CUDA(double *matrix, dim3 dimMatrix)
+Leicester::CudaLib::dumpMatrix_CUDA(double *matrix, dim3 dimMatrix)
 {
 	int j = blockDim.x * blockIdx.x + threadIdx.x;
 	int i = blockDim.y * blockIdx.y + threadIdx.y;
@@ -184,7 +184,7 @@ dumpMatrix_CUDA(double *matrix, dim3 dimMatrix)
 }
 
 __global__ void
-printMatrix_CUDA(double *matrix, dim3 dimMatrix)
+Leicester::CudaLib::printMatrix_CUDA(double *matrix, dim3 dimMatrix)
 {
 	int j = blockDim.x * blockIdx.x + threadIdx.x;
 	int i = blockDim.y * blockIdx.y + threadIdx.y;
@@ -215,7 +215,7 @@ printMatrix_CUDA(double *matrix, dim3 dimMatrix)
 }
 
 void
-printMatrixFormatted(const double *matrix, dim3 dimMatrix)
+Leicester::CudaLib::printMatrixFormatted(const double *matrix, dim3 dimMatrix)
 {
 	int mSize = sizeof(matrix);
 
@@ -238,7 +238,7 @@ printMatrixFormatted(const double *matrix, dim3 dimMatrix)
 }
 
 void
-printMatrix(const double *matrix, dim3 dimMatrix)
+Leicester::CudaLib::printMatrix(const double *matrix, dim3 dimMatrix)
 {
 	int mSize = sizeof(matrix);
 
@@ -260,7 +260,7 @@ printMatrix(const double *matrix, dim3 dimMatrix)
 }
 
 __global__ void
-matrixFill_CUDA(double *matrix, dim3 dimMatrix, double fill)
+Leicester::CudaLib::matrixFill_CUDA(double *matrix, dim3 dimMatrix, double fill)
 {
 	int j = blockDim.x * blockIdx.x + threadIdx.x;
 	int i = blockDim.y * blockIdx.y + threadIdx.y;
@@ -279,7 +279,7 @@ matrixFill_CUDA(double *matrix, dim3 dimMatrix, double fill)
 
 
 __global__ void
-FAI_CUDA(double *FAI, double a, double *TP, int tpCol, double CN, double c, dim3 dimTP)
+Leicester::CudaLib::FAI_CUDA(double *FAI, double a, double *TP, int tpCol, double CN, double c, dim3 dimTP)
 {
 	int i = blockDim.y * blockIdx.y + threadIdx.y;
 	int j = blockDim.x * blockIdx.x + threadIdx.x;
@@ -327,7 +327,7 @@ FAI_CUDA(double *FAI, double a, double *TP, int tpCol, double CN, double c, dim3
 
 // D = a * (B - c)
 __global__ void
-ScalarVectorDifference_CUDA(double *D, double a, double *B, double c, dim3 dimB)
+Leicester::CudaLib::ScalarVectorDifference_CUDA(double *D, double a, double *B, double c, dim3 dimB)
 {
 	int j = blockDim.x * blockIdx.x + threadIdx.x;
 	int i = blockDim.y * blockIdx.y + threadIdx.y;
@@ -351,7 +351,7 @@ ScalarVectorDifference_CUDA(double *D, double a, double *B, double c, dim3 dimB)
 }
 
 __global__ void
-ElementWiseMultiply_CUDA(double *C, double *A, double *B, int rows, int cols)
+Leicester::CudaLib::ElementWiseMultiply_CUDA(double *C, double *A, double *B, int rows, int cols)
 {
 	int j = blockDim.x * blockIdx.x + threadIdx.x;
 	int i = blockDim.y * blockIdx.y + threadIdx.y;
@@ -377,7 +377,7 @@ ElementWiseMultiply_CUDA(double *C, double *A, double *B, int rows, int cols)
 }
 
 __global__ void
-ElementWiseMultiply_CUDA(double *C, double *A, double *B, dim3 dimC)
+Leicester::CudaLib::ElementWiseMultiply_CUDA(double *C, double *A, double *B, dim3 dimC)
 {
 	int j = blockDim.x * blockIdx.x + threadIdx.x;
 	int i = blockDim.y * blockIdx.y + threadIdx.y;
@@ -403,7 +403,7 @@ ElementWiseMultiply_CUDA(double *C, double *A, double *B, dim3 dimC)
 }
 
 __global__ void
-ElementWiseMultiply_CUDA2(double *C, double *A, double *B, dim3 dimC)
+Leicester::CudaLib::ElementWiseMultiply_CUDA2(double *C, double *A, double *B, dim3 dimC)
 {
 	int j = blockDim.x * blockIdx.x + threadIdx.x;
 	int i = blockDim.y * blockIdx.y + threadIdx.y;
@@ -429,7 +429,7 @@ ElementWiseMultiply_CUDA2(double *C, double *A, double *B, dim3 dimC)
 }
 
 __global__ void
-ElementWiseMultiply_CUDA3(double *C, double *A, double *B, dim3 dimC)
+Leicester::CudaLib::ElementWiseMultiply_CUDA3(double *C, double *A, double *B, dim3 dimC)
 {
 	int j = blockDim.x * blockIdx.x + threadIdx.x;
 	int i = blockDim.y * blockIdx.y + threadIdx.y;
@@ -461,7 +461,7 @@ ElementWiseMultiply_CUDA3(double *C, double *A, double *B, dim3 dimC)
 }
 
 __global__ void
-ElementWiseMultiply_CUDA4(double *C, double *A, double *B, dim3 dimC)
+Leicester::CudaLib::ElementWiseMultiply_CUDA4(double *C, double *A, double *B, dim3 dimC)
 {
 	int j = blockDim.x * blockIdx.x + threadIdx.x;
 	int i = blockDim.y * blockIdx.y + threadIdx.y;
@@ -487,7 +487,7 @@ ElementWiseMultiply_CUDA4(double *C, double *A, double *B, dim3 dimC)
 }
 
 __global__ void
-ElementWiseMultiply_CUDA5(double *C, double *A, double *B, dim3 dimC)
+Leicester::CudaLib::ElementWiseMultiply_CUDA5(double *C, double *A, double *B, dim3 dimC)
 {
 	int j = blockDim.x * blockIdx.x + threadIdx.x;
 	int i = blockDim.y * blockIdx.y + threadIdx.y;
@@ -513,7 +513,7 @@ ElementWiseMultiply_CUDA5(double *C, double *A, double *B, dim3 dimC)
 }
 
 __global__ void
-ElementWiseMultiplyThree_CUDA(double *D, double *A, double *B, double *C, dim3 dimD)
+Leicester::CudaLib::ElementWiseMultiplyThree_CUDA(double *D, double *A, double *B, double *C, dim3 dimD)
 {
 	int j = blockDim.x * blockIdx.x + threadIdx.x;
 	int i = blockDim.y * blockIdx.y + threadIdx.y;
@@ -529,7 +529,7 @@ ElementWiseMultiplyThree_CUDA(double *D, double *A, double *B, double *C, dim3 d
 }
 
 __global__ void
-MatrixScalarMultiply_CUDA(double *C, double *A, double b, dim3 dimA)
+Leicester::CudaLib::MatrixScalarMultiply_CUDA(double *C, double *A, double b, dim3 dimA)
 {
 	int j = blockDim.x * blockIdx.x + threadIdx.x;
 	int i = blockDim.y * blockIdx.y + threadIdx.y;
@@ -545,7 +545,7 @@ MatrixScalarMultiply_CUDA(double *C, double *A, double b, dim3 dimA)
 }
 
 __global__ void
-MatrixSubtractScalar_CUDA(double *C, double *A, double b, dim3 dimA)
+Leicester::CudaLib::MatrixSubtractScalar_CUDA(double *C, double *A, double b, dim3 dimA)
 {
 	int j = blockDim.x * blockIdx.x + threadIdx.x;
 	int i = blockDim.y * blockIdx.y + threadIdx.y;
@@ -563,7 +563,7 @@ MatrixSubtractScalar_CUDA(double *C, double *A, double b, dim3 dimA)
 }
 
 __global__ void
-MatrixAddScalar_CUDA(double *C, double *A, double b, dim3 dimA)
+Leicester::CudaLib::MatrixAddScalar_CUDA(double *C, double *A, double b, dim3 dimA)
 {
 	int j = blockDim.x * blockIdx.x + threadIdx.x;
 	int i = blockDim.y * blockIdx.y + threadIdx.y;
@@ -579,7 +579,7 @@ MatrixAddScalar_CUDA(double *C, double *A, double b, dim3 dimA)
 }
 
 __global__ void
-GetColumn(double * result, int col, double *A, dim3 dimA)
+Leicester::CudaLib::GetColumn(double * result, int col, double *A, dim3 dimA)
 {
 	int j = blockDim.x * blockIdx.x + threadIdx.x;
 	int i = blockDim.y * blockIdx.y + threadIdx.y;
@@ -595,7 +595,7 @@ GetColumn(double * result, int col, double *A, dim3 dimA)
 }
 
 __global__ void
-GetRow(double * result, int row, double *A, dim3 dimA)
+Leicester::CudaLib::GetRow(double * result, int row, double *A, dim3 dimA)
 {
 	int j = blockDim.x * blockIdx.x + threadIdx.x;
 	int i = blockDim.y * blockIdx.y + threadIdx.y;
@@ -608,7 +608,7 @@ GetRow(double * result, int row, double *A, dim3 dimA)
 }
 
 __global__ void
-SetColumn(double * matrix, int col, double *vector, dim3 dimMatrix)
+Leicester::CudaLib::SetColumn(double * matrix, int col, double *vector, dim3 dimMatrix)
 {
 	int j = blockDim.x * blockIdx.x + threadIdx.x;
 	int i = blockDim.y * blockIdx.y + threadIdx.y;
@@ -625,7 +625,7 @@ SetColumn(double * matrix, int col, double *vector, dim3 dimMatrix)
 }
 
 __global__ void
-SetColumnLogged(double * matrix, int col, double *vector, dim3 dimMatrix)
+Leicester::CudaLib::SetColumnLogged(double * matrix, int col, double *vector, dim3 dimMatrix)
 {
 	int j = blockDim.x * blockIdx.x + threadIdx.x;
 	int i = blockDim.y * blockIdx.y + threadIdx.y;

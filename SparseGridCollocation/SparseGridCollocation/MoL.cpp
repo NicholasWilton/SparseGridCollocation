@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "MoL.h"
-#include "Common.h"
+#include "Utility.h"
 #include "EuropeanCallOption.h"
 #include "VectorUtil.h"
 #include "RBF.h"
@@ -15,19 +15,21 @@
 using namespace Eigen;
 using namespace std;
 using namespace Leicester;
+using namespace Leicester::SparseGridCollocation;
+using namespace Leicester::Common;
 
-Leicester::MoL::MoL()
+Leicester::SparseGridCollocation::MoL::MoL()
 {
 }
 
 
-Leicester::MoL::~MoL()
+Leicester::SparseGridCollocation::MoL::~MoL()
 {
 }
 
 
 
-vector<VectorXd> Leicester::MoL::MethodOfLines(Params p)
+vector<VectorXd> Leicester::SparseGridCollocation::MoL::MethodOfLines(Params p)
 {
 	stringstream ssX;
 	ssX << setprecision(16) << "SmoothInitial_EuroCall_" << p.T << "_" << p.Tdone << "_" << p.Tend << "_" << p.dt << "_" << p.K << "_" << p.r << "_" << p.sigma << "_" << p.theta << "_" << p.inx1[0] << "_" << p.inx2[0] << "_X.dat";
@@ -47,28 +49,28 @@ vector<VectorXd> Leicester::MoL::MethodOfLines(Params p)
 	if (x.good() & u.good() & t.good())
 	{
 		x.close();
-		MatrixXd mX = Common::ReadBinary(fileX, 32769, 1);
+		MatrixXd mX = Common::Utility::ReadBinary(fileX, 32769, 1);
 		VectorXd X(Map<VectorXd>(mX.data(), mX.cols()*mX.rows()));
 		u.close();
-		MatrixXd mU = Common::ReadBinary(fileU, 32769, 1);
+		MatrixXd mU = Common::Utility::ReadBinary(fileU, 32769, 1);
 		VectorXd U(Map<VectorXd>(mU.data(), mU.cols()*mU.rows()));
 		t.close();
-		MatrixXd mT = Common::ReadBinary(fileT, 1, 1);
+		MatrixXd mT = Common::Utility::ReadBinary(fileT, 1, 1);
 		VectorXd T(Map<VectorXd>(mT.data(), mT.cols()*mT.rows()));
 		return { X, U, T };
 	}
 	else
 	{
 		vector<VectorXd> smoothInitial = MethodOfLines(p.T, p.Tdone, p.Tend, p.dt, p.K, p.r, p.sigma, p.theta, p.inx1[0], p.inx2[0]);
-		Common::WriteToBinary(fileX, smoothInitial[0]);
-		Common::WriteToBinary(fileU, smoothInitial[1]);
-		Common::WriteToBinary(fileT, smoothInitial[2]);
+		Common::Utility::WriteToBinary(fileX, smoothInitial[0]);
+		Common::Utility::WriteToBinary(fileU, smoothInitial[1]);
+		Common::Utility::WriteToBinary(fileT, smoothInitial[2]);
 		return smoothInitial;
 	}
 
 }
 
-vector<VectorXd> Leicester::MoL::MethodOfLines(double T, double Tdone, double Tend, double dt, double K, double r, double sigma, double theta, double inx1, double inx2)
+vector<VectorXd> Leicester::SparseGridCollocation::MoL::MethodOfLines(double T, double Tdone, double Tend, double dt, double K, double r, double sigma, double theta, double inx1, double inx2)
 {
 	cout << "MethodOfLines for 1-D European Call Option" << endl;
 	vector<VectorXd> price = EuroCallOption1D(T, Tdone, Tend, dt, K, r, sigma, theta, inx1, inx2);
@@ -95,7 +97,7 @@ vector<VectorXd> Leicester::MoL::MethodOfLines(double T, double Tdone, double Te
 	return { X_ini, U_ini,t };
 }
 
-vector<VectorXd> Leicester::MoL::EuroCallOption1D(double T, double Tdone, double Tend, double dt, double K, double r, double sigma, double theta, double inx1, double inx2)
+vector<VectorXd> Leicester::SparseGridCollocation::MoL::EuroCallOption1D(double T, double Tdone, double Tend, double dt, double K, double r, double sigma, double theta, double inx1, double inx2)
 {
 	Option *option = new EuropeanCallOption(K, T);
 	int N_uniform = 5000;
@@ -104,20 +106,20 @@ vector<VectorXd> Leicester::MoL::EuroCallOption1D(double T, double Tdone, double
 	VectorXd u0 = option->PayOffFunction(x);
 	delete option;
 
-	VectorXd dx = VectorUtil::Diff(x);
+	VectorXd dx = Common::VectorUtil::Diff(x);
 	const double inf = numeric_limits<double>::infinity();
 	VectorXd vInf(dx.rows());
 	vInf.fill(inf);
 
-	VectorXd pushed = VectorUtil::Push(dx, inf);
-	VectorXd queued = VectorUtil::Queue(dx, inf);
+	VectorXd pushed = Common::VectorUtil::Push(dx, inf);
+	VectorXd queued = Common::VectorUtil::Queue(dx, inf);
 	VectorXd c = 2 * (pushed.array() >= queued.array()).select(queued, pushed);
 	//Common::saveArray(c, "1D_c.txt");
 
 	VectorXd xx = VectorXd::LinSpaced(1000, 0, 3 * K);
 	VectorXd IT = ((1.2 * K >= x.array()) && (x.array() >= 0.8 * K)).select(x, 0);
 	double sumIT = IT.sum();
-	VectorXd AroundE = VectorUtil::Select(IT, 0);
+	VectorXd AroundE = Common::VectorUtil::Select(IT, 0);
 
 	//Common::saveArray(x, "1D_X.txt");
 	//Common::saveArray(xx, "1D_XX.txt");
@@ -191,7 +193,7 @@ vector<VectorXd> Leicester::MoL::EuroCallOption1D(double T, double Tdone, double
 		MatrixXd g = G* lamb;
 
 		//VectorXd fff = VectorUtil::PushAndQueue(0, (VectorXd)g.col(0), inx2 - exp(-r*Tdone)*K);
-		VectorXd fff = VectorUtil::PushAndQueue(0, Map<VectorXd>(g.data(), g.cols() * g.rows()), inx2 - exp(-r*Tdone)*K);
+		VectorXd fff = Common::VectorUtil::PushAndQueue(0, Map<VectorXd>(g.data(), g.cols() * g.rows()), inx2 - exp(-r*Tdone)*K);
 
 		MatrixXd HH(A1.cols(), A1.cols());
 		HH.row(0) = A1;
@@ -271,7 +273,7 @@ vector<VectorXd> Leicester::MoL::EuroCallOption1D(double T, double Tdone, double
 
 }
 
-SmoothInitial Leicester::MoL::MethodOfLinesND(Params p, MatrixXd correlation)
+SmoothInitial Leicester::SparseGridCollocation::MoL::MethodOfLinesND(Params p, MatrixXd correlation)
 {
 	stringstream ssinx1;
 	stringstream ssinx2;
@@ -298,13 +300,13 @@ SmoothInitial Leicester::MoL::MethodOfLinesND(Params p, MatrixXd correlation)
 	if (x.good() & u.good() & t.good())
 	{
 		x.close();
-		MatrixXd mX = Common::ReadBinary(fileX, 32769, correlation.rows());
+		MatrixXd mX = Utility::ReadBinary(fileX, 32769, correlation.rows());
 		VectorXd X(Map<VectorXd>(mX.data(), mX.cols()*mX.rows()));
 		u.close();
-		MatrixXd mU = Common::ReadBinary(fileU, 32769, correlation.rows());
+		MatrixXd mU = Utility::ReadBinary(fileU, 32769, correlation.rows());
 		VectorXd U(Map<VectorXd>(mU.data(), mU.cols()*mU.rows()));
 		t.close();
-		MatrixXd mT = Common::ReadBinary(fileT, 1, 1);
+		MatrixXd mT = Utility::ReadBinary(fileT, 1, 1);
 		VectorXd T(Map<VectorXd>(mT.data(), mT.cols()*mT.rows()));
 		SmoothInitial result;
 		result.S = X;
@@ -324,17 +326,17 @@ SmoothInitial Leicester::MoL::MethodOfLinesND(Params p, MatrixXd correlation)
 		//	smthU.col(col) = s[1];
 		//	col++;
 		//}
-		Common::WriteToBinary(fileX, smoothInitial.S);
-		Common::WriteToBinary(fileU, smoothInitial.U);
+		Utility::WriteToBinary(fileX, smoothInitial.S);
+		Utility::WriteToBinary(fileU, smoothInitial.U);
 		MatrixXd T(1, 1);
 		T << smoothInitial.T;
-		Common::WriteToBinary(fileT, T);
+		Utility::WriteToBinary(fileT, T);
 		return smoothInitial;
 	}
 
 }
 
-SmoothInitial Leicester::MoL::MethodOfLinesND(double T, double Tdone, double Tend, double dt, double K, double r, double sigma, double theta, VectorXd inx1, VectorXd inx2, MatrixXd correlation)
+SmoothInitial Leicester::SparseGridCollocation::MoL::MethodOfLinesND(double T, double Tdone, double Tend, double dt, double K, double r, double sigma, double theta, VectorXd inx1, VectorXd inx2, MatrixXd correlation)
 {
 	vector<vector<VectorXd>> result;
 	cout << "MethodOfLines for N-D European Call Option" << endl;
@@ -361,7 +363,7 @@ SmoothInitial Leicester::MoL::MethodOfLinesND(double T, double Tdone, double Ten
 	return initial;
 }
 
-SmoothInitial Leicester::MoL::EuroCallOptionND(double T, double Tdone, double Tend, double dt, double K, double r, double sigma, double theta, MatrixXd correlation)
+SmoothInitial Leicester::SparseGridCollocation::MoL::EuroCallOptionND(double T, double Tdone, double Tend, double dt, double K, double r, double sigma, double theta, MatrixXd correlation)
 {
 	//vector<vector<VectorXd>> result;
 	int assets = correlation.rows();
@@ -403,7 +405,7 @@ SmoothInitial Leicester::MoL::EuroCallOptionND(double T, double Tdone, double Te
 	MatrixXd Axx = MatrixXd::Zero(centralNodes.rows(), tnRows);
 	MatrixXd a1 = MatrixXd::Ones(c.rows(), testNodes.cols());
 	MatrixXd S = option->PayOffS(aroundStrikeNodes);
-	Common::saveArray(S, "S.txt");
+	Utility::saveArray(S, "S.txt");
 	MatrixXd Sc = option->PayOffS(centralNodes);
 	delete option;
 	cout << "MoL RBF Kernel interpolation\r\n";
@@ -599,7 +601,7 @@ SmoothInitial Leicester::MoL::EuroCallOptionND(double T, double Tdone, double Te
 
 }
 
-MatrixXd Leicester::MoL::PushAndQueueBoundaries(MatrixXd A, VectorXd inx2, double r, double Tdone, double K)
+MatrixXd Leicester::SparseGridCollocation::MoL::PushAndQueueBoundaries(MatrixXd A, VectorXd inx2, double r, double Tdone, double K)
 {
 	double push = 0;
 
@@ -619,7 +621,7 @@ MatrixXd Leicester::MoL::PushAndQueueBoundaries(MatrixXd A, VectorXd inx2, doubl
 
 }
 
-vector<vector<VectorXd>> Leicester::MoL::MethodOfLinesND_ODE(double T, double Tdone, double Tend, double dt, double K, double r, double sigma, double theta, VectorXd inx1, VectorXd inx2, MatrixXd correlation)
+vector<vector<VectorXd>> Leicester::SparseGridCollocation::MoL::MethodOfLinesND_ODE(double T, double Tdone, double Tend, double dt, double K, double r, double sigma, double theta, VectorXd inx1, VectorXd inx2, MatrixXd correlation)
 {
 	vector<vector<VectorXd>> result;
 	cout << "MethodOfLines for N-D European Call Option" << endl;
@@ -650,7 +652,7 @@ vector<vector<VectorXd>> Leicester::MoL::MethodOfLinesND_ODE(double T, double Td
 	return result;
 }
 
-vector<vector<VectorXd>> Leicester::MoL::EuroCallOptionND_ODE(double T, double Tdone, double Tend, double dt, double K, double r, double sigma, double theta, VectorXd inx1, VectorXd inx2, MatrixXd correlation)
+vector<vector<VectorXd>> Leicester::SparseGridCollocation::MoL::EuroCallOptionND_ODE(double T, double Tdone, double Tend, double dt, double K, double r, double sigma, double theta, VectorXd inx1, VectorXd inx2, MatrixXd correlation)
 {
 	vector<vector<VectorXd>> result;
 	int dimensions = correlation.rows();
@@ -732,8 +734,8 @@ vector<vector<VectorXd>> Leicester::MoL::EuroCallOptionND_ODE(double T, double T
 		D2_mid.col(j) = D2_mid.col(j).array() / (AroundE.array() * AroundE.array());
 	}
 
-	Common::saveArray(A, "A.txt");
-	Common::saveArray(u0, "u0.txt");
+	Utility::saveArray(A, "A.txt");
+	Utility::saveArray(u0, "u0.txt");
 	VectorXd lamb = A.lu().solve(u0);
 
 	MatrixXd uu0 = Axx*lamb;
@@ -749,11 +751,11 @@ vector<vector<VectorXd>> Leicester::MoL::EuroCallOptionND_ODE(double T, double T
 	MatrixXd d2 = D2.block(1, 0, D2.rows() - 2, D2.cols());
 
 	MatrixXd P = a * r - 0.5 * (sigma * sigma) * d2 - r * d1;
-	Common::saveArray(P, "ND_P.txt");
+	Utility::saveArray(P, "ND_P.txt");
 	MatrixXd H = a + dt * (1 - theta)* P;
-	Common::saveArray(H, "ND_H.txt");
+	Utility::saveArray(H, "ND_H.txt");
 	MatrixXd G = a - dt * theta * P;
-	Common::saveArray(G, "ND_G.txt");
+	Utility::saveArray(G, "ND_G.txt");
 
 	int count = 0;
 	cout << "MoL Iterative solver\r\n";
@@ -823,7 +825,7 @@ vector<vector<VectorXd>> Leicester::MoL::EuroCallOptionND_ODE(double T, double T
 		double p3size = part3.size();
 		wstringstream wss;
 		wss << "iteration:" << count << setprecision(8) << " T:" << Tdone;
-		Common::Logger(wss.str());
+		Utility::Logger(wss.str());
 		if (min >= 0)
 		{
 			//	Approximation of Speed is monotonic in subintervals
@@ -852,7 +854,7 @@ vector<vector<VectorXd>> Leicester::MoL::EuroCallOptionND_ODE(double T, double T
 
 }
 
-vector<MatrixXd> Leicester::MoL::SetupBasket(int assets, int testNodeNumber, int centralNodeNumber, double aroundStrikeRange, double strike)
+vector<MatrixXd> Leicester::SparseGridCollocation::MoL::SetupBasket(int assets, int testNodeNumber, int centralNodeNumber, double aroundStrikeRange, double strike)
 {
 	MatrixXd inx1 = -1 * MatrixXd::Ones(1, assets) *strike;
 	MatrixXd inx2 = 6 * MatrixXd::Ones(1, assets) *strike;
@@ -867,7 +869,7 @@ vector<MatrixXd> Leicester::MoL::SetupBasket(int assets, int testNodeNumber, int
 
 }
 
-MatrixXd Leicester::MoL::TakeMeans(MatrixXd M)
+MatrixXd Leicester::SparseGridCollocation::MoL::TakeMeans(MatrixXd M)
 {
 	double last =  - numeric_limits<double>::infinity();
 	double sum = 0;

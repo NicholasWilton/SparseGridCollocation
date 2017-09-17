@@ -4,11 +4,11 @@
 #include "TestNodes.h"
 
 
-Leicester::BasketOption::BasketOption()
+Leicester::SparseGridCollocation::BasketOption::BasketOption()
 {
 }
 
-Leicester::BasketOption::BasketOption(double strike, double maturity, MatrixXd correlation)
+Leicester::SparseGridCollocation::BasketOption::BasketOption(double strike, double maturity, MatrixXd correlation)
 {
 	this->Strike = strike;
 	this->Maturity = maturity;
@@ -17,12 +17,12 @@ Leicester::BasketOption::BasketOption(double strike, double maturity, MatrixXd c
 }
 
 
-Leicester::BasketOption::~BasketOption()
+Leicester::SparseGridCollocation::BasketOption::~BasketOption()
 {
 }
 
 
-VectorXd Leicester::BasketOption::PayOffFunction(MatrixXd S)
+VectorXd Leicester::SparseGridCollocation::BasketOption::PayOffFunction(MatrixXd S)
 {
 
 	VectorXd delta = S.rowwise().mean().array() - this->Strike;
@@ -31,12 +31,12 @@ VectorXd Leicester::BasketOption::PayOffFunction(MatrixXd S)
 	return result;
 }
 
-VectorXd Leicester::BasketOption::PayOffS(MatrixXd S)
+VectorXd Leicester::SparseGridCollocation::BasketOption::PayOffS(MatrixXd S)
 {
 	return S.rowwise().mean().array();
 }
 
-MatrixXd Leicester::BasketOption::NodesAroundStrike(const MatrixXd &X, double strike, double radius)
+MatrixXd Leicester::SparseGridCollocation::BasketOption::NodesAroundStrike(const MatrixXd &X, double strike, double radius)
 {
 	VectorXd avg = X.rowwise().sum() / X.cols();
 
@@ -63,7 +63,7 @@ MatrixXd Leicester::BasketOption::NodesAroundStrike(const MatrixXd &X, double st
 	return selected;
 }
 
-MatrixXd Leicester::BasketOption::NodesAroundStrikeFromGrid(const MatrixXd &X, double strike, double radius)
+MatrixXd Leicester::SparseGridCollocation::BasketOption::NodesAroundStrikeFromGrid(const MatrixXd &X, double strike, double radius)
 {
 	double range = strike * radius;
 	MatrixXd lower(X.rows(), X.cols());
@@ -94,7 +94,7 @@ MatrixXd Leicester::BasketOption::NodesAroundStrikeFromGrid(const MatrixXd &X, d
 	return result;
 }
 
-MatrixXd Leicester::BasketOption::Price(const MatrixXd &X, double r, double sigma)
+MatrixXd Leicester::SparseGridCollocation::BasketOption::Price(const MatrixXd &X, double r, double sigma)
 {
 	double strike = this->Strike;
 	double maturity = this->Maturity;
@@ -118,7 +118,7 @@ MatrixXd Leicester::BasketOption::Price(const MatrixXd &X, double r, double sigm
 
 		d1(i) = (log(S(i) / strike) + (r + sigma * sigma / 2)* M(i)) / (sigma * sqrt(M(i)));
 		d2(i) = (log(S(i) / strike) + (r - sigma * sigma / 2)* M(i)) / (sigma * sqrt(M(i)));
-		P(i) = S(i) * Distributions::normCDF(d1(i)) - strike * exp(-r * M(i)) * Distributions::normCDF(d2(i));
+		P(i) = S(i) * Leicester::Common::Distributions::normCDF(d1(i)) - strike * exp(-r * M(i)) * Leicester::Common::Distributions::normCDF(d2(i));
 	}
 	return P;
 }
