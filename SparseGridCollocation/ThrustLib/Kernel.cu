@@ -1,5 +1,7 @@
 #include "Gaussian2d.h"
 #include "Common.h"
+#include "NodeRegistry.h"
+#include "cuda_runtime.h"
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -443,7 +445,8 @@ MatrixXd GetTX2()
 	return TX1;
 }
 
-int main()
+
+void TestRbfInterpolation()
 {
 	MatrixXd TX1 = GetTX7();
 	MatrixXd CN = GetTX7();
@@ -454,7 +457,7 @@ int main()
 	MatrixXd A(1, 2);
 	C << 1.73, 600;
 	A << 2, 64; //TX7
-	//A << 2, 4; //TX2
+				//A << 2, 4; //TX2
 	MatrixXd D(TX1.rows(), TX1.rows());
 	Leicester::ThrustLib::Gaussian cGaussian(TX1, TX1);
 	for (int i = 0; i < 1; i++)
@@ -475,6 +478,181 @@ int main()
 		wcout << "Dxx:" << endl;
 		wcout << Utility::printMatrix(res[3].col(0)) << endl;
 	}
+}
+
+void printMatrix_CUDA(double *matrix, dim3 dimMatrix)
+{
+
+	printf("printing matrix data=");
+	for (int x = 0; x < 2 + dimMatrix.x * dimMatrix.y; x++)
+		printf("%f,", matrix[x]);
+	printf("\r\n");
+	printf("rows=%i cols=%i\r\n", dimMatrix.y, dimMatrix.x);
+
+	for (int y = 0; y < dimMatrix.y; y++)
+	{
+		for (int x = 0; x < dimMatrix.x; x++)
+		{
+			//int idx = (y * dimMatrix.x) + x;
+			int idx = (x * dimMatrix.y) + y;
+			//if ( mSize > idx)
+			printf("indx=%i value=%16.10f\t", idx, matrix[idx + 2]);
+		}
+		printf("\r\n");
+	}
+
+}
+
+
+void subnumber(int b, int d, double matrix[])
+{
+
+	double *L = NULL;
+	if (d == 1)
+	{
+		double * l = (double*)malloc(3 * sizeof(double));
+		l[0] = 1;
+		l[1] = 1;
+		l[2] = b;
+		L = l;
+	}
+	else
+	{
+		int nbot = 1;
+
+		int Lrows = 0;
+		int Lcols = 0;
+		for (int i = 0; i < b - d + 1; i++)
+		{
+			double* indextemp = (double*)malloc(512 * sizeof(double));
+
+			subnumber(b - (i + 1), d - 1, indextemp);
+			printMatrix_CUDA(indextemp, dim3(indextemp[0], indextemp[1]));
+
+			int s = indextemp[0];
+			int ntop = nbot + s - 1;
+
+			double*l = (double*)malloc(ntop*d * sizeof(double) + 2);
+
+			l[0] = ntop;
+			l[1] = d;
+			double *ones = (double*)malloc(s+2 * sizeof(double));
+			ones[0] = s;
+			ones[1] = 1;
+
+			thrust::fill(thrust::seq, ones + 2, ones + 2 + s, (i + 1));
+
+			int start = nbot;
+			int end = start + ntop - nbot;
+
+			//fill the first column with 'ones'
+			//thrust::fill(thrust::seq, l + 2 + start, l + 2 + end, (i + 1));
+			//fill the rest with 'indextemp'
+			//thrust::copy(thrust::seq, indextemp + 2, indextemp + 2 + (int)(l[0] * l[1]) - 1, l + start + ntop);
+			int jMin = 0;
+			int increment = 1;
+			if (L != NULL)
+			{
+				int count = 0;
+				for (int x = 0; x < L[1]; x++)
+					for (int y = 0; y < L[0]; y++)
+					{
+						int diff = l[0] - L[0];
+						l[count + 2 + x * diff] = L[count + 2];
+						//int indx = (x * L[0]) + y + 2;
+
+						//l[indx] = L[indx];
+						count++;
+					}
+				jMin = L[0];
+				increment = L[0];
+			}
+
+			int rows = l[0];
+			int cols = l[1];
+			int k = 0;
+			for (int j = jMin; j < rows * cols; j+=rows, k++)
+			{
+				int indx = j + 2;
+				if (j -jMin < rows)//first col
+					l[indx] = i + 1;
+				else
+					l[indx] = indextemp[k+1];
+			}
+
+			nbot = ntop + 1;
+
+			//if (Lrows > 0)
+			//{
+			//	thrust::copy(thrust::seq, L, L + (Lrows * Lcols) - 1, l);
+			//}
+			L = (double*)malloc(sizeof(double) * (l[0] * l[1] + 2));
+			for (int i = 0; i < (int)(l[0] * l[1]) + 2; i++)
+				L[i] = l[i];
+			Lrows = ntop;
+			Lcols = d;
+		}
+	}
+	for (int i = 0; i < (int)(L[0] * L[1] )+2; i++)
+		matrix[i] = L[i];
+
+}
+
+void Add_CUDA(int b, int d, double *N)
+{
+	double *d_L = (double*)malloc(3 * sizeof(double));
+	d_L[0] = 1;
+	d_L[1] = 1;
+
+	subnumber(b, d, d_L);
+	int ch = d_L[0];
+	free(N);
+
+	N = (double*)malloc((2 + ch * d) * sizeof(double));
+	N[0] = ch;
+	N[1] = d;
+	for (int i = 0; i < ch; i++)
+		for (int j = 0; j < d; j++)
+		{
+			int idx = 2 + j + (i * ch);
+			N[idx] = pow(2, d_L[idx])  + 1;
+		}
+
+
+}
+
+void f(int array[]) {
+
+	array[0] = 4;
+	array[1] = 5;
+	array[2] = 6;
+}
+
+int main()
+{
+
+	//NodeRegistry nr;
+	//nr.Add(3,2);
+
+	//double * expected = new double[4]{1,2,2,1};
+	//
+	//device_vector<double> dactual = nr.Ns["3,2"];
+
+	//double* p_actual = dactual.data().get();
+	//double* h_actual = new double[4];
+
+	//cudaError_t e = cudaMemcpy(h_actual, p_actual, sizeof(double) * 4, cudaMemcpyKind::cudaMemcpyDeviceToHost);
+
+	double* N = (double*)malloc(512 * sizeof(double));
+	Add_CUDA(3, 2, N);
+
+	printMatrix_CUDA(N, dim3(2, 2));
+
+	//int array[] = { 1,2,3 };
+
+	//f(array);
+
+	//printf("%d %d %d", array[0], array[1], array[2]);
 
 	return 0;
 }

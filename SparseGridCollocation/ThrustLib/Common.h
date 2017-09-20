@@ -40,5 +40,52 @@ namespace Leicester
 				return res;
 			}
 		};
+
+
+
+		void
+			printMatrixFormatted(const double *matrix, dim3 dimMatrix)
+		{
+			int mSize = sizeof(matrix);
+
+			printf("printing matrix data=");
+			for (int x = 0; x < dimMatrix.x * dimMatrix.y; x++)
+				printf("%f,", matrix[x]);
+			printf("\r\n");
+			printf("rows=%i cols=%i\r\n", dimMatrix.y, dimMatrix.x);
+
+			for (int y = 0; y < dimMatrix.y; y++)
+			{
+				for (int x = 0; x < dimMatrix.x; x++)
+				{
+					int idx = (x * dimMatrix.y) + y;
+					//if ( mSize > idx)
+					printf("indx=%i value=%f\t", idx, matrix[idx]);
+				}
+				printf("\r\n");
+			}
+		}
+
+		void
+			printMatrix(const double *matrix, dim3 dimMatrix)
+		{
+			int mSize = sizeof(matrix);
+
+			printf("printing matrix data=");
+			for (int x = 0; x < dimMatrix.x * dimMatrix.y; x++)
+				printf("%f,", matrix[x]);
+			printf("\r\n");
+			printf("rows=%i cols=%i\r\n", dimMatrix.y, dimMatrix.x);
+
+			for (int y = 0; y < dimMatrix.y; y++)
+			{
+				for (int x = 0; x < dimMatrix.x; x++)
+				{
+					int idx = (x * dimMatrix.y) + y;
+					printf("%f ", matrix[idx]);
+				}
+				printf("\r\n");
+			}
+		}
 	}
 }
