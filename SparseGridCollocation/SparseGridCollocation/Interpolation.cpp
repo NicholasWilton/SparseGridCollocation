@@ -68,6 +68,7 @@ void Leicester::SparseGridCollocation::Interpolation::interpolateGeneric(string 
 		{
 			wcout << "Sending matrix size=" << memory << " bytes to GPU" << endl;
 			ThrustLib::Gaussian cudaGaussian(TX1, TX1);
+			//ThrustLib::Gaussian cudaGaussian(b, d, 0, tsec, inx1, inx2);
 			threads.push_back(std::thread(&Interpolation::shapelambda2DGenericC, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation, TX1, cudaGaussian));
 		}
 		else
@@ -273,6 +274,7 @@ void Leicester::SparseGridCollocation::Interpolation::shapelambda2DGenericC(stri
 	//vector<MatrixXd> mqdc = CudaRBF::Gaussian2D(TX1, TX1, a, c);
 	//if(threadId ==0)
 	vector<MatrixXd> mqdc = cudaGaussian.Gaussian2d(a, c);
+	//vector<MatrixXd> mqdc = cudaGaussian.Gaussian2d_1(a, c, threadId);
 	//wcout << Common::printMatrix(mqd[0].col(0)) << endl;
 	//wcout << Common::printMatrix(mqdc[0]) << endl;
 	

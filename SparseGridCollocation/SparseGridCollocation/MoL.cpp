@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "MoL.h"
-#include "Utility.h"
+#include ".\..\Common\Utility.h"
 #include "EuropeanCallOption.h"
 #include "VectorUtil.h"
 #include "RBF.h"
@@ -62,7 +62,7 @@ vector<VectorXd> Leicester::SparseGridCollocation::MoL::MethodOfLines(Params p)
 	else
 	{
 		vector<VectorXd> smoothInitial = MethodOfLines(p.T, p.Tdone, p.Tend, p.dt, p.K, p.r, p.sigma, p.theta, p.inx1[0], p.inx2[0]);
-		Common::Utility::WriteToBinary(fileX, smoothInitial[0]);
+		Leicester::Common::Utility::WriteToBinary(fileX, smoothInitial[0]);
 		Common::Utility::WriteToBinary(fileU, smoothInitial[1]);
 		Common::Utility::WriteToBinary(fileT, smoothInitial[2]);
 		return smoothInitial;

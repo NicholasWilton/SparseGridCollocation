@@ -13,28 +13,28 @@ namespace Leicester
 		//	}
 		//};
 
-		__device__ void printMatrix_CUDA(double *matrix, dim3 dimMatrix)
-		{
+		//__device__ void printMatrix_CUDA(double *matrix, dim3 dimMatrix)
+		//{
 
-			printf("printing matrix data=");
-			for (int x = 0; x < 2 + dimMatrix.x * dimMatrix.y; x++)
-				printf("%f,", matrix[x]);
-			printf("\r\n");
-			printf("rows=%i cols=%i\r\n", dimMatrix.y, dimMatrix.x);
+		//	printf("printing matrix data=");
+		//	for (int x = 0; x < 2 + dimMatrix.x * dimMatrix.y; x++)
+		//		printf("%f,", matrix[x]);
+		//	printf("\r\n");
+		//	printf("rows=%i cols=%i\r\n", dimMatrix.y, dimMatrix.x);
 
-			for (int y = 0; y < dimMatrix.y; y++)
-			{
-				for (int x = 0; x < dimMatrix.x; x++)
-				{
-					//int idx = (y * dimMatrix.x) + x;
-					int idx = (x * dimMatrix.y) + y;
-					//if ( mSize > idx)
-					printf("indx=%i value=%16.10f\t", idx, matrix[idx + 2]);
-				}
-				printf("\r\n");
-			}
+		//	for (int y = 0; y < dimMatrix.y; y++)
+		//	{
+		//		for (int x = 0; x < dimMatrix.x; x++)
+		//		{
+		//			//int idx = (y * dimMatrix.x) + x;
+		//			int idx = (x * dimMatrix.y) + y;
+		//			//if ( mSize > idx)
+		//			printf("indx=%i value=%16.10f\t", idx, matrix[idx + 2]);
+		//		}
+		//		printf("\r\n");
+		//	}
 
-		}
+		//}
 
 		//__global__ void Add_CUDA(int b, int d, double *N)
 		//{
@@ -57,38 +57,38 @@ namespace Leicester
 		//	//thrust::transform(thrust::seq, L + 2, L + 2 + (int)(L[0] * L[1]), N,  )
 		//}
 
-		struct subNumber_functor
-		{
-			int b;
-			int d;
-			subNumber_functor(int _b, int _d, int &_nbot) { b = _b; d = _d; }
-			int nbot;
+		//struct subNumber_functor
+		//{
+		//	int b;
+		//	int d;
+		//	subNumber_functor(int _b, int _d, int &_nbot) { b = _b; d = _d; }
+		//	int nbot;
 
-			template<typename Tuple> __device__ void operator()(Tuple t)
-			{
-				int i = (int)thrust::get<0>(t);
-				double* temp;
-				matrixDim m = subnumber(b - (i + 1), d - 1, temp);
-				int s = m.rows;
-				int ntop = nbot + s - 1;
-				//double* l = (double*)malloc(ntop * d * sizeof(double));
-				device_vector<double> l(ntop * d);
-				//double* ones = (double*)malloc(s * 1 * sizeof(double));
-				device_vector<double> ones(s);
-				thrust::fill(ones.begin(), ones.end(), 1);
-				thrust::copy_n(ones.begin(), s, l.begin());
-				thrust::transform(ones.begin(), ones.end(), l.begin(), vectorScalarMultiply(i + 1));
+		//	template<typename Tuple> __device__ void operator()(Tuple t)
+		//	{
+		//		int i = (int)thrust::get<0>(t);
+		//		double* temp;
+		//		matrixDim m = subnumber(b - (i + 1), d - 1, temp);
+		//		int s = m.rows;
+		//		int ntop = nbot + s - 1;
+		//		//double* l = (double*)malloc(ntop * d * sizeof(double));
+		//		device_vector<double> l(ntop * d);
+		//		//double* ones = (double*)malloc(s * 1 * sizeof(double));
+		//		device_vector<double> ones(s);
+		//		thrust::fill(ones.begin(), ones.end(), 1);
+		//		thrust::copy_n(ones.begin(), s, l.begin());
+		//		thrust::transform(ones.begin(), ones.end(), l.begin(), vectorScalarMultiply(i + 1));
 
 
-				nbot = ntop + 1;
-			}
-		};
+		//		nbot = ntop + 1;
+		//	}
+		//};
 		//__device__ double* indextemp;
 		
-		__device__ int getOne()
-		{
-			return 1;
-		}
+		//__device__ int getOne()
+		//{
+		//	return 1;
+		//}
 
 	/*	__device__ void subnumber(int b, int d, double *matrix)
 		{

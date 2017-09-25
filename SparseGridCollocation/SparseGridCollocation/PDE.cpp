@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "PDE.h"
 #include "RBF.h"
-#include "Utility.h"
+#include "..\Common\Utility.h"
 #include "MatrixXdm.h"
 #include "kernel.h"
 #include "Gaussian2d.h"

@@ -1,5 +1,7 @@
 #include "Gaussian2d.h"
+#include "Gaussian2d2.h"
 #include "Common.h"
+#include "Utility.h"
 #include "NodeRegistry.h"
 #include "cuda_runtime.h"
 
@@ -448,19 +450,19 @@ MatrixXd GetTX2()
 
 void TestRbfInterpolation()
 {
-	MatrixXd TX1 = GetTX7();
-	MatrixXd CN = GetTX7();
-	//MatrixXd TX1 = GetTX2();
-	//MatrixXd CN = GetTX2();
+	//MatrixXd TX1 = GetTX7();
+	//MatrixXd CN = GetTX7();
+	MatrixXd TX1 = GetTX2();
+	MatrixXd CN = GetTX2();
 
 	MatrixXd C(1, 2);
 	MatrixXd A(1, 2);
 	C << 1.73, 600;
-	A << 2, 64; //TX7
-				//A << 2, 4; //TX2
+	//A << 2, 64; //TX7
+	A << 2, 4; //TX2
 	MatrixXd D(TX1.rows(), TX1.rows());
 	Leicester::ThrustLib::Gaussian cGaussian(TX1, TX1);
-	for (int i = 0; i < 1; i++)
+	for (int i = 0; i < 10; i++)
 	{
 		printf("i=%i\r\n", i);
 		vector<MatrixXd> res = cGaussian.Gaussian2d(A, C);
@@ -480,152 +482,399 @@ void TestRbfInterpolation()
 	}
 }
 
-void printMatrix_CUDA(double *matrix, dim3 dimMatrix)
+void TestRbfInterpolation_2()
 {
+	//MatrixXd TX1 = GetTX7();
+	//MatrixXd CN = GetTX7();
+	MatrixXd TX1 = GetTX2();
+	MatrixXd CN = GetTX2();
 
-	printf("printing matrix data=");
-	for (int x = 0; x < 2 + dimMatrix.x * dimMatrix.y; x++)
-		printf("%f,", matrix[x]);
-	printf("\r\n");
-	printf("rows=%i cols=%i\r\n", dimMatrix.y, dimMatrix.x);
-
-	for (int y = 0; y < dimMatrix.y; y++)
+	MatrixXd C(1, 2);
+	MatrixXd A(1, 2);
+	C << 1.73, 600;
+	//A << 2, 64; //TX7
+	A << 2, 4; //TX2
+	MatrixXd D(TX1.rows(), TX1.rows());
+	Leicester::ThrustLib::Gaussian cGaussian;
+	for (int i = 0; i < 10; i++)
 	{
-		for (int x = 0; x < dimMatrix.x; x++)
-		{
-			//int idx = (y * dimMatrix.x) + x;
-			int idx = (x * dimMatrix.y) + y;
-			//if ( mSize > idx)
-			printf("indx=%i value=%16.10f\t", idx, matrix[idx + 2]);
-		}
-		printf("\r\n");
-	}
+		printf("i=%i\r\n", i);
+		double N[4] = { 1,2,3,5 };
 
+		vector<MatrixXd> res = cGaussian.Gaussian2d_2(0, 0.8650, N, A, C);
+
+		//vector<MatrixXd> res = ThrustLib::Gaussian::Gaussian2d(TX1, CN, A, C);
+		//wcout << "Phi1:" << endl;
+		//wcout << printMatrix(res[0].col(0)) << endl;
+		//wcout << "Phi2:" << endl;
+		//wcout << printMatrix(res[1].col(0)) << endl;
+		wcout << "D:" << endl;
+		wcout << Utility::printMatrix(res[0].col(0)) << endl;
+		wcout << "Dt:" << endl;
+		wcout << Utility::printMatrix(res[1].col(0)) << endl;
+		wcout << "Dx:" << endl;
+		wcout << Utility::printMatrix(res[2].col(0)) << endl;
+		wcout << "Dxx:" << endl;
+		wcout << Utility::printMatrix(res[3].col(0)) << endl;
+	}
 }
 
-
-void subnumber(int b, int d, double matrix[])
-{
-
-	double *L = NULL;
-	if (d == 1)
-	{
-		double * l = (double*)malloc(3 * sizeof(double));
-		l[0] = 1;
-		l[1] = 1;
-		l[2] = b;
-		L = l;
-	}
-	else
-	{
-		int nbot = 1;
-
-		int Lrows = 0;
-		int Lcols = 0;
-		for (int i = 0; i < b - d + 1; i++)
-		{
-			double* indextemp = (double*)malloc(512 * sizeof(double));
-
-			subnumber(b - (i + 1), d - 1, indextemp);
-			printMatrix_CUDA(indextemp, dim3(indextemp[0], indextemp[1]));
-
-			int s = indextemp[0];
-			int ntop = nbot + s - 1;
-
-			double*l = (double*)malloc(ntop*d * sizeof(double) + 2);
-
-			l[0] = ntop;
-			l[1] = d;
-			double *ones = (double*)malloc(s+2 * sizeof(double));
-			ones[0] = s;
-			ones[1] = 1;
-
-			thrust::fill(thrust::seq, ones + 2, ones + 2 + s, (i + 1));
-
-			int start = nbot;
-			int end = start + ntop - nbot;
-
-			//fill the first column with 'ones'
-			//thrust::fill(thrust::seq, l + 2 + start, l + 2 + end, (i + 1));
-			//fill the rest with 'indextemp'
-			//thrust::copy(thrust::seq, indextemp + 2, indextemp + 2 + (int)(l[0] * l[1]) - 1, l + start + ntop);
-			int jMin = 0;
-			int increment = 1;
-			if (L != NULL)
-			{
-				int count = 0;
-				for (int x = 0; x < L[1]; x++)
-					for (int y = 0; y < L[0]; y++)
-					{
-						int diff = l[0] - L[0];
-						l[count + 2 + x * diff] = L[count + 2];
-						//int indx = (x * L[0]) + y + 2;
-
-						//l[indx] = L[indx];
-						count++;
-					}
-				jMin = L[0];
-				increment = L[0];
-			}
-
-			int rows = l[0];
-			int cols = l[1];
-			int k = 0;
-			for (int j = jMin; j < rows * cols; j+=rows, k++)
-			{
-				int indx = j + 2;
-				if (j -jMin < rows)//first col
-					l[indx] = i + 1;
-				else
-					l[indx] = indextemp[k+1];
-			}
-
-			nbot = ntop + 1;
-
-			//if (Lrows > 0)
-			//{
-			//	thrust::copy(thrust::seq, L, L + (Lrows * Lcols) - 1, l);
-			//}
-			L = (double*)malloc(sizeof(double) * (l[0] * l[1] + 2));
-			for (int i = 0; i < (int)(l[0] * l[1]) + 2; i++)
-				L[i] = l[i];
-			Lrows = ntop;
-			Lcols = d;
-		}
-	}
-	for (int i = 0; i < (int)(L[0] * L[1] )+2; i++)
-		matrix[i] = L[i];
-
-}
-
-void Add_CUDA(int b, int d, double *N)
-{
-	double *d_L = (double*)malloc(3 * sizeof(double));
-	d_L[0] = 1;
-	d_L[1] = 1;
-
-	subnumber(b, d, d_L);
-	int ch = d_L[0];
-	free(N);
-
-	N = (double*)malloc((2 + ch * d) * sizeof(double));
-	N[0] = ch;
-	N[1] = d;
-	for (int i = 0; i < ch; i++)
-		for (int j = 0; j < d; j++)
-		{
-			int idx = 2 + j + (i * ch);
-			N[idx] = pow(2, d_L[idx])  + 1;
-		}
-
-
-}
-
+//void printMatrix_CUDA(double *matrix, dim3 dimMatrix)
+//{
+//
+//	printf("printing matrix data=");
+//	for (int x = 0; x < 2 + dimMatrix.x * dimMatrix.y; x++)
+//		printf("%f,", matrix[x]);
+//	printf("\r\n");
+//	printf("rows=%i cols=%i\r\n", dimMatrix.y, dimMatrix.x);
+//
+//	for (int y = 0; y < dimMatrix.y; y++)
+//	{
+//		for (int x = 0; x < dimMatrix.x; x++)
+//		{
+//			//int idx = (y * dimMatrix.x) + x;
+//			int idx = (x * dimMatrix.y) + y;
+//			//if ( mSize > idx)
+//			printf("indx=%i value=%16.10f\t", idx, matrix[idx + 2]);
+//		}
+//		printf("\r\n");
+//	}
+//
+//}
+//
+//
+//void subnumber(int b, int d, double matrix[])
+//{
+//
+//	double *L = NULL;
+//	if (d == 1)
+//	{
+//		double * l = (double*)malloc(3 * sizeof(double));
+//		l[0] = 1;
+//		l[1] = 1;
+//		l[2] = b;
+//		L = l;
+//	}
+//	else
+//	{
+//		int nbot = 1;
+//
+//		int Lrows = 0;
+//		int Lcols = 0;
+//		for (int i = 0; i < b - d + 1; i++)
+//		{
+//			double* indextemp = (double*)malloc(512 * sizeof(double));
+//
+//			subnumber(b - (i + 1), d - 1, indextemp);
+//			//printMatrix_CUDA(indextemp, dim3(indextemp[0], indextemp[1]));
+//
+//			int s = indextemp[0];
+//			int ntop = nbot + s - 1;
+//
+//			double*l = (double*)malloc((ntop*d + 2)* sizeof(double));
+//
+//			l[0] = ntop;
+//			l[1] = d;
+//			double *ones = (double*)malloc((s+2) * sizeof(double));
+//			ones[0] = s;
+//			ones[1] = 1;
+//
+//			thrust::fill(thrust::seq, ones + 2, ones + 2 + s, (i + 1));
+//
+//			int start = nbot;
+//			int end = start + ntop - nbot;
+//
+//			//fill the first column with 'ones'
+//			//thrust::fill(thrust::seq, l + 2 + start, l + 2 + end, (i + 1));
+//			//fill the rest with 'indextemp'
+//			//thrust::copy(thrust::seq, indextemp + 2, indextemp + 2 + (int)(l[0] * l[1]) - 1, l + start + ntop);
+//			int jMin = 0;
+//			int increment = 1;
+//			if (L != NULL)
+//			{
+//				int count = 0;
+//				for (int x = 0; x < L[1]; x++)
+//					for (int y = 0; y < L[0]; y++)
+//					{
+//						int diff = l[0] - L[0];
+//						l[count + 2 + x * diff] = L[count + 2];
+//						//int indx = (x * L[0]) + y + 2;
+//
+//						//l[indx] = L[indx];
+//						count++;
+//					}
+//				jMin = L[0];
+//				increment = L[0];
+//			}
+//
+//			int rows = l[0];
+//			int cols = l[1];
+//			int k = 0;
+//			for (int j = jMin; j < rows * cols; j+=rows, k++)
+//			{
+//				int indx = j + 2;
+//				if (j -jMin < rows)//first col
+//					l[indx] = i + 1;
+//				else
+//					l[indx] = indextemp[k+1];
+//			}
+//
+//			nbot = ntop + 1;
+//
+//			//if (Lrows > 0)
+//			//{
+//			//	thrust::copy(thrust::seq, L, L + (Lrows * Lcols) - 1, l);
+//			//}
+//			L = (double*)malloc(sizeof(double) * (l[0] * l[1] + 2));
+//			for (int i = 0; i < (int)(l[0] * l[1]) + 2; i++)
+//				L[i] = l[i];
+//			Lrows = ntop;
+//			Lcols = d;
+//		}
+//	}
+//	for (int i = 0; i < (int)(L[0] * L[1] )+2; i++)
+//		matrix[i] = L[i];
+//
+//}
+//
+//void Add_CUDA(int b, int d, double N[])
+//{
+//	double *d_L = (double*)malloc(3 * sizeof(double));
+//	d_L[0] = 1;
+//	d_L[1] = 1;
+//
+//	subnumber(b, d, d_L);
+//	int ch = d_L[0];
+//	//free(N);
+//
+//	//N = (double*)malloc((2 + ch * d) * sizeof(double));
+//	N[0] = ch;
+//	N[1] = d;
+//	int idx = 2;
+//	for (int i = 0; i < ch; i++)
+//		for (int j = 0; j < d; j++, idx++)
+//		{
+//			//int idx = 2 + j + (i * ch);
+//			N[idx] = pow(2, d_L[idx])  + 1;
+//		}
+//
+//}
+//
+//double* GetColumn(double matrix[], int col)
+//{
+//	double* result = (double*)malloc((2 + matrix[0]) * sizeof(double));
+//	int columnStart = 2 + ((matrix[0] + 2) * col);
+//	result[0] = matrix[columnStart];
+//	result[1] = 1;
+//	for (int i = 0; i < result[0]; i++)
+//	{
+//		int idx = i + 2 + columnStart;
+//		result[i + 2] = matrix[idx];
+//	}
+//	return result;
+//}
+//
+//void SetColumn(double matrix[], double vector[], int col)
+//{
+//	/*double* result = (double*)malloc((2 + matrix[0] * matrix[1]) * sizeof(double));
+//	result[0] = matrix[0];
+//	result[1] = matrix[1];*/
+//	for (int i = 0; i < vector[0]; i++)
+//	{
+//		int idx = i + (matrix[0] * col);
+//		matrix[idx + 2] = vector[i + 2];
+//	}
+//	//return result;
+//}
+//
+//double* GetRow(double matrix[], int row)
+//{
+//	double* result = (double*)malloc((2 + matrix[1]) * sizeof(double));
+//	result[0] = 1;
+//	result[1] = matrix[1];
+//	int rowIdx = 0;
+//	for (int i = 0; i < matrix[0] * matrix[1]; i++)
+//	{
+//		if ((i % (int)matrix[0]) == row)
+//		{
+//			result[rowIdx+2] = matrix[i + 2];
+//			rowIdx++;
+//		}
+//	}
+//	return result;
+//}
+//
+//double* ReplicateN(double linearVector[], double totalLength, int dups)
+//{
+//	double* Result = (double*)malloc((2+totalLength) * sizeof(double));
+//	Result[0] = totalLength;
+//	Result[1] = 1;
+//	int size = linearVector[0] * linearVector[1];
+//	for (int i = 0; i < totalLength; i += (size * dups))
+//	{
+//		for (int j = 0; j < size; j++)
+//		{
+//			for (int duplicated = 0; duplicated < dups; duplicated++)
+//			{
+//				int idx = i + (j * dups) + duplicated;
+//				if (idx < totalLength)
+//				{
+//					Result[idx+2] = linearVector[j+2];
+//					//cout << "idx="<< idx << " v[j]=" << v[j] << endl;
+//				}
+//
+//			}
+//		}
+//	}
+//	return Result;
+//}
+//
+//double Max(double matrix[])
+//{
+//	double max = -1;
+//	double length = 2 + matrix[0] * matrix[1];
+//	for (int i = 2; i < length; i++)
+//		if (matrix[i] > max)
+//			max = matrix[i];
+//	return max;
+//}
+//
+//double* VectorLinSpaced(int i, double lowerLimit, double upperLimit)
+//{
+//	double difference = upperLimit - lowerLimit;
+//	double dx = difference / (i-1);
+//	double* result = (double*)malloc((i + 2)* sizeof(double));
+//	result[0] = i;
+//	result[1] = 1;
+//	for(int j=0; j < i; j++)
+//	{
+//		result[j+2] = lowerLimit + (j * dx);
+//	}
+//	return result;
+//}
+//
+//double* GenerateTestNodes(double timeLowerLimit, double timeUpperLimit, double lowerLimits[], double upperLimits[], double N[])
+//{
+//	//vector<VectorXd> linearGrid;
+//
+//	int product = 1;
+//	int nCols = N[1];
+//	int nRows = N[0];
+//	double max = Max(N);
+//	double* linearGrid = (double*)malloc((2 + (nCols * (2 + max))) * sizeof(double)); // this is an array of NCols vectors of max-rows each
+//	linearGrid[0] = max;
+//	linearGrid[1] = nCols;
+//	for (int n = 0; n < nCols; n++) //N.Cols() is #dimensions
+//	{
+//		int idx = n * nRows;
+//		int i = N[idx+2];
+//		product *= i;
+//
+//		//VectorXd linearDimension;
+//		double* linearDimension;
+//		if (n == 0)
+//			linearDimension = VectorLinSpaced(i, timeLowerLimit, timeUpperLimit);
+//		else
+//			linearDimension = VectorLinSpaced(i, lowerLimits[n - 1], upperLimits[n - 1]);
+//		double length = linearDimension[0] * linearDimension[1] + 2;
+//		//linearGrid.push_back(linearDimension);
+//		for (int j = 0; j < length; j++)
+//		{
+//			int idx = 2 + n* (linearGrid[0]+2);
+//			linearGrid[idx+j] = linearDimension[j];
+//		}
+//
+//	}
+//
+//
+//	//MatrixXd TXYZ(product, N.cols());
+//	double* TXYZ = (double*)malloc(product * nCols * sizeof(double));
+//	TXYZ[0] = product;
+//	TXYZ[1] = nCols;
+//	int dimension = 0;
+//	int dups = 1;
+//	for (int col = 0; col < nCols; col++)
+//	{
+//		int idx = 2 + dimension * (2 +linearGrid[0]);
+//		if (dimension == 0)
+//		{
+//			dups = product / linearGrid[idx];
+//		}
+//		else
+//			dups = dups / linearGrid[idx];
+//		double* linearVector = GetColumn(linearGrid, col);
+//		double* column = ReplicateN(linearVector, product, dups);
+//		SetColumn(TXYZ, column, col);
+//		dimension++;
+//	}
+//	return TXYZ;
+//}
 void f(int array[]) {
 
 	array[0] = 4;
 	array[1] = 5;
 	array[2] = 6;
+}
+
+void TestArrayCopy()
+{
+	//cublasHandle_t handle;
+	cudaError_t cudaerr;
+	cudaEvent_t start, stop;
+	//cublasStatus_t stat;
+	const double alpha = 1.0f;
+	const double beta = 0.0f;
+
+	double *h_A = new double[5];
+	double *h_B = new double[5];
+	double *h_C = new double[6];
+	for (int i = 0; i < 5; i++)
+	{
+		h_A[i] = i;
+		h_B[i] = i;
+	}
+
+
+
+	double **h_AA, **h_BB, **h_CC;
+	h_AA = (double**)malloc(6 * sizeof(double*));
+	h_BB = (double**)malloc(6 * sizeof(double*));
+	h_CC = (double**)malloc(6 * sizeof(double*));
+	for (int i = 0; i < 6; i++) {
+		cudaMalloc((void **)&h_AA[i], 5 * sizeof(double));
+		cudaMalloc((void **)&h_BB[i], 5 * sizeof(double));
+		cudaMalloc((void **)&h_CC[i], sizeof(double));
+		cudaMemcpy(h_AA[i], h_A, 5 * sizeof(double), cudaMemcpyHostToDevice);
+		cudaMemcpy(h_BB[i], h_B, 5 * sizeof(double), cudaMemcpyHostToDevice);
+	}
+	double **d_AA, **d_BB, **d_CC;
+	cudaMalloc(&d_AA, 6 * sizeof(double*));
+	cudaMalloc(&d_BB, 6 * sizeof(double*));
+	cudaMalloc(&d_CC, 6 * sizeof(double*));
+	cudaerr = cudaMemcpy(d_AA, h_AA, 6 * sizeof(double*), cudaMemcpyHostToDevice);
+	cudaerr = cudaMemcpy(d_BB, h_BB, 6 * sizeof(double*), cudaMemcpyHostToDevice);
+	cudaerr = cudaMemcpy(d_CC, h_CC, 6 * sizeof(double*), cudaMemcpyHostToDevice);
+	
+	Leicester::ThrustLib::BuildRegistry << <1, 1 >> >(3, 2, 0, 0.5, 0, 300, d_CC);
+
+	cudaerr = cudaMemcpy(h_CC, d_CC, sizeof(double), cudaMemcpyDeviceToHost);
+	for (int i = 0; i < 6; i++)
+		cudaMemcpy(h_C + i, h_CC[i], sizeof(double), cudaMemcpyDeviceToHost);
+	//cublasDestroy(handle);
+
+	double nNodes = *h_C;
+
+	//for (int i = 1; i < nNodes; i++)
+	//{
+	//	int rows = N[2 + i] * N[2 + i + (int)nRows];
+	//	thrust::device_ptr<double> d_ptr(h_nodes[i]);
+	//	const thrust::device_vector<double> d_v(d_ptr, d_ptr + (rows * 2));//TODO: change 2 to dimensions
+	//	nodesDetails nd;
+	//	nd.rows = rows;
+	//	nd.cols = 2;
+	//	nd.nodes = d_v;
+	//	this->nodeMap[i] = nd;
+	//}
 }
 
 int main()
@@ -643,16 +892,34 @@ int main()
 
 	//cudaError_t e = cudaMemcpy(h_actual, p_actual, sizeof(double) * 4, cudaMemcpyKind::cudaMemcpyDeviceToHost);
 
-	double* N = (double*)malloc(512 * sizeof(double));
-	Add_CUDA(3, 2, N);
+	//double* N = (double*)malloc(512 * sizeof(double));
+	////double N[512];
+	//Add_CUDA(3, 2, N);
+	//printMatrix_CUDA(N, dim3(2, 2));
+	//double* n = GetRow(N, 0);
+	//double lower[1] = {0};
+	//double upper[1] = {300};
+	//double* TXYZ = GenerateTestNodes(0, 0.8650, lower, upper, n );
+	//printMatrix_CUDA(TXYZ, dim3(TXYZ[1], TXYZ[0]));
 
-	printMatrix_CUDA(N, dim3(2, 2));
+	//double* N1 = (double*)malloc(512 * sizeof(double));
+	//Add_CUDA(4, 2, N1); // 1,2,3,3,2,1
+	//n = GetRow(N1, 0);
+	//TXYZ = GenerateTestNodes(0, 0.8650, lower, upper, n);
+	//printMatrix_CUDA(TXYZ, dim3(TXYZ[1], TXYZ[0]));
+
+	//double* N2 = (double*)malloc(512 * sizeof(double));
+	//Add_CUDA(5, 2, N2); // 1,2,3,4,4,3,2,1
+	//n = GetRow(N2, 0);
+	//TXYZ = GenerateTestNodes(0, 0.8650, lower, upper, n);
+	//printMatrix_CUDA(TXYZ, dim3(TXYZ[1], TXYZ[0]));
 
 	//int array[] = { 1,2,3 };
 
 	//f(array);
 
 	//printf("%d %d %d", array[0], array[1], array[2]);
-
+	//TestArrayCopy();
+	TestRbfInterpolation_2();
 	return 0;
 }
