@@ -338,6 +338,47 @@ struct phi_functor3
 	}
 };
 
+struct phi_functor3Nd
+{
+	double* a;
+	double* cn;
+	double *c;
+	double * tp;
+	int rows;
+	int cols;
+	int dimensions;
+
+	phi_functor3Nd(double* _tp, double* _a, double* _cn, double* _c, int _rows, int _cols, int _dimensions)
+		: rows(_rows), cols(_cols), dimensions(_dimensions){
+		tp = _tp;
+		cn = _cn;
+		a = _a;
+		c = _c;
+	}
+	template<typename Tuple> __device__
+		void operator()(Tuple t)
+	{
+		int idx = (int)thrust::get<0>(t);
+		
+		double product = 1.0;
+		for (int dimension = 0; dimension < dimensions; dimension++)
+		{
+			int tpIdx = (idx % rows) + (dimension * rows);
+			int cnIdx = (idx / rows) + (dimension * rows);
+
+			double a1 = a[dimension] * (tp[tpIdx] - cn[cnIdx]);
+			double b1 = -(a1 * a1) / (c[dimension] * c[dimension]);
+			double e1 = expm1(b1) + 1;
+			product *= e1;
+		//	if (idx == 80)
+			//	printf("rows=%i, cols=%i, dimensions=%i, idx=%i, tpIdx=%i, tp[%i]=%f, cn[%i]=%f a[%i]=%f c[%i]=%f dimension=%i product=%f\r\n", rows, cols, dimensions, idx, tpIdx, tpIdx, tp[tpIdx], cnIdx, cn[cnIdx], dimension, a[dimension], dimension, c[dimension], dimension, product);
+		}
+		
+
+		thrust::get<1>(t) = product;
+	}
+};
+
 struct dt_functor3
 {
 	const double a;
@@ -362,6 +403,32 @@ struct dt_functor3
 	}
 };
 
+struct dt_functor3Nd
+{
+	const double a;
+	double* cn;
+	double* tp;
+	int rows;
+	int cols;
+
+	dt_functor3Nd(double* _tp, double _a, double* _cn, int _rows, int _cols)
+		: tp(_tp), a(_a), cn(_cn), rows(_rows), cols(_cols) {}
+	template<typename Tuple> __device__
+		void operator()(Tuple t)
+	{
+		int idx = (int)thrust::get<0>(t);
+
+		double D = (double)thrust::get<1>(t);
+		int tpIdx = idx % rows;
+		int cnIdx = idx / rows;
+		double b = a * (tp[tpIdx] - cn[cnIdx]) * D;
+		//if (idx == 27)
+		//	printf("idx=%i, tpIdx=%i, tp[%i]=%f, cn[%i]=%f b=%f a=%f D=%f \r\n", idx, tpIdx, tpIdx, tp[tpIdx], cnIdx, cn[cnIdx], b, a, D);
+		thrust::get<2>(t) = b;
+
+	}
+};
+
 struct dx_functor3
 {
 	const double a;
@@ -383,6 +450,41 @@ struct dx_functor3
 
 		double b = tp[tpIdx] * a * (tp[tpIdx] - cn[cnIdx]) * D;
 		thrust::get<2>(t) = b;
+	}
+};
+
+struct dx_functor3Nd
+{
+	double* a;
+	double* c;
+	double* cn;
+	double* tp;
+	int rows;
+	int cols;
+	int dimensions;
+
+	dx_functor3Nd(double* _tp, double* _a, double* _cn, double* _c, int _rows, int _cols, int _dimensions)
+		:tp(_tp), a(_a), cn(_cn), c(_c), rows(_rows), cols(_cols), dimensions(_dimensions) {
+	}
+	template<typename Tuple> __device__
+		void operator()(Tuple t)
+	{
+		int idx = (int)thrust::get<0>(t);
+		double D = (double)thrust::get<1>(t);
+		double sum = 0;
+		for (int dimension = 1; dimension < dimensions; dimension++)
+		{
+			//int tpIdx = idx % rows;
+			//int cnIdx = idx / rows;
+			int tpIdx = (idx % rows) + (dimension * rows);
+			int cnIdx = (idx / rows) + (dimension * rows);
+			double scalarDx = -2 * ((a[dimension] / c[dimension]) * ( a[dimension] / c[dimension]));
+			double b = tp[tpIdx] * scalarDx * (tp[tpIdx] - cn[cnIdx]) * D;
+			sum += b;
+			//if (idx == 0)
+				//printf("rows=%i, cols=%i, dimensions=%i, idx=%i, tpIdx=%i, tp[%i]=%f, cn[%i]=%f a[%i]=%f c[%i]=%f dimension=%i sum=%f\r\n", rows, cols, dimensions, idx, tpIdx, tpIdx, tp[tpIdx], cnIdx, cn[cnIdx], dimension, a[dimension], dimension, c[dimension], dimension, sum);
+		}
+		thrust::get<2>(t) = sum;
 	}
 };
 
@@ -413,5 +515,69 @@ struct dxx_functor3
 		double sTp = tp[tpIdx] * tp[tpIdx];
 		double d = c1 * sTp;
 		thrust::get<2>(t) = d;
+	}
+};
+
+struct dxx_functor3Nd
+{
+	double *a;
+	double *c;
+	double *cn;
+	double *tp;
+	int rows;
+	int cols;
+	int dimensions;
+
+	dxx_functor3Nd(double* _tp, double* _a, double* _c, double* _cn, int _rows, int _cols, int _dimensions)
+		: tp(_tp), a(_a), c(_c), cn(_cn), rows(_rows), cols(_cols), dimensions(_dimensions) {}
+	template<typename Tuple> __device__
+		void operator()(Tuple t)
+	{
+		int idx = (int)thrust::get<0>(t);
+		double D = (double)thrust::get<1>(t);
+
+		double sumij = 0;
+		for (int dimension = 1; dimension < dimensions; dimension++)
+		{
+			double sumi = 0;
+			for (int i = 1; i < dimensions; i++)
+			{
+				//if (i == dimension)
+				//{
+					//int tpIdx = idx % rows;
+					//int cnIdx = idx / rows;
+					int tpIdxd = (idx % rows) + (dimension * rows);
+					int tpIdxi = (idx % rows) + (i * rows);
+					int cnIdxi = (idx / rows) + (i * rows);
+
+					double sA = a[dimension] * a[dimension];
+					double qA = sA * sA;
+					double sC = c[dimension] * c[dimension];
+					double qC = sC * sC;
+					double scalarDxx1 = 4 * qA / qC;
+					double scalarDxx2 = -2 * sA / sC;
+
+					double dTpCn = tp[tpIdxd] - cn[cnIdxi];
+					double sDTpCn = dTpCn * dTpCn;
+					double a1 = scalarDxx1 * sDTpCn;
+					double b1 = a1 + scalarDxx2;
+					double c1 = b1 * D;
+					double sTp = tp[tpIdxd] * tp[tpIdxi];
+					double d = c1 * sTp;
+
+					sumi += d;
+
+					/*if (idx == 10)
+						printf("rows=%i, cols=%i, dimensions=%i, idx=%i, i=%i tpIdxd=%i, tp[%i]=%f, cn[%i]=%f, tpIdxi=%i, tp[%i]=%f, a[%i]=%f c[%i]=%f dimension=%i sum=%f\r\n",
+							rows, cols, dimensions, idx, i, tpIdxd, tpIdxd, tp[tpIdxd], cnIdxi, cn[cnIdxi], tpIdxi, tpIdxi, tp[tpIdxi], dimension, a[dimension], dimension, c[dimension], dimension, sumi);*/
+				//}
+			}
+			
+			sumij += sumi;
+			//if (idx == 10)
+			//	printf("rows=%i, cols=%i, dimensions=%i, idx=%i, dimension=%i sumij=%f\r\n",
+			//		rows, cols, dimensions, idx, dimension, sumij);
+		}
+		thrust::get<2>(t) = sumij;
 	}
 };

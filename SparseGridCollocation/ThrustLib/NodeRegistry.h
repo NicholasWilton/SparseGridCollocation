@@ -1,7 +1,10 @@
 #pragma once
-#include "cuda_runtime.h"
+//#include "cuda_runtime.h"
 #include "device_launch_parameters.h"
+#ifdef __CUDA_INTERNAL_COMPILATION__
 #include <math_functions.h>
+#endif
+//#undef __CUDA_INTERNAL_COMPILATION__
 #include "SubNumber.h"
 
 #define API _declspec(dllexport)

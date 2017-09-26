@@ -299,7 +299,8 @@ namespace Leicester
 		{
 			double lower[1] = { 0 };
 			double upper[1] = { 300 };
-			double* result = GenerateTestNodes(timeLowerLimit, timeUpperLimit, lower, upper, N);
+			double n[4] = { 1,2,N[0],N[1] };
+			double* result = GenerateTestNodes(timeLowerLimit, timeUpperLimit, lower, upper, n);
 			for (int i =0; i < 2 + (2 * N[2] * N[3]); i ++)
 				TXYZ[i] = result[i];
 		}

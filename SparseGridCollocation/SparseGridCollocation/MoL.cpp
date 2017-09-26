@@ -300,10 +300,12 @@ SmoothInitial Leicester::SparseGridCollocation::MoL::MethodOfLinesND(Params p, M
 	if (x.good() & u.good() & t.good())
 	{
 		x.close();
-		MatrixXd mX = Utility::ReadBinary(fileX, 32769, correlation.rows());
+		//MatrixXd mX = Utility::ReadBinary(fileX, 32769, correlation.rows());
+		MatrixXd mX = Utility::ReadBinary(fileX, 32769, 1);
 		VectorXd X(Map<VectorXd>(mX.data(), mX.cols()*mX.rows()));
 		u.close();
-		MatrixXd mU = Utility::ReadBinary(fileU, 32769, correlation.rows());
+		//MatrixXd mU = Utility::ReadBinary(fileU, 32769, correlation.rows());
+		MatrixXd mU = Utility::ReadBinary(fileU, 32769, 1);
 		VectorXd U(Map<VectorXd>(mU.data(), mU.cols()*mU.rows()));
 		t.close();
 		MatrixXd mT = Utility::ReadBinary(fileT, 1, 1);

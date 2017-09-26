@@ -1,5 +1,5 @@
 #pragma once
-//#include "cuda_runtime.h"
+#include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
 #include <stdio.h>
@@ -12,10 +12,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cmath>
-#include <map>
 #include ".\..\include\eigen-eigen-67e894c6cd8f\Eigen\StdVector"
-#include <thrust/system/cuda/experimental/pinned_allocator.h>
-#include "NodeRegistry.h"
 #include "Functors.h"
 #include "Common.h"
 #include "Utility.h"
@@ -32,24 +29,21 @@ namespace Leicester
 {
 	namespace ThrustLib
 	{
-		class API Gaussian2d2
+		class API GaussianNd1
 		{
 		public:
-			Gaussian2d2();
-			~Gaussian2d2();
-
-			Gaussian2d2(double tLower, double tUpper, const double* N);
-			
-			vector<MatrixXd> Gaussian2d(const MatrixXd & CN, const MatrixXd & A, const MatrixXd & C);
-			vector<MatrixXd> Gaussian2d(const MatrixXd & A, const MatrixXd & C);
-
+			GaussianNd1(MatrixXd testNodes, MatrixXd centralNodes);
+			GaussianNd1(MatrixXd testNodes);
+			~GaussianNd1();
+			static vector<MatrixXd> GaussianNd(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C);
+			vector<MatrixXd> GaussianNd(const MatrixXd &A, const MatrixXd &C);
+			vector<MatrixXd> GaussianNd(const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C);
 		private:
-			thrust::device_ptr<double> testNodes;
-			thrust::device_ptr<double> centralNodes;
+			thrust::device_vector<double> testNodes;
+			thrust::device_vector<double> centralNodes;
 			int dimensions;
 			int rows;
 			int cols;
 		};
 	}
 }
-

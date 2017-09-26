@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Interpolation.h"
-#include "Common.h"
+#include ".\..\Common\Utility.h"
 #include "Double.h"
 #include "RBF.h"
 #include "PDE.h"
@@ -9,7 +9,8 @@
 #include "TestNodes.h"
 #include <thread>
 #include "kernel.h"
-#include "Gaussian2d.h"
+//#include "Gaussian2d.h"
+#include "Gaussian2d1.h"
 
 
 //#include "CppUnitTest.h"
@@ -61,28 +62,30 @@ void Leicester::SparseGridCollocation::Interpolation::interpolateGeneric(string 
 	for (int i = 0; i < N.rows(); i++)
 	{
 		MatrixXd TX1 = GenerateNodes(coef, tsec, inx1, inx2, N.row(i));
-		unsigned int memory = TX1.rows() * TX1.cols() * sizeof(double) * 6; //TN, CN, D, Dt, Dx, Dxx
-		MemoryInfo mi = ThrustLib::Common::GetMemory();
-		//if there is free memory then do RBF interpolation gpu else on the cpu
-		if (mi.free > memory)
-		{
-			wcout << "Sending matrix size=" << memory << " bytes to GPU" << endl;
-			ThrustLib::Gaussian cudaGaussian(TX1, TX1);
-			//ThrustLib::Gaussian cudaGaussian(b, d, 0, tsec, inx1, inx2);
-			threads.push_back(std::thread(&Interpolation::shapelambda2DGenericC, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation, TX1, cudaGaussian));
-		}
-		else
-		{
-			wcout << "Sending matrix size=" << memory << " bytes to CPU" << endl;
-			threads.push_back(std::thread(&Interpolation::shapelambda2DGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation, TX1));
-		}
+		//unsigned int memory = TX1.rows() * TX1.cols() * sizeof(double) * 6; //TN, CN, D, Dt, Dx, Dxx
+		//MemoryInfo mi = ThrustLib::Common::GetMemory();
+		////if there is free memory then do RBF interpolation gpu else on the cpu
+		//if (mi.free > memory)
+		//{
+		//	wcout << "Sending matrix size=" << memory << " bytes to GPU" << endl;
+		//	ThrustLib::Gaussian2d1 cudaGaussian(TX1, TX1);
+		//	MatrixXd n = N.row(i);
+		//	//double* n = .data();
+		//	//ThrustLib::Gaussian2d2 cudaGaussian(0, tsec, n.data());
+		//	threads.push_back(std::thread(&Interpolation::shapelambda2DGenericC, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, n, keys, vInterpolation, TX1, cudaGaussian));
+		//}
+		//else
+		//{
+		//	wcout << "Sending matrix size=" << memory << " bytes to CPU" << endl;
+		//	threads.push_back(std::thread(&Interpolation::shapelambda2DGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation, TX1));
+		//}
 		//wcout << Common::printMatrix(N.row(i)) << endl;
-		//shapelambda2DGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation, TX1, cudaGaussian);
+		shapelambda2DGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation, TX1);
 	}
 
 
-	for (int i = 0; i < threads.size(); i++)
-		threads.at(i).join();
+	//for (int i = 0; i < threads.size(); i++)
+	//	threads.at(i).join();
 
 	vector<MatrixXd> l;
 	vector<MatrixXd> tx;
@@ -117,13 +120,13 @@ void Leicester::SparseGridCollocation::Interpolation::interpolateGenericND(strin
 	//cout << "N.rows()=" << N.rows() << endl;
 	for (int i = 0; i < N.rows(); i++)
 	{
-		threads.push_back(std::thread(&Interpolation::shapelambdaNDGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
-		//shapelambdaNDGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
+		//threads.push_back(std::thread(&Interpolation::shapelambdaNDGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
+		shapelambdaNDGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
 	}
 
 	
-	for (int i = 0; i < threads.size(); i++)
-		threads.at(i).join();
+	//for (int i = 0; i < threads.size(); i++)
+	//	threads.at(i).join();
 
 	vector<MatrixXd> l;
 	vector<MatrixXd> tx;
@@ -254,7 +257,7 @@ MatrixXd Leicester::SparseGridCollocation::Interpolation::GenerateNodes(double c
 }
 
 void Leicester::SparseGridCollocation::Interpolation::shapelambda2DGenericC(string prefix, int threadId, double coef, double tsec, double r, double sigma, double T, double E, double inx1, double inx2, MatrixXd N,
-	vector<string> keys, const map<string, vector<vector<MatrixXd>> > * state, MatrixXd TP, Gaussian cudaGaussian)
+	vector<string> keys, const map<string, vector<vector<MatrixXd>> > * state, MatrixXd TP, Gaussian2d1 cudaGaussian)
 {
 	map<string, vector<vector<MatrixXd>>> vInterpolation = *state;
 
@@ -280,10 +283,10 @@ void Leicester::SparseGridCollocation::Interpolation::shapelambda2DGenericC(stri
 	
 	//wcout << "D" << endl;
 	
-	MatrixXd d = mqdc[0];
-	MatrixXd dt = mqdc[1];
-	MatrixXd dx = mqdc[2];
-	MatrixXd dxx = mqdc[3];
+	MatrixXd d = mqdc[0].replicate(1, 1);
+	MatrixXd dt = mqdc[1].replicate(1, 1);
+	MatrixXd dx = mqdc[2].replicate(1, 1);
+	MatrixXd dxx = mqdc[3].replicate(1, 1);
 	//dxx = dxx.colwise().reverse();
 	
 	//bool f1 = Common::checkMatrix(mqd[0], d, 0.001, false);
@@ -519,12 +522,14 @@ void Leicester::SparseGridCollocation::Interpolation::shapelambdaNDGeneric(strin
 	MatrixXd a = N.array() - 1;
 		
 	MatrixXd TXYZ = TestNodes::GenerateTestNodes(0, tsec, inx1.transpose(), inx2.transpose(), N, coef);
-	//Common::saveArray(TXYZ, "TXYZ.txt");
+	Common::Utility::saveArray(TXYZ, "TXYZ.txt");
+	Common::Utility::saveArray(a, "a.txt");
+	Common::Utility::saveArray(c, "c.txt");
 	vector<MatrixXd> mqd = RBF::GaussianND(TXYZ, TXYZ, a, c);
-	//Common::saveArray(mqd[0], "mqd0.txt");
-	//Common::saveArray(mqd[1], "mqd1.txt");
-	//Common::saveArray(mqd[2], "mqd2.txt");
-	//Common::saveArray(mqd[3], "mqd3.txt");
+	Common::Utility::saveArray(mqd[0], "mqd0.txt");
+	Common::Utility::saveArray(mqd[1], "mqd1.txt");
+	Common::Utility::saveArray(mqd[2], "mqd2.txt");
+	Common::Utility::saveArray(mqd[3], "mqd3.txt");
 	
 	MatrixXd P = mqd[1] + (sigma * sigma) * mqd[3] / 2 + r * mqd[2] - r * mqd[0];
 	//if (prefix.compare("4") == 0)

@@ -1,6 +1,6 @@
 #pragma once
 #include "stdafx.h"
-#include "Gaussian2d.h"
+#include "Gaussian2d1.h"
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 //using Eigen::Map;
@@ -46,7 +46,7 @@ namespace Leicester
 			void interpolateGenericND(string prefix, double coef, double tsec, int b, int d, MatrixXd inx1, MatrixXd inx2, double r, double sigma, double T, double E,
 				vector<string> keys, const  map<string, vector<vector<MatrixXd>> > * vInterpolation);
 			void shapelambda2DGenericC(string prefix, int threadId, double coef, double tsec, double r, double sigma, double T, double E, double inx1, double inx2, MatrixXd N,
-				vector<string> keys, const map<string, vector<vector<MatrixXd>> > * state, MatrixXd TP, Gaussian cudaGaussian);
+				vector<string> keys, const map<string, vector<vector<MatrixXd>> > * state, MatrixXd TP, Gaussian2d1 cudaGaussian);
 			void shapelambda2DGeneric(string prefix, int threadId, double coef, double tsec, double r, double sigma, double T, double E, double inx1, double inx2, MatrixXd N,
 				vector<string> keys, const map<string, vector<vector<MatrixXd>> > * state, MatrixXd TP);
 			void ShapeLambda2D(std::vector<Eigen::MatrixXd> &mqd, double sigma, double &r, double num, std::vector<std::string> &keys, Eigen::MatrixXd &TP, std::map<std::string, std::vector<std::vector<Eigen::MatrixXd>>> &vInterpolation, double inx1, double inx2, double E, double T, double tsec, int &threadId, Eigen::MatrixXd &c, Eigen::MatrixXd &a);

@@ -467,7 +467,7 @@ int main(){
 	p.sigma = 0.15;
 	p.theta = 0.5;
 	//Set this to vary dimensions:
-	int assets = 1;
+	int assets = 2;
 	p.inx1 = VectorXd::Zero(assets);
 	VectorXd inx2(assets);
 	inx2.fill(3.0 * p.K);
@@ -492,17 +492,17 @@ int main(){
 	BasketOption option(100.0,1,correlation);
 	Algorithm* test = new Algorithm();
 
-	//vector<MatrixXd> MuSiKcBasket = test->MuSIKcND(10, 0, option, p);
-	vector<MatrixXd> MuSiKc = test->MuSIKc(10, 0, p);
+	vector<MatrixXd> MuSiKcBasket = test->MuSIKcND(6, 0, option, p);
+	vector<MatrixXd> MuSiKc = test->MuSIKc(6, 0, p);
 	
 	
 
 	//wcout << "MuSIK-c ND result:" << endl;
 	//wcout << Utility::printMatrix(result[0]) << endl;
-	//wcout << "MuSIK-c ND RMS error:" << endl;
-	//wcout << Utility::printMatrix(MuSiKcBasket[1]) << endl;
-	//wcout << "MuSIK-c ND MAX error:" << endl;
-	//wcout << Utility::printMatrix(MuSiKcBasket[2]) << endl;
+	wcout << "MuSIK-c ND RMS error:" << endl;
+	wcout << Utility::printMatrix(MuSiKcBasket[1]) << endl;
+	wcout << "MuSIK-c ND MAX error:" << endl;
+	wcout << Utility::printMatrix(MuSiKcBasket[2]) << endl;
 	//wcout << getchar() << endl;
 
 

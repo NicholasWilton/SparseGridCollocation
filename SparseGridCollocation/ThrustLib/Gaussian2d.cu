@@ -112,6 +112,7 @@ namespace Leicester
 			//const double *h_testNodes = testNodes.data();
 			double *d_testNodes;
 			int sizeTestNodes = sizeof(double) * testNodes.rows() * testNodes.cols();
+			cudaMalloc((void**)&d_testNodes, sizeTestNodes);
 			device_ptr<double> dp_testNodes = thrust::device_pointer_cast<double>(d_testNodes);
 			cudaError_t e = cudaMemcpyAsync(d_testNodes, h_testNodes, sizeTestNodes, cudaMemcpyKind::cudaMemcpyHostToDevice, s1);
 			

@@ -4,7 +4,7 @@
 #include "..\Common\Utility.h"
 #include "MatrixXdm.h"
 #include "kernel.h"
-#include "Gaussian2d.h"
+#include "Gaussian2d1.h"
 #include "Common.h"
 
 
@@ -31,9 +31,9 @@ MatrixXd Leicester::SparseGridCollocation::PDE::BlackScholes(const MatrixXd &nod
 	MatrixXd U2 = MatrixXd::Ones(N, ch2);
 	unsigned int memory = node.rows() * node.cols() * sizeof(double) * 6;
 	MemoryInfo mi = ThrustLib::Common::GetMemory();
-	ThrustLib::Gaussian* cudaGaussian = NULL;
+	ThrustLib::Gaussian2d1* cudaGaussian = NULL;
 	if (mi.free > memory)
-		cudaGaussian = new Gaussian(node);
+		cudaGaussian = new Gaussian2d1(node);
 	
 	for (int j = 0; j < ch2; j++)
 	{

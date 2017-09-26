@@ -18,7 +18,7 @@
 #include <iomanip>
 #include "Params.h"
 #include "MoL.h"
-#include "C:\Users\User\Source\Repos\SparseGridCollocation\CudaLib\kernel.h"
+//#include "C:\Users\User\Source\Repos\SparseGridCollocation\CudaLib\kernel.h"
 #include "SmoothInitial.h"
 
 using Eigen::Matrix;
@@ -35,8 +35,8 @@ using namespace Leicester::Common;
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <cmath>
-#include <math.h>
+//#include <cmath>
+//#include <math.h>
 #include <thread>
 
 
