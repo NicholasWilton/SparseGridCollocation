@@ -467,12 +467,13 @@ int main(){
 	p.sigma = 0.15;
 	p.theta = 0.5;
 	//Set this to vary dimensions:
-	int assets = 2;
+	int assets = 1;
 	p.inx1 = VectorXd::Zero(assets);
 	VectorXd inx2(assets);
 	inx2.fill(3.0 * p.K);
 	p.inx2 = inx2;
 	MatrixXd correlation = MatrixXd::Identity(assets, assets);
+	p.useCuda = true;
 	
 
 	VectorXd x = VectorXd::LinSpaced(10000, p.inx1[0], p.inx2[0]);
@@ -492,9 +493,8 @@ int main(){
 	BasketOption option(100.0,1,correlation);
 	Algorithm* test = new Algorithm();
 
-	vector<MatrixXd> MuSiKcBasket = test->MuSIKcND(6, 0, option, p);
-	vector<MatrixXd> MuSiKc = test->MuSIKc(6, 0, p);
-	
+	vector<MatrixXd> MuSiKcBasket = test->MuSIKcND(8, 0, option, p);
+	vector<MatrixXd> MuSiKc = test->MuSIKc(8, 0, p);
 	
 
 	//wcout << "MuSIK-c ND result:" << endl;
@@ -628,7 +628,7 @@ int main(){
 
 	//}
 
-	//wcout << getchar() << endl;
+	wcout << getchar() << endl;
 	return 0;
 }
 

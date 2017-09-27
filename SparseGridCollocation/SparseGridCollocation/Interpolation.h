@@ -1,6 +1,7 @@
 #pragma once
 #include "stdafx.h"
 #include "Gaussian2d1.h"
+#include "GaussianNd1.h"
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 //using Eigen::Map;
@@ -25,8 +26,8 @@ namespace Leicester
 			map<int, MatrixXd> U;
 
 
-
 		public:
+			static int callCount;
 			//Interpolation();
 			//Interpolation(const Interpolation & obj);
 			//~Interpolation();
@@ -44,7 +45,7 @@ namespace Leicester
 			void interpolateGeneric(string prefix, double coef, double tsec, int b, int d, double inx1, double inx2, double r, double sigma, double T, double E,
 				vector<string> keys, const map<string, vector<vector<MatrixXd>> > *vInterpolation);
 			void interpolateGenericND(string prefix, double coef, double tsec, int b, int d, MatrixXd inx1, MatrixXd inx2, double r, double sigma, double T, double E,
-				vector<string> keys, const  map<string, vector<vector<MatrixXd>> > * vInterpolation);
+				vector<string> keys, const  map<string, vector<vector<MatrixXd>> > * vInterpolation, bool useCuda);
 			void shapelambda2DGenericC(string prefix, int threadId, double coef, double tsec, double r, double sigma, double T, double E, double inx1, double inx2, MatrixXd N,
 				vector<string> keys, const map<string, vector<vector<MatrixXd>> > * state, MatrixXd TP, Gaussian2d1 cudaGaussian);
 			void shapelambda2DGeneric(string prefix, int threadId, double coef, double tsec, double r, double sigma, double T, double E, double inx1, double inx2, MatrixXd N,
@@ -52,6 +53,8 @@ namespace Leicester
 			void ShapeLambda2D(std::vector<Eigen::MatrixXd> &mqd, double sigma, double &r, double num, std::vector<std::string> &keys, Eigen::MatrixXd &TP, std::map<std::string, std::vector<std::vector<Eigen::MatrixXd>>> &vInterpolation, double inx1, double inx2, double E, double T, double tsec, int &threadId, Eigen::MatrixXd &c, Eigen::MatrixXd &a);
 			void shapelambdaNDGeneric(string prefix, int threadId, double coef, double tsec, double r, double sigma, double T, double E, MatrixXd inx1, MatrixXd inx2, MatrixXd N,
 				vector<string> keys, const  map<string, vector<vector<MatrixXd>> > * vInterpolation);
+			void shapelambdaNDGenericC(string prefix, int threadId, double coef, double tsec, double r, double sigma, double T, double E, MatrixXd inx1, MatrixXd inx2, MatrixXd N,
+				vector<string> keys, const map<string, vector<vector<MatrixXd>> > * state, MatrixXd TP, GaussianNd1 cudaGaussian);
 
 			MatrixXd GenerateNodes(double coef, double tsec, double inx1, double inx2, MatrixXd N);
 		};

@@ -151,8 +151,8 @@ vector<MatrixXd> Leicester::SparseGridCollocation::RBF::GaussianND(const MatrixX
 				//VectorXd a5 = 4 * qA * (dTpCn.array() * dTpCn.array() / qC); // 4 * a^4 * (x - c)^2 / c^4
 				//vxy = -2 * sA / sC + a5.array();//  -2 * a^2/c^2 + [4 * a^4 * (x - c)^2 / c^4]
 				//sumi.array() = sumi.array() + TP.col(d).array() * TP.col(i).array() * vxy.array();
-				Common::Utility::saveArray(TP.col(d), "TPd.txt");
-				Common::Utility::saveArray(TP.col(i), "TPi.txt");
+				//Common::Utility::saveArray(TP.col(d), "TPd.txt");
+				//Common::Utility::saveArray(TP.col(i), "TPi.txt");
 				sumi.array() = sumi.array() + TP.col(d).array() * TP.col(i).array() * (-2 * (A(0, d) * A(0, d)) / (C(0, d) *C(0, d)) + (4 * (A(0, d) * A(0, d)* A(0, d) * A(0, d)) * ((TP.col(d).array() - CN(j, i)).array() * (TP.col(d).array() - CN(j, i)).array() / (C(0, d) *C(0, d)*C(0, d) *C(0, d)))).array()).array();
 			}
 			sumij.array() = sumij.array() + sumi.array();

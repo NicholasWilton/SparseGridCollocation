@@ -15,7 +15,38 @@
 
 \section{Introduction}
 
- 
+Numerical Analysis is the study and use of computation algorithms in approximation within the field of mathematical analysis of which (and in particular interest to this paper), partial differential equations (PDEs) are common throughout many areas of science. Whilst analytic solutions exist for some PDEs using such techniques as 'seperation of variables', 'integral transform' and 'change of variables', often either no solution exists orthe analytic tools are currently insufficient to find it.   
+
+The known algorithms developed for solving PDEs are generally classified into nine main methods:\\
+\\
+\textperiodcentered Finite Difference\\
+Where functions whose known values at certain points are approximated by differences between these values. The grid on which these points (aka. nodes) reside is often referred to as a mesh there each node in a finite difference scheme is connected to it's neighbour in either a forward or backwards manner by the algorithm employed\\
+\\ 
+\textperiodcentered Method of Lines\\
+PDE's in multiple dimensions are discretised into Ordinary Differential Equations (ODEs), in all but one dimension allowing for any of the vast number of numerical integration solvers to be used in these dimensions, meanwhile the final dimension is solved by ...\\
+\\ 
+\textperiodcentered Finite Element\\
+Used for approximating boundary value problems where by the solution is approximated by the composition of many linear elements again using a mesh of nodes connected to each other.\\
+\\
+\textperiodcentered Gradient Discretisation\\
+
+
+\textperiodcentered Finite Volume
+Similar to both Finite Element and Finite Difference methods, a mesh is created on which values are calculcated at discrete points. Using the diveregence theorem to convert volume integrals into surface integrals around each point...\\
+\\ 
+\textperiodcentered Spectral\\
+Where approximation is done by combining a series of basis functions by superposition and then choosing the co-efficients of the series which minimise the error of the result. For example a Fourier series of sinusoidal waveforms or Radial Basis Functions (RBF).\\
+\\ 
+\textperiodcentered Meshfree\\
+In contrast to the previous methods, which all require connections between nodes of a grid a mesh free method requires no connection between nodes.
+\\ 
+\textperiodcentered Domain Decomposition\\
+Whereby a boundary value problem is split into smaller problems on sub-domains each of which is independent from the others allowing for parallelisation of the overall global problem.
+\\ 
+\textperiodcentered Multigrid\\
+Using a heirachy of descritised grids with different levels of coarseness between the nodes. The idea being that the convergence of an iterative method can be accelerated by solving on a coarser grid to make a global correction to the finer grid.
+\\
+Recent work by
 
 \section{Theoretical Background}
 
@@ -404,8 +435,8 @@ The Fourier transform of the Lagrange function $L^A$ is given by
 \end{thm}
 
 \begin{thebibliography}{99}
-\bibitem{mdb} Buhmann (2003), 
-{\em Radial Basis Functions}, CUP.
+\bibitem{mski2} Georgoulis, E.h., Levesley, J., Subhan, F. (2013), {\em Multilevel sparse kernel-based interpolation}, SIAM Journal on Scientific Computing, 2013, 35(2):A815-A831.
+\bibitem{mski1} Subhan, F. (2011), {\em Multilevel sparse kernel-based interpolation}, Ph.D. Thesis, University of Leicester, 2011.
 \end{thebibliography}
 
 

@@ -36,6 +36,8 @@ namespace Leicester
 		{
 			this->testNodes.clear();
 			this->testNodes.shrink_to_fit();
+			this->centralNodes.clear();
+			this->centralNodes.shrink_to_fit();
 		}
 
 		vector<MatrixXd> GaussianNd1::GaussianNd(const MatrixXd & CN, const MatrixXd & A, const MatrixXd & C)
@@ -179,6 +181,20 @@ namespace Leicester
 					cudaGetErrorString(e), e, __LINE__, sizeof(double) * rows * cols);
 			Eigen::Map<Eigen::MatrixXd> dataMapDxx(h_Dxx, rows, cols);
 			MatrixXd Dxx = dataMapDxx.eval();
+			
+			d_a.clear();
+			d_a.shrink_to_fit();
+			d_c.clear();
+			d_c.shrink_to_fit();
+
+			d_D.clear();
+			d_D.shrink_to_fit();
+			d_Dt.clear();
+			d_Dt.shrink_to_fit();
+			d_Dx.clear();
+			d_Dx.shrink_to_fit();
+			d_Dxx.clear();
+			d_Dxx.shrink_to_fit();
 
 			return{ D, Dt, Dx, Dxx };
 			

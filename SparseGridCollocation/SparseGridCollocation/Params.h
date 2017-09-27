@@ -19,6 +19,7 @@ namespace Leicester
 			double theta;
 			VectorXd inx1;
 			VectorXd inx2;
+			bool useCuda;
 		};
 	}
 }

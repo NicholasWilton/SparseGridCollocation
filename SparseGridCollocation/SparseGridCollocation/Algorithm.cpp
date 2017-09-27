@@ -17,6 +17,7 @@
 #include "InterTest.h"
 #include <iomanip>
 #include "Params.h"
+#include "PDE.h"
 #include "MoL.h"
 //#include "C:\Users\User\Source\Repos\SparseGridCollocation\CudaLib\kernel.h"
 #include "SmoothInitial.h"
@@ -367,7 +368,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKc(int upper, 
 	//		{
 	//			stringstream ssk;
 	//			ssk << ssj.str() << "." << countk << ".txt";
-	//			Common::saveArray(k, ssk.str());
+	//			Common::Utility::saveArray(k, ssk.str());
 	//			countk++;
 	//		}
 	//		countj++;
@@ -427,7 +428,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKc(int upper, 
 	//		stringstream ssj;
 	//		ssj << ss.str() << "." << j.first << ".txt";
 
-	//		Common::saveArray(j.second, ssj.str());
+	//		Common::Utility::saveArray(j.second, ssj.str());
 
 	//		countj++;
 	//	}
@@ -542,7 +543,11 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKcND(int upper
 
 vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKcND(int upper, int lower, BasketOption option, Params p, map<string, vector<vector<MatrixXd>>>& interpolation)
 {
+	Interpolation::callCount = 0;
+	PDE::callCount = 0;
 	cout << "Starting MuSiK-c" << endl;
+	wcout << "Interpolation Call count=" << Interpolation::callCount << endl;
+	wcout << "PDE Call count=" << Interpolation::callCount << endl;
 
 	int dimensions = option.Underlying + 1; // 1 per asset + time
 	double E = p.K;// strike price
@@ -587,7 +592,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKcND(int upper
 		string key = ss.str();
 		{
 			Interpolation i;
-			i.interpolateGenericND(key, coef, tsec, n, dimensions, inx1, inx2, r, sigma, T, E, level, &interpolation);
+			i.interpolateGenericND(key, coef, tsec, n, dimensions, inx1, inx2, r, sigma, T, E, level, &interpolation, p.useCuda);
 			interpolation[key] = i.getResult();
 		}
 		newKeys.push_back(key);
@@ -600,7 +605,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKcND(int upper
 			string key = ss.str();
 			{
 				Interpolation i;
-				i.interpolateGenericND(key, coef, tsec, n, dimensions, inx1, inx2, r, sigma, T, E, level, &interpolation);
+				i.interpolateGenericND(key, coef, tsec, n, dimensions, inx1, inx2, r, sigma, T, E, level, &interpolation, p.useCuda);
 				interpolation[key] = i.getResult();
 			}
 			newKeys.push_back(key);
@@ -627,7 +632,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKcND(int upper
 			string key = ss1.str();
 			{
 				Interpolation i;
-				i.interpolateGenericND(key, coef, tsec, n, dimensions, inx1, inx2, r, sigma, T, E, level, &interpolation);
+				i.interpolateGenericND(key, coef, tsec, n, dimensions, inx1, inx2, r, sigma, T, E, level, &interpolation, p.useCuda);
 				interpolation[key] = i.getResult();
 			}
 			newKeys.push_back(key);
@@ -639,7 +644,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKcND(int upper
 				string key = ss2.str();
 				{
 					Interpolation i;
-					i.interpolateGenericND(key, coef, tsec, n, dimensions, inx1, inx2, r, sigma, T, E, level, &interpolation);
+					i.interpolateGenericND(key, coef, tsec, n, dimensions, inx1, inx2, r, sigma, T, E, level, &interpolation, p.useCuda);
 					interpolation[key] = i.getResult();
 				}
 				newKeys.push_back(key);
@@ -650,7 +655,8 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKcND(int upper
 			sequence++;
 		}
 	}
-	
+	wcout << "Interpolation Call count=" << Interpolation::callCount << endl;
+	wcout << "PDE Call count=" << Leicester::SparseGridCollocation::PDE::callCount << endl;
 	//for (auto i : interpolation)
 	//{
 	//	stringstream ss;
@@ -665,7 +671,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKcND(int upper
 	//		{
 	//			stringstream ssk;
 	//			ssk << ssj.str() << "." << countk << ".txt";
-	//			Common::saveArray(k, ssk.str());
+	//			Common::Utility::saveArray(k, ssk.str());
 	//			countk++;
 	//		}
 	//		countj++;
@@ -679,7 +685,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKcND(int upper
 
 	for (int count = dimensions; count <= 10 + dimensions; count++)
 	{
-		if (upper > count & lower <= count)
+		if (upper >= count & lower <= count)
 		{
 			int lvl = count;
 			int n = lvl + option.Underlying;
@@ -724,7 +730,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKcND(int upper
 	//		stringstream ssj;
 	//		ssj << ss.str() << "." << j.first << ".txt";
 
-	//		Common::saveArray(j.second, ssj.str());
+	//		Common::Utility::saveArray(j.second, ssj.str());
 
 	//		countj++;
 	//	}

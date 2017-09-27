@@ -699,6 +699,141 @@ MatrixXd GetTX2_2Asset()
 	return TX1;
 }
 
+MatrixXd GetTX1_2Asset()
+{
+	MatrixXd TX1(27, 2);
+
+	TX1(0, 0) = 0;
+	TX1(1, 0) = 0;
+	TX1(2, 0) = 0;
+	TX1(3, 0) = 0;
+	TX1(4, 0) = 0;
+	TX1(5, 0) = 0;
+	TX1(6, 0) = 0;
+	TX1(7, 0) = 0;
+	TX1(8, 0) = 0;
+	TX1(9, 0) = 0.4665;
+	TX1(10, 0) = 0.4665;
+	TX1(11, 0) = 0.4665;
+	TX1(12, 0) = 0.4665;
+	TX1(13, 0) = 0.4665;
+	TX1(14, 0) = 0.4665;
+	TX1(15, 0) = 0.4665;
+	TX1(16, 0) = 0.4665;
+	TX1(17, 0) = 0.4665;
+	TX1(18, 0) = 0.932999999999999;
+	TX1(19, 0) = 0.932999999999999;
+	TX1(20, 0) = 0.932999999999999;
+	TX1(21, 0) = 0.932999999999999;
+	TX1(22, 0) = 0.932999999999999;
+	TX1(23, 0) = 0.932999999999999;
+	TX1(24, 0) = 0.932999999999999;
+	TX1(25, 0) = 0.932999999999999;
+	TX1(26, 0) = 0.932999999999999;
+	TX1(0, 1) = 0;
+	TX1(1, 1) = 37.5;
+	TX1(2, 1) = 75;
+	TX1(3, 1) = 112.5;
+	TX1(4, 1) = 150;
+	TX1(5, 1) = 187.5;
+	TX1(6, 1) = 225;
+	TX1(7, 1) = 262.5;
+	TX1(8, 1) = 300;
+	TX1(9, 1) = 0;
+	TX1(10, 1) = 37.5;
+	TX1(11, 1) = 75;
+	TX1(12, 1) = 112.5;
+	TX1(13, 1) = 150;
+	TX1(14, 1) = 187.5;
+	TX1(15, 1) = 225;
+	TX1(16, 1) = 262.5;
+	TX1(17, 1) = 300;
+	TX1(18, 1) = 0;
+	TX1(19, 1) = 37.5;
+	TX1(20, 1) = 75;
+	TX1(21, 1) = 112.5;
+	TX1(22, 1) = 150;
+	TX1(23, 1) = 187.5;
+	TX1(24, 1) = 225;
+	TX1(25, 1) = 262.5;
+	TX1(26, 1) = 300;
+
+
+	return TX1;
+}
+
+MatrixXd GetCN1_2Asset()
+{
+	MatrixXd CN1(15, 2);
+
+	CN1(0, 0) = 0;
+	CN1(1, 0) = 0;
+	CN1(2, 0) = 0;
+	CN1(3, 0) = 0;
+	CN1(4, 0) = 0;
+	CN1(5, 0) = 0.4665;
+	CN1(6, 0) = 0.4665;
+	CN1(7, 0) = 0.4665;
+	CN1(8, 0) = 0.4665;
+	CN1(9, 0) = 0.4665;
+	CN1(10, 0) = 0.932999999999999;
+	CN1(11, 0) = 0.932999999999999;
+	CN1(12, 0) = 0.932999999999999;
+	CN1(13, 0) = 0.932999999999999;
+	CN1(14, 0) = 0.932999999999999;
+	CN1(0, 1) = 0;
+	CN1(1, 1) = 75;
+	CN1(2, 1) = 150;
+	CN1(3, 1) = 225;
+	CN1(4, 1) = 300;
+	CN1(5, 1) = 0;
+	CN1(6, 1) = 75;
+	CN1(7, 1) = 150;
+	CN1(8, 1) = 225;
+	CN1(9, 1) = 300;
+	CN1(10, 1) = 0;
+	CN1(11, 1) = 75;
+	CN1(12, 1) = 150;
+	CN1(13, 1) = 225;
+	CN1(14, 1) = 300;
+
+
+
+	return CN1;
+}
+
+void TestRbfInterpolationPDE_2Asset()
+{
+	
+	MatrixXd TX1 = GetTX1_2Asset();
+	MatrixXd CN = GetCN1_2Asset();
+
+	MatrixXd C(1, 2);
+	MatrixXd A(1, 2);
+	C << 1.866, 600;
+	A << 2, 4; //TX2
+	
+	Leicester::ThrustLib::GaussianNd1 cGaussian(TX1);
+	for (int i = 0; i < 1; i++)
+	{
+		printf("i=%i\r\n", i);
+		vector<MatrixXd> res = cGaussian.GaussianNd(CN,A, C);
+		//vector<MatrixXd> res = ThrustLib::Gaussian::Gaussian2d(TX1, CN, A, C);
+		//wcout << "Phi1:" << endl;
+		//wcout << printMatrix(res[0].col(0)) << endl;
+		//wcout << "Phi2:" << endl;
+		//wcout << printMatrix(res[1].col(0)) << endl;
+		wcout << "D:" << endl;
+		wcout << Utility::printMatrix(res[0].col(1)) << endl;
+		wcout << "Dt:" << endl;
+		wcout << Utility::printMatrix(res[1].col(1)) << endl;
+		wcout << "Dx:" << endl;
+		wcout << Utility::printMatrix(res[2].col(1)) << endl;
+		wcout << "Dxx:" << endl;
+		wcout << Utility::printMatrix(res[3].col(1)) << endl;
+	}
+}
+
 void TestRbfInterpolation_2Asset()
 {
 	//MatrixXd TX1 = GetTX7();
@@ -1205,6 +1340,6 @@ int main()
 
 	//printf("%d %d %d", array[0], array[1], array[2]);
 	//TestArrayCopy();
-	TestRbfInterpolation_2Asset();
+	TestRbfInterpolationPDE_2Asset();
 	return 0;
 }

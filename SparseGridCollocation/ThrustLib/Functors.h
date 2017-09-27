@@ -364,13 +364,13 @@ struct phi_functor3Nd
 		for (int dimension = 0; dimension < dimensions; dimension++)
 		{
 			int tpIdx = (idx % rows) + (dimension * rows);
-			int cnIdx = (idx / rows) + (dimension * rows);
+			int cnIdx = (idx / rows) + (dimension * cols);
 
 			double a1 = a[dimension] * (tp[tpIdx] - cn[cnIdx]);
 			double b1 = -(a1 * a1) / (c[dimension] * c[dimension]);
 			double e1 = expm1(b1) + 1;
 			product *= e1;
-		//	if (idx == 80)
+			//if (idx < 27)
 			//	printf("rows=%i, cols=%i, dimensions=%i, idx=%i, tpIdx=%i, tp[%i]=%f, cn[%i]=%f a[%i]=%f c[%i]=%f dimension=%i product=%f\r\n", rows, cols, dimensions, idx, tpIdx, tpIdx, tp[tpIdx], cnIdx, cn[cnIdx], dimension, a[dimension], dimension, c[dimension], dimension, product);
 		}
 		
@@ -477,7 +477,7 @@ struct dx_functor3Nd
 			//int tpIdx = idx % rows;
 			//int cnIdx = idx / rows;
 			int tpIdx = (idx % rows) + (dimension * rows);
-			int cnIdx = (idx / rows) + (dimension * rows);
+			int cnIdx = (idx / rows) + (dimension * cols);
 			double scalarDx = -2 * ((a[dimension] / c[dimension]) * ( a[dimension] / c[dimension]));
 			double b = tp[tpIdx] * scalarDx * (tp[tpIdx] - cn[cnIdx]) * D;
 			sum += b;
@@ -548,7 +548,7 @@ struct dxx_functor3Nd
 					//int cnIdx = idx / rows;
 					int tpIdxd = (idx % rows) + (dimension * rows);
 					int tpIdxi = (idx % rows) + (i * rows);
-					int cnIdxi = (idx / rows) + (i * rows);
+					int cnIdxi = (idx / rows) + (i * cols);
 
 					double sA = a[dimension] * a[dimension];
 					double qA = sA * sA;
@@ -567,17 +567,20 @@ struct dxx_functor3Nd
 
 					sumi += d;
 
-					/*if (idx == 10)
-						printf("rows=%i, cols=%i, dimensions=%i, idx=%i, i=%i tpIdxd=%i, tp[%i]=%f, cn[%i]=%f, tpIdxi=%i, tp[%i]=%f, a[%i]=%f c[%i]=%f dimension=%i sum=%f\r\n",
-							rows, cols, dimensions, idx, i, tpIdxd, tpIdxd, tp[tpIdxd], cnIdxi, cn[cnIdxi], tpIdxi, tpIdxi, tp[tpIdxi], dimension, a[dimension], dimension, c[dimension], dimension, sumi);*/
-				//}
+				//	if (idx == 1)
+				//		printf("rows=%i, cols=%i, dimensions=%i, idx=%i, i=%i tpIdxd=%i, tp[%i]=%f, cn[%i]=%f, tpIdxi=%i, tp[%i]=%f, a[%i]=%f c[%i]=%f dimension=%i sum=%f\r\n",
+				//			rows, cols, dimensions, idx, i, tpIdxd, tpIdxd, tp[tpIdxd], cnIdxi, cn[cnIdxi], tpIdxi, tpIdxi, tp[tpIdxi], dimension, a[dimension], dimension, c[dimension], dimension, sumi);
+				////}
 			}
 			
 			sumij += sumi;
-			//if (idx == 10)
+			//if (idx == 1)
 			//	printf("rows=%i, cols=%i, dimensions=%i, idx=%i, dimension=%i sumij=%f\r\n",
 			//		rows, cols, dimensions, idx, dimension, sumij);
 		}
 		thrust::get<2>(t) = sumij;
+		//if (idx == 1)
+		//	printf("rows=%i, cols=%i, dimensions=%i, idx=%i, sumij=%f, Dxx=%f\r\n",
+		//		rows, cols, dimensions, idx, sumij, thrust::get<2>(t));
 	}
 };
