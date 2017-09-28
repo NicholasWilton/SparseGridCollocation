@@ -457,6 +457,8 @@ void CompareInterpolation(map<string, vector<vector<MatrixXd>>> expected, map<st
 //}
 
 int main(){
+	//_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
+	//_CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
 	Params p;
 	p.T = 1.0;
 	p.Tdone = 0.0;
@@ -493,8 +495,8 @@ int main(){
 	BasketOption option(100.0,1,correlation);
 	Algorithm* test = new Algorithm();
 
-	vector<MatrixXd> MuSiKcBasket = test->MuSIKcND(8, 0, option, p);
-	vector<MatrixXd> MuSiKc = test->MuSIKc(8, 0, p);
+	vector<MatrixXd> MuSiKcBasket = test->MuSIKcND(10, 0, option, p);
+	//vector<MatrixXd> MuSiKc = test->MuSIKc(8, 0, p);
 	
 
 	//wcout << "MuSIK-c ND result:" << endl;
@@ -508,10 +510,10 @@ int main(){
 
 	//wcout << "MuSIK-c result:" << endl;
 	//wcout << Utility::printMatrix(result[0]) << endl;
-	wcout << "MuSIK-c RMS error:" << endl;
-	wcout << Utility::printMatrix(MuSiKc[1]) << endl;
-	wcout << "MuSIK-c MAX error:" << endl;
-	wcout << Utility::printMatrix(MuSiKc[2]) << endl;
+	//wcout << "MuSIK-c RMS error:" << endl;
+	//wcout << Utility::printMatrix(MuSiKc[1]) << endl;
+	//wcout << "MuSIK-c MAX error:" << endl;
+	//wcout << Utility::printMatrix(MuSiKc[2]) << endl;
 	//wcout << getchar() << endl;
 
 	//wcout << "MuSIK-c vs MuSIK-c basket:" << endl;

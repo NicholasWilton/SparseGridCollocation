@@ -1,5 +1,6 @@
 #pragma once
 #include "stdafx.h"
+#include "GaussianNd1.h"
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
 using Eigen::Map;
@@ -26,6 +27,8 @@ namespace Leicester
 			static MatrixXd BlackScholesNd(const MatrixXd &node, double r, double sigma, vector<string> keys, const map<string, vector<vector<MatrixXd>> > * state);
 
 			static MatrixXd BlackScholesNdC(const MatrixXd &node, double r, double sigma, vector<string> keys, const map<string, vector<vector<MatrixXd>> > * state);
+
+			static void GaussianNd(const MatrixXd & CN, const MatrixXd & A, const MatrixXd & C, MatrixXd* d, MatrixXd* dt, MatrixXd* dx, MatrixXd* dxx, ThrustLib::GaussianNd1* cudaGaussian);
 
 		};
 	}

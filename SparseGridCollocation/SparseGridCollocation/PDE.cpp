@@ -5,8 +5,9 @@
 #include "MatrixXdm.h"
 #include "kernel.h"
 #include "Gaussian2d1.h"
-#include "GaussianNd1.h"
+//#include "GaussianNd1.h"
 #include "Common.h"
+#include <thread>
 
 
 //#include "CppUnitTest.h"
@@ -217,22 +218,39 @@ MatrixXd Leicester::SparseGridCollocation::PDE::BlackScholesNdC(const MatrixXd &
 		unsigned int memory = node.rows() * node.cols() * sizeof(double) * 6;
 		MemoryInfo mi = ThrustLib::Common::GetMemory();
 		ThrustLib::GaussianNd1* cudaGaussian = NULL;
-		//if (mi.free > memory)
+		if (mi.free > memory)
 			cudaGaussian = new GaussianNd1(node);
-
+		vector<thread> threads;
+		map<int,MatrixXd> vd;
+		map<int,MatrixXd> vdt;
+		map<int,MatrixXd> vdx;
+		map<int,MatrixXd> vdxx;
 		for (int j = 0; j < ch2; j++)
 		{
 			vector<MatrixXd> mqd;
-			//if (cudaGaussian != NULL & (j % 2 == 0))
-			//{
-				//wcout << "Sending matrix size=" << memory << " bytes to GPU" << endl;
+			if (cudaGaussian != NULL & (j % 2 == 0))
+			{
+				wcout << "Sending matrix size=" << memory << " bytes to GPU" << endl;
 				//Common::Utility::saveArray(node, "node_Ndc.txt");
 				//Common::Utility::saveArray(item[1][j], "CN_Ndc.txt");
 				//Common::Utility::saveArray(item[3][j], "A_Ndc.txt");
 				//Common::Utility::saveArray(item[2][j], "C_Ndc.txt");
 				PDE::callCount++;
-				vector<MatrixXd> mq = RBF::GaussianND(node, item[1][j], item[3][j], item[2][j]);
+				//vector<MatrixXd> mq = RBF::GaussianND(node, item[1][j], item[3][j], item[2][j]);
+				//MatrixXd d(node.rows(), item[1][j].rows());
+				//vd[j] = d;
+				//MatrixXd dt(node.rows(), item[1][j].rows());
+				//vdt[j] =dt;
+				//MatrixXd dx(node.rows(), item[1][j].rows());
+				//vdx[j] = dx;
+				//MatrixXd dxx(node.rows(), item[1][j].rows());
+				//vdxx[j] = dxx;
+				//threads.push_back(std::thread(&Leicester::SparseGridCollocation::PDE::GaussianNd, item[1][j], item[3][j], item[2][j], &d, &dt, &dx, &dxx, cudaGaussian));
 				mqd = cudaGaussian->GaussianNd(item[1][j], item[3][j], item[2][j]);
+				vd[j] = mqd[0];
+				vdt[j] = mqd[1];
+				vdx[j] = mqd[2];
+				vdxx[j] = mqd[3];
 				//Common::Utility::saveArray(mq[0], "cD1.txt");
 				//Common::Utility::saveArray(mq[1], "cDt1.txt");
 				//Common::Utility::saveArray(mq[2], "cDx1.txt");
@@ -260,15 +278,40 @@ MatrixXd Leicester::SparseGridCollocation::PDE::BlackScholesNdC(const MatrixXd &
 				//	Common::Utility::saveArray(mq[2], "cDx1.txt");
 				//	Common::Utility::saveArray(mq[3], "cDxx1.txt");
 				//}
-				U.col(j) = (mqd[1] * item[0][j]) + ((pow(sigma, 2) / 2) * mqd[3] * item[0][j]) + (r * mqd[2] * item[0][j]) - (r * mqd[0] * item[0][j]);
+				//U.col(j) = (mqd[1] * item[0][j]) + ((pow(sigma, 2) / 2) * mqd[3] * item[0][j]) + (r * mqd[2] * item[0][j]) - (r * mqd[0] * item[0][j]);
 				
-			//}
-			//else
-			//{
-			//	wcout << "Sending matrix size=" << memory << " bytes to CPU" << endl;
-			//	mqd = RBF::GaussianND(node, item[1][j], item[3][j], item[2][j]);
-			//	U.col(j) = (mqd[1] * item[0][j]) + ((pow(sigma, 2) / 2) * mqd[3] * item[0][j]) + (r * mqd[2] * item[0][j]) - (r * mqd[0] * item[0][j]);
-			//}
+			}
+			else
+			{
+				wcout << "Sending matrix size=" << memory << " bytes to CPU" << endl;
+				mqd = RBF::GaussianND(node, item[1][j], item[3][j], item[2][j]);
+				vd[j] =mqd[0];
+				vdt[j] = mqd[1];
+				vdx[j] = mqd[2];
+				vdxx[j] =mqd[3];
+				//U.col(j) = (mqd[1] * item[0][j]) + ((pow(sigma, 2) / 2) * mqd[3] * item[0][j]) + (r * mqd[2] * item[0][j]) - (r * mqd[0] * item[0][j]);
+			}
+		}
+
+		for (int i = 0; i < threads.size(); i++)
+			threads.at(i).join();
+
+		for (int j = 0; j < ch2; j++)
+		{
+			MatrixXd d = vd[j];
+			MatrixXd dt = vdt[j];
+			MatrixXd dx = vdx[j];
+			MatrixXd dxx = vdxx[j];
+			//if there was a cuda memcopy error, recover by re-running on the CPU:
+			if ((d.rows() == 0 & d.cols() == 0) | (dt.rows() == 0 & dt.cols() == 0) | (dx.rows() == 0 & dx.cols() == 0) | (dxx.rows() == 0 & dxx.cols() == 0))
+			{
+				vector<MatrixXd> mqd = RBF::GaussianND(node, item[1][j], item[3][j], item[2][j]);
+				d = mqd[j];
+				dt = mqd[j];
+				dx = mqd[j];
+				dxx = mqd[j];
+			}
+			U.col(j) = (dt * item[0][j]) + ((pow(sigma, 2) / 2) * dxx * item[0][j]) + (r * dx * item[0][j]) - (r * d * item[0][j]);
 		}
 		Us.push_back(U);
 
@@ -289,4 +332,24 @@ MatrixXd Leicester::SparseGridCollocation::PDE::BlackScholesNdC(const MatrixXd &
 	}
 
 	return output;
+}
+
+void Leicester::SparseGridCollocation::PDE::GaussianNd(const MatrixXd & CN, const MatrixXd & A, const MatrixXd & C, 
+	MatrixXd* d, MatrixXd* dt, MatrixXd* dx, MatrixXd* dxx, ThrustLib::GaussianNd1* cudaGaussian)
+{
+	try
+	{
+		vector<MatrixXd> result = cudaGaussian->GaussianNd(CN, A, C);
+		d = new MatrixXd(result[0]);
+		dt = new MatrixXd(result[1]);
+		dx = new MatrixXd(result[2]);
+		dxx = new MatrixXd(result[3]);
+	}
+	catch (...)
+	{
+		d = new MatrixXd(0,0);
+		dt = new MatrixXd(0,0);
+		dx = new MatrixXd(0,0);
+		dxx = new MatrixXd(0,0);
+	}
 }

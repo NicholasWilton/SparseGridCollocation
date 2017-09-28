@@ -35,9 +35,9 @@ namespace Leicester
 			GaussianNd1(MatrixXd testNodes, MatrixXd centralNodes);
 			GaussianNd1(MatrixXd testNodes);
 			~GaussianNd1();
-			static vector<MatrixXd> GaussianNd(const MatrixXd &TP, const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C);
 			vector<MatrixXd> GaussianNd(const MatrixXd &A, const MatrixXd &C);
 			vector<MatrixXd> GaussianNd(const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C);
+			//void GaussianNd(const MatrixXd &CN, const MatrixXd &A, const MatrixXd &C, MatrixXd* d, MatrixXd* dt, MatrixXd* dx, MatrixXd* dxx);
 		private:
 			thrust::device_vector<double> testNodes;
 			thrust::device_vector<double> centralNodes;

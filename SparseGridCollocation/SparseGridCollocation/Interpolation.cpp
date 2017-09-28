@@ -126,29 +126,28 @@ void Leicester::SparseGridCollocation::Interpolation::interpolateGenericND(strin
 		MatrixXd TXYZ = TestNodes::GenerateTestNodes(0, tsec, inx1.transpose(), inx2.transpose(), n, coef);
 		unsigned int memory = TXYZ.rows() * TXYZ.cols() * sizeof(double) * 6; //TN, CN, D, Dt, Dx, Dxx
 		MemoryInfo mi = ThrustLib::Common::GetMemory();
-		//if (mi.free > memory)
-		if (useCuda)
+		if (useCuda & mi.free > memory)
 		{
 			callCount++;
-			//wcout << "Sending matrix size=" << memory << " bytes to GPU" << endl;
+			wcout << "Sending matrix size=" << memory << " bytes to GPU" << endl;
 			ThrustLib::GaussianNd1 cudaGaussian(TXYZ, TXYZ);
 			
-			//threads.push_back(std::thread(&Interpolation::shapelambdaNDGenericC, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, n, keys, vInterpolation, TXYZ, cudaGaussian));
-			shapelambdaNDGenericC(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, n, keys, vInterpolation, TXYZ, cudaGaussian);
+			threads.push_back(std::thread(&Interpolation::shapelambdaNDGenericC, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, n, keys, vInterpolation, TXYZ, cudaGaussian));
+			//shapelambdaNDGenericC(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, n, keys, vInterpolation, TXYZ, cudaGaussian);
 		}
 		else
 		{
 			callCount++;
-		//	wcout << "Sending matrix size=" << memory << " bytes to CPU" << endl;
-		//	//threads.push_back(std::thread(&Interpolation::shapelambdaNDGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
-			shapelambdaNDGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
+			wcout << "Sending matrix size=" << memory << " bytes to CPU" << endl;
+			threads.push_back(std::thread(&Interpolation::shapelambdaNDGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
+			//shapelambdaNDGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
 		}
 		
 	}
 
 	
-	/*for (int i = 0; i < threads.size(); i++)
-		threads.at(i).join();*/
+	for (int i = 0; i < threads.size(); i++)
+		threads.at(i).join();
 
 	vector<MatrixXd> l;
 	vector<MatrixXd> tx;
