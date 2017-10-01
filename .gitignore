@@ -368,3 +368,4 @@ paket-files/
 /SparseGridCollocation/TestHarness/cC.txt
 /SparseGridCollocation/TestHarness/cA.txt
 *.nvvp
+/SparseGridCollocation/include

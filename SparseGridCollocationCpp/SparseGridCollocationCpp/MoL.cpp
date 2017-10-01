@@ -32,11 +32,11 @@ Leicester::SparseGridCollocation::MoL::~MoL()
 vector<VectorXd> Leicester::SparseGridCollocation::MoL::MethodOfLines(Params p)
 {
 	stringstream ssX;
-	ssX << setprecision(16) << "SmoothInitial_EuroCall_" << p.T << "_" << p.Tdone << "_" << p.Tend << "_" << p.dt << "_" << p.K << "_" << p.r << "_" << p.sigma << "_" << p.theta << "_" << p.inx1[0] << "_" << p.inx2[0] << "_X.dat";
+	ssX << setprecision(16) << p.SmoothInitialPath << "SmoothInitial_EuroCall_" << p.T << "_" << p.Tdone << "_" << p.Tend << "_" << p.dt << "_" << p.K << "_" << p.r << "_" << p.sigma << "_" << p.theta << "_" << p.inx1[0] << "_" << p.inx2[0] << "_X.dat";
 	stringstream ssU;
-	ssU << setprecision(16) << "SmoothInitial_EuroCall_" << p.T << "_" << p.Tdone << "_" << p.Tend << "_" << p.dt << "_" << p.K << "_" << p.r << "_" << p.sigma << "_" << p.theta << "_" << p.inx1[0] << "_" << p.inx2[0] << "_U.dat";
+	ssU << setprecision(16) << p.SmoothInitialPath << "SmoothInitial_EuroCall_" << p.T << "_" << p.Tdone << "_" << p.Tend << "_" << p.dt << "_" << p.K << "_" << p.r << "_" << p.sigma << "_" << p.theta << "_" << p.inx1[0] << "_" << p.inx2[0] << "_U.dat";
 	stringstream ssT;
-	ssT << setprecision(16) << "SmoothInitial_EuroCall_" << p.T << "_" << p.Tdone << "_" << p.Tend << "_" << p.dt << "_" << p.K << "_" << p.r << "_" << p.sigma << "_" << p.theta << "_" << p.inx1[0] << "_" << p.inx2[0] << "_T.dat";
+	ssT << setprecision(16) << p.SmoothInitialPath << "SmoothInitial_EuroCall_" << p.T << "_" << p.Tdone << "_" << p.Tend << "_" << p.dt << "_" << p.K << "_" << p.r << "_" << p.sigma << "_" << p.theta << "_" << p.inx1[0] << "_" << p.inx2[0] << "_T.dat";
 
 
 	string fileX = ssX.str();
@@ -354,14 +354,14 @@ SmoothInitial Leicester::SparseGridCollocation::MoL::MethodOfLinesND(double T, d
 	MatrixXd phi = MatrixXd::Ones(X_ini.size(), n);
 	for (int i = 0; i < n; i++)
 	{
-		vector<vector<MatrixXd>> rbf = RBF::MultiQuadricND(X_ini, initial.TestNodes.row(i), a1, initial.C.row(i) );
+		vector<vector<MatrixXd>> rbf = RBF::MultiQuadricND(X_ini, initial.TestNodes.row(i), a1, initial.C.row(i));
 		phi.col(i) = rbf[0][0].col(0);
 	}
 
 	VectorXd U_ini = phi * initial.Lambda;
 	initial.S = X_ini;
 	initial.U = U_ini;
-		
+
 	return initial;
 }
 
@@ -370,12 +370,12 @@ SmoothInitial Leicester::SparseGridCollocation::MoL::EuroCallOptionND(double T, 
 	//vector<vector<VectorXd>> result;
 	int assets = correlation.rows();
 	BasketOption *option = new BasketOption(K, T, correlation);
-	int N_uniform = 5000*assets;
-	
+	int N_uniform = 5000 * assets;
+
 	MatrixXd N(1, assets);
 	N.fill(N_uniform);
-	
-	vector<MatrixXd> setup = SetupBasket(assets, N_uniform, N_uniform/5, 0.2, K);
+
+	vector<MatrixXd> setup = SetupBasket(assets, N_uniform, N_uniform / 5, 0.2, K);
 	MatrixXd inx1 = setup[0];
 	MatrixXd inx2 = setup[1];
 	MatrixXd testNodes = setup[2];
@@ -392,7 +392,7 @@ SmoothInitial Leicester::SparseGridCollocation::MoL::EuroCallOptionND(double T, 
 	VectorXd queued = VectorUtil::Queue(dx, inf);
 	VectorXd c = 2 * (pushed.array() >= queued.array()).select(queued, pushed);
 	//Common::saveArray(c, "ND_c.txt");
-	
+
 
 	int tnRows = testNodes.rows();
 	int asRows = aroundStrikeNodes.rows();
@@ -413,7 +413,7 @@ SmoothInitial Leicester::SparseGridCollocation::MoL::EuroCallOptionND(double T, 
 	cout << "MoL RBF Kernel interpolation\r\n";
 	for (int j = 0; j < tnRows; j++)
 	{
-		cout << j+1 << "/" << tnRows;
+		cout << j + 1 << "/" << tnRows;
 		vector<vector<MatrixXd>> vAxx = RBF::MultiQuadricND(centralNodes, testNodes.row(j), a1, c.row(j));
 		Axx.col(j) = vAxx[0][0].col(0);
 		//Common::saveArray(vAxx[0][0], "ND_Axx.txt");
@@ -442,21 +442,21 @@ SmoothInitial Leicester::SparseGridCollocation::MoL::EuroCallOptionND(double T, 
 		for (auto m : vAE[2]) //diagonal
 			D2_mid.col(j) += m.col(0);
 		for (auto m : vAE[3]) //upper triangle
-			D2_mid.col(j) += ( 2 * m.col(0)) ;
+			D2_mid.col(j) += (2 * m.col(0));
 		//Common::saveArray(D2_mid, "ND_D2_mid.txt");
 
 		//D3_mid.col(j) = vAE[3].col(0);
 		D1_mid.col(j) = D1_mid.col(j).array() / S.array();
 		//Common::saveArray(D1_mid, "ND_D1_mid.txt");
-		
+
 		D2_mid.col(j) = D2_mid.col(j).array() / (S.array() * S.array());
-		if (j != tnRows -1 )
+		if (j != tnRows - 1)
 			cout << "\r";
 		else
 			cout << endl;
 	}
 
-	for (int i=0; i< D2_mid.cols(); i++)
+	for (int i = 0; i< D2_mid.cols(); i++)
 		D3_mid.col(i) = -D2_mid.col(i).array() / S.col(0).array();
 
 	//Common::saveArray(A, "A.txt");
@@ -490,7 +490,7 @@ SmoothInitial Leicester::SparseGridCollocation::MoL::EuroCallOptionND(double T, 
 		MatrixXd g = G* lamb;
 
 		//VectorXd fff = VectorUtil::PushAndQueue(0, (VectorXd)g.col(0), inx2 - exp(-r*Tdone)*K);
-		MatrixXd g1 = PushAndQueueBoundaries(g, inx2.transpose(),r, Tdone, K);
+		MatrixXd g1 = PushAndQueueBoundaries(g, inx2.transpose(), r, Tdone, K);
 		VectorXd fff = Map<VectorXd>(g1.data(), g1.cols() * g1.rows());
 		//VectorXd fff = VectorUtil::PushAndQueue(0, v, inx2[n] - exp(-r*Tdone)*K);
 
@@ -511,8 +511,8 @@ SmoothInitial Leicester::SparseGridCollocation::MoL::EuroCallOptionND(double T, 
 		//Common::saveArray(deri2, "deri2.txt");
 		deri3 = D3_mid*lamb;
 		MatrixXd SK = S / K;
-		MatrixXd d1 = ( SK.array().log() + (r + sigma * sigma / 2) * (Tdone) ) / (sigma * sqrt(Tdone));
-		deri3 = deri3.array() * (1 + ( d1 / (sigma * sqrt(Tdone)) ).array() );
+		MatrixXd d1 = (SK.array().log() + (r + sigma * sigma / 2) * (Tdone)) / (sigma * sqrt(Tdone));
+		deri3 = deri3.array() * (1 + (d1 / (sigma * sqrt(Tdone))).array());
 
 		MatrixXd plot1(S.rows(), 2);
 		plot1.col(0) = S.col(0);
@@ -523,7 +523,7 @@ SmoothInitial Leicester::SparseGridCollocation::MoL::EuroCallOptionND(double T, 
 		plot1 = TakeMeans(sorted1);
 		//wcout << Common::printMatrix(plot1) << endl;
 		VectorXd vderi2 = plot1.col(1);
-		
+
 
 		MatrixXd plot2(S.rows(), 2);
 		plot2.col(0) = S.col(0);
@@ -546,7 +546,7 @@ SmoothInitial Leicester::SparseGridCollocation::MoL::EuroCallOptionND(double T, 
 		double part1Length = (TopRow < BottomRow) ? TopRow : BottomRow; //the region between 0 and peak speed
 		double part2Length = (TopRow > BottomRow) ? TopRow : BottomRow; //the region between peak speed and lowest speed
 
-		
+
 		MatrixXd part1 = VectorUtil::Diff(vderi3.block(0, 0, part1Length, 1));
 		MatrixXd prediff = vderi3.block(part1Length, 0, part2Length - part1Length + 1, 1);
 		MatrixXd part2 = VectorUtil::Diff(prediff);
@@ -596,7 +596,7 @@ SmoothInitial Leicester::SparseGridCollocation::MoL::EuroCallOptionND(double T, 
 	cout << "\r\n" << "Total Iterations:" << count << "\r\n";
 	//vector<MatrixXd> res = { testNodes, lamb, c };
 	//result.push_back(res);
-	
+
 	SmoothInitial result(Tdone, testNodes, lamb, c);
 
 	return result;
@@ -660,13 +660,13 @@ vector<vector<VectorXd>> Leicester::SparseGridCollocation::MoL::EuroCallOptionND
 	int dimensions = correlation.rows();
 	BasketOption *option = new BasketOption(K, T, correlation);
 	int N_uniform = 5000;
-	
+
 	MatrixXd X(N_uniform, inx1.rows());
 	for (int i = 0; i < inx1.rows(); i++)
 		X.col(i) = VectorXd::LinSpaced(N_uniform, inx1[i], inx2[i]);
 	MatrixXd N(1, dimensions);
 	N.fill(N_uniform);
-	
+
 	VectorXd u0 = option->PayOffFunction(X);
 	delete option;
 
@@ -687,12 +687,12 @@ vector<vector<VectorXd>> Leicester::SparseGridCollocation::MoL::EuroCallOptionND
 	VectorXd c = 2 * (pushed.array() >= queued.array()).select(queued, pushed);
 	//Common::saveArray(c, "ND_c.txt");
 
-	
+
 	N.fill(1000);
-	
+
 	MatrixXd XX(1000, inx1.rows());
 	for (int i = 0; i < inx1.rows(); i++)
-		XX.col(i) = VectorXd::LinSpaced(1000, 0, 3*K);
+		XX.col(i) = VectorXd::LinSpaced(1000, 0, 3 * K);
 
 	//Common::saveArray(X, "ND_X.txt");
 	//Common::saveArray(XX, "ND_XX.txt");
@@ -848,7 +848,7 @@ vector<vector<VectorXd>> Leicester::SparseGridCollocation::MoL::EuroCallOptionND
 	}
 	cout << "Total Iterations:" << count << "\r\n";
 	VectorXd t(1);
-	t(0) =  Tdone;
+	t(0) = Tdone;
 	vector<VectorXd> res = { X.col(n), lamb, c, t };
 	result.push_back(res);
 
@@ -873,19 +873,19 @@ vector<MatrixXd> Leicester::SparseGridCollocation::MoL::SetupBasket(int assets, 
 
 MatrixXd Leicester::SparseGridCollocation::MoL::TakeMeans(MatrixXd M)
 {
-	double last =  - numeric_limits<double>::infinity();
+	double last = -numeric_limits<double>::infinity();
 	double sum = 0;
 	int ni = 0;
 	MatrixXd Na = MatrixXd::Zero(M.rows(), M.cols());
 	int count = 0;
 	double current = -numeric_limits<double>::infinity();
-	for (int i =0 ; i<= M.rows(); i++)
+	for (int i = 0; i <= M.rows(); i++)
 	{
 		if (i < M.rows())
-			current = M(i,0);
-		if (( i != 0 && (abs(current - last) > DBL_EPSILON)) | i == M.rows())
+			current = M(i, 0);
+		if ((i != 0 && (abs(current - last) > DBL_EPSILON)) | i == M.rows())
 		{
-			Na(ni, 0) = M(i-1, 0);
+			Na(ni, 0) = M(i - 1, 0);
 			Na(ni, 1) = sum / count;
 			ni++;
 			count = 1;
@@ -895,7 +895,7 @@ MatrixXd Leicester::SparseGridCollocation::MoL::TakeMeans(MatrixXd M)
 		else
 		{
 			count++;
-			sum += M(i,1);
+			sum += M(i, 1);
 		}
 		last = current;
 	}
