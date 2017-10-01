@@ -1,9 +1,6 @@
-
-%matlabpool open
 delete(gcp('nocreate'))
-parpool local
-cMuSIK;
 
+cMuSIK;
 cSIK;
 
 Nodes=ones(9,1);
@@ -11,9 +8,6 @@ Nodes=ones(9,1);
 for i=1:9
     Nodes(i)=nodesnumber(i+2,2);
 end
-
-%matlabpool close
-delete(gcp('nocreate'))
 
 Slope_RMS=( log(RMS(2:end)) - log(RMS(1:end-1)) ) ./ ( log(Nodes(2:end)) - log(Nodes(1:end-1)) );
 Slope_RMS_s=( log(RMS_s(2:end)) - log(RMS_s(1:end-1)) ) ./ ( log(Nodes(2:end)) - log(Nodes(1:end-1)) );

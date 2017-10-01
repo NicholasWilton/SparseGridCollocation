@@ -1,9 +1,9 @@
 <deployment-project plugin="plugin.ezdeploy" plugin-version="1.0">
-  <configuration file="C:\Users\User\Source\Repos\SparseGridCollocation4\SparseGridCollocation\Matlab\Black Scholes\1 Asset\sparse grid collocation\cfigure.prj" location="C:\Users\User\Source\Repos\SparseGridCollocation4\SparseGridCollocation\Matlab\Black Scholes\1 Asset\sparse grid collocation" name="cfigure" target="target.ezdeploy.standalone" target-name="Application Compiler">
+  <configuration file="C:\Users\User\Source\Repos\SparseGridCollocation6\SparseGridCollocation\Matlab\Black Scholes\1 Asset\sparse grid collocation\cfigure.prj" location="C:\Users\User\Source\Repos\SparseGridCollocation6\SparseGridCollocation\Matlab\Black Scholes\1 Asset\sparse grid collocation" name="cfigure" target="target.ezdeploy.standalone" target-name="Application Compiler">
     <param.appname>cfigure</param.appname>
     <param.icon />
     <param.icons />
-    <param.version>1.0</param.version>
+    <param.version>1.3</param.version>
     <param.authnamewatermark>Yangzhang Zhao &amp; Nick Wilton</param.authnamewatermark>
     <param.email />
     <param.company />
@@ -36,7 +36,6 @@
     <unset>
       <param.icon />
       <param.icons />
-      <param.version />
       <param.email />
       <param.company />
       <param.summary />
@@ -101,9 +100,9 @@
       <file>${PROJECT_ROOT}\subnumber.m</file>
     </fileset.depfun>
     <build-deliverables>
-      <file location="${PROJECT_ROOT}\cfigure\for_testing" name="splash.png" optional="false">C:\Users\User\Source\Repos\SparseGridCollocation4\SparseGridCollocation\Matlab\Black Scholes\1 Asset\sparse grid collocation\cfigure\for_testing\splash.png</file>
-      <file location="${PROJECT_ROOT}\cfigure\for_testing" name="readme.txt" optional="true">C:\Users\User\Source\Repos\SparseGridCollocation4\SparseGridCollocation\Matlab\Black Scholes\1 Asset\sparse grid collocation\cfigure\for_testing\readme.txt</file>
-      <file location="${PROJECT_ROOT}\cfigure\for_testing" name="cfigure.exe" optional="false">C:\Users\User\Source\Repos\SparseGridCollocation4\SparseGridCollocation\Matlab\Black Scholes\1 Asset\sparse grid collocation\cfigure\for_testing\cfigure.exe</file>
+      <file location="${PROJECT_ROOT}\cfigure\for_testing" name="splash.png" optional="false">C:\Users\User\Source\Repos\SparseGridCollocation6\SparseGridCollocation\Matlab\Black Scholes\1 Asset\sparse grid collocation\cfigure\for_testing\splash.png</file>
+      <file location="${PROJECT_ROOT}\cfigure\for_testing" name="cfigure.exe" optional="false">C:\Users\User\Source\Repos\SparseGridCollocation6\SparseGridCollocation\Matlab\Black Scholes\1 Asset\sparse grid collocation\cfigure\for_testing\cfigure.exe</file>
+      <file location="${PROJECT_ROOT}\cfigure\for_testing" name="readme.txt" optional="true">C:\Users\User\Source\Repos\SparseGridCollocation6\SparseGridCollocation\Matlab\Black Scholes\1 Asset\sparse grid collocation\cfigure\for_testing\readme.txt</file>
     </build-deliverables>
     <workflow />
     <matlab>

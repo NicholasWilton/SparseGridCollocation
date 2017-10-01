@@ -1,4 +1,6 @@
 % multilevel sparse grid collocation for 2D BS ( time * 1D stock dimension )
+tic
+parpool local
 load('Smoothinitial.mat', 'Tdone')
 
 E=100; % strike price
@@ -18,7 +20,7 @@ TX = [t x']; % testing nodes
 % na, nb = level n + dimension d - 1
 na=3;
 nb=2;
-tic
+
 % Level 2 ....lamb stands for \lambda the coefficients, TX stands for nodes
 % C stands for shape parater, A stands for scale parameter
 [ lamb3, TX3, C3, A3 ] = interplant( coef, tsec, na, d, inx1, inx2, r, sigma, T, E );
@@ -211,7 +213,8 @@ MuSIK(:,9)=U+U1+U2+U3+U4+U5+U6+U7+U8;
 % MuSIK(:,11)=U+U1+U2+U3+U4+U5+U6+U7+U8+U9+U10;
 % MuSIK(:,12)=U+U1+U2+U3+U4+U5+U6+U7+U8+U9+U10+U11;
 
-ttt(13)=toc;
+delete(gcp('nocreate'))
+ttt(10)=toc;
 
 [RMS, MAX] = deal(ones(9,1));
 for i=1:9

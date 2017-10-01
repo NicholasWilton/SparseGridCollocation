@@ -10,12 +10,9 @@ for i=1:d
     N(:,i)=2.^L(:,i)+1;
 end
 % calculate information on every sub grid
-%parfor i = 1 : ch
-for i = 1 : ch
-    %if i <= ch
+parfor i = 1 : ch
     [ lamb{i}, TX{i} , C{i}, A{i} ]=...
         shapelambda2D(coef,tsec,r,sigma,T,E,inx1,inx2,N(i,:));
-    %end
 end
 
 end
