@@ -126,3 +126,12 @@ for i=1:9
     MAX_s(i)=max( abs( SIK(:,i) - AP ) );
 end
 
+[muRows, muCols] = size(SIK);
+[rRows, rCols] = size(RMS);
+[mRows, mCols] = size(MAX);
+[tRows, tCols] = size(ttt);
+saveMatrixB("MatLab_SIKc_Results_" + muRows + "_" + muCols + ".dat",SIK);
+saveMatrixB("MatLab_SIKc_RMS_" + rRows + "_" + rCols + ".dat",RMS);
+saveMatrixB("MatLab_SIKc_MAX_" + mRows + "_" + mCols + ".dat",MAX);
+saveMatrixB("MatLab_SIKc_Timings_" + tRows + "_" + tCols + ".dat",ttt);
+

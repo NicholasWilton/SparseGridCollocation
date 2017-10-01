@@ -211,9 +211,21 @@ MuSIK(:,9)=U+U1+U2+U3+U4+U5+U6+U7+U8;
 % MuSIK(:,11)=U+U1+U2+U3+U4+U5+U6+U7+U8+U9+U10;
 % MuSIK(:,12)=U+U1+U2+U3+U4+U5+U6+U7+U8+U9+U10+U11;
 
+ttt(13)=toc;
+
 [RMS, MAX] = deal(ones(9,1));
 for i=1:9
     RMS(i)=rms( MuSIK(:,i) - AP );
     MAX(i)=max( abs( MuSIK(:,i) - AP ) );
 end
+
+[muRows, muCols] = size(MuSIK);
+[rRows, rCols] = size(RMS);
+[mRows, mCols] = size(MAX);
+[tRows, tCols] = size(ttt);
+saveMatrixB("MatLab_MuSIKc_Results_" + muRows + "_" + muCols + ".dat",MuSIK);
+saveMatrixB("MatLab_MuSIKc_RMS_" + rRows + "_" + rCols + ".dat",RMS);
+saveMatrixB("MatLab_MuSIKc_MAX_" + mRows + "_" + mCols + ".dat",MAX);
+saveMatrixB("MatLab_MuSIKc_Timings_" + tRows + "_" + tCols + ".dat",ttt);
+
 

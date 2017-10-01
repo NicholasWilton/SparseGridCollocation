@@ -9,7 +9,7 @@ for i=1:d
     N(:,i)=2.^L(:,i)+1;
 end
 
-for i = 1 : ch
+parfor i = 1 : ch
     [ lamb{i}, TX{i} , C{i}, A{i}, PU{i} ]=...
         shapelambda2D_1(coef,tsec,r,sigma,T,E,inx1,inx2,N(i,:),lamb2, TX2, C2, A2,lamb3, TX3, C3, A3);
 end

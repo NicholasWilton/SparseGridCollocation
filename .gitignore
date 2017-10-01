@@ -369,3 +369,8 @@ paket-files/
 /SparseGridCollocation/TestHarness/cA.txt
 *.nvvp
 /SparseGridCollocation/include
+/SparseGridCollocation/Matlab/Black Scholes/1 Asset/sparse grid collocation/cfigure
+/SparseGridCollocation/Matlab/Black Scholes/1 Asset/sparse grid collocation/MatLab_MuSIKc_Timings_1_13.dat
+/SparseGridCollocation/Matlab/Black Scholes/1 Asset/sparse grid collocation/MatLab_MuSIKc_RMS_9_1.dat
+/SparseGridCollocation/Matlab/Black Scholes/1 Asset/sparse grid collocation/MatLab_MuSIKc_Results_10000_9.dat
+/SparseGridCollocation/Matlab/Black Scholes/1 Asset/sparse grid collocation/MatLab_MuSIKc_MAX_9_1.dat
