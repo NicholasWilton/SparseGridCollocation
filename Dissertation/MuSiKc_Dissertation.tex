@@ -3,6 +3,10 @@
 \usepackage{amssymb}
 \usepackage{amsfonts}
 \include{latex_macros}
+\usepackage{graphicx}
+\usepackage{physics}
+\usepackage{amsmath}
+\graphicspath{ {images/} }
 
 \begin{document}
 
@@ -49,24 +53,246 @@ Using a heirachy of descritised grids with different levels of coarseness betwee
 Recent work by
 
 \section{Theoretical Background}
+An in-depth discussion of the theoretical background to this work can be found in \cite{mski0}, whilst here we present a more brief overview of the main points.
+
+\section{Partial Differential Equations}
+
+\subsection{Elliptical PDEs}
+If we define a linear operator $L : C^{2} (\Omega) \rightarrow C(\Omega)$ as an elliptic differrential operator on u(x) as:
+\be
+Lu(x) = \sum_{i,j=1} a_{i,j}(x) \pdv{}{x_i}{x_j} u(x) + \sum_{i=1} b_{i}(x) \pdv{}{x_i} u(x) + b_{0}(x) u(x)
+\label{EPDE}
+\ee
+where the coefficient matrix $\big[ a_{ij}(x) \big] \in \Re^{dxd}$ satisfies the condition:
+\begin{align*}
+\exists \mbox{  } \alpha > 0
+\end{align*}
+ such that,
+\begin{align*}
+\sum_{i,j=1}^{d} a_{ij}(x)c_{i}c_{j}\geq \alpha||c||_{2}^{2}
+\end{align*}
+
+for all $ x \in \Omega and c \in \Re^{d}$
+
+For a boundary value problem, we would then solve the second order elliptic PDE with the boundary conditions:
+
+\be
+Lu = f \mbox{ in } \Omega \\
+\label{EPDE1}
+\ee
+\be
+u = g \mbox{ on } \partial \Omega
+\label{EPDE2}
+\ee
+
+Where again, L is the elliptic operator and f and g are the functions describing the boundary.
+
+\subsection{Parabolic PDEs}
+
+
+\be
+Lu(x,t) = u_{t} \sum_{i,j=1} a_{i,j}(x,t) \pdv{}{x_i}{x_j} u(x,t) - \sum_{i=1} b_{i}(x,t) \pdv{}{x_i} u(x,t) - c(x,t) u(x)
+\label{PPDE}
+\ee
+
+The Black-Sholes equation is a 2nd order parabolic PDE of the form
 
 \subsection{Radial Basis Functions}
 
+A radial basis function (RBF) is a real valued function whose value only depends on the ditance from the origin or centre such that:
+
+\be
+\phi(x,c) = \phi(||x-c||)
+\ee
+
+Where x is the point of interest and $x_{i}$ is the location of the central point. \\Some examples of RBFs are the Euclidean distance:
+
+\be
+\phi(r) = \sqrt{x^{2} + y^{2}}
+\ee
+Hardy's Multiquadric RBF:
+\be
+\phi(r) = \sqrt{c^{2} + ||x-x_{i}||^{2}}
+\ee
+
+The Gaussian RBF
+\be
+\phi(r) = e^{-||x-x_{i}||^{2} / c^{2}}
+\ee
+
+
+Of particular interest are the Multiquadric (MQ) and Gaussian RBFs as they are both inifintely differentiable and have been shown to exhibit accuracy, stability and ease of implementation in for example Franke (1982)\cite{rbf3}. As such they have become popular in the literature of various interpolation schemes \cite{rbf4}. In both cases a parameter \em{c} is defined, known as the \em{shape parameter} the size of which will sharpen (decreasing c) or flatten (increasing c) the function.
+[TODO insert some graphs]
+
+It has been shown that a larger value of c will increase accuracy but exceed a limit and the system will become ill conditioned and unstable. Likewise reduceing c will improve the conditioning but also lead to an inaccurate solution. There has been significant effort devoted to finding the optimal value of c for different RBFs for example \cite{} however this is still considered an open question within the field.
+
+Ansiotropic Radial Basis Functions
+If the domain of interest is not the same size in all dimensions then an RBF becomes ansiotropic. To model this let $\phi(||\dot -x_{i})$ is some RBF centred around $x_{i} \in \Re^{d}$ and $A \in \Re^{d x d}$ is an invertible transformation matrix, then the ansiotropic radial basis function $\phi_{a}$ is defined by:
+\be
+\phi_{A}(||\cdot-x_{i}||)=\phi(||A(\cdot-x_{i}||)
+\ee
+Furthermore we can then define the ansiotropic tensor based product function (ATBPF) of the MQ and Gasussian basis functions respectively, as:
+
+\be
+\phi_{A,x_{i}}(x)= \prod^{d}_{k=1}\sqrt{A^{2}_{k}(x_{k}-x^{k}_{i})^{2}+c^{2}_k}
+\ee
+
+\be
+\phi_{A,x_{i}}(x)= \prod^{d}_{k=1}\exp{\frac{-A^{2}_{k}(x_{k}-x^{k}_{i})^{2}}{ c^{2}_k}}
+\ee
+Where, k is the $k^{th}$ dimension of x and $A_{k}$ is $k^{th}$ diagonal element of $A \in \Re^{d} x \Re^{d}$.
+
+Whilst we can observe that the Gaussian ATBPF still belongs to the family of RBFs, the MQ ATPBF is no longer radially symmetric.
+
+Now, if we let $Ch_{k} = c_{k} / A_{k}$ we find:
+
+\be
+\phi_{A,x_{i}}(x)= \prod^{d}_{k=1}\sqrt{(x_{k}-x^{k}_{i})^{2}+Ch^{2}_k}
+\ee
+
+\be
+\phi_{A,x_{i}}(x)= \prod^{d}_{k=1}\exp{\frac{(x_{k}-x^{k}_{i})^{2}}{ Ch^{2}_k}}
+\ee
+
+that $Ch_{k}$ represents a 'shape parameter' as noted previously where $h_{k}$ represents the distance between nodes in the kth direction and $A_{k}$ is the number of nodes in that same direction minus one.
+
+The first and 2nd derivtives of the ATPBFs are then in the Mutliquadric case,
+
+\be
+D_{x_{p}}(\phi_{A,x_{i}})=\frac{x_{p}-x^{p}_{i}}{\sqrt{(x_{p}-x^{p}_{i})^{2} + (Ch_{p})^2 }} \prod^{d}_{k\neq p}\sqrt{(x_{k}-x^{k}_{i})^{2}+Ch^{2}_k}
+\ee
+\be
+D_{x_{p}}^{2}\phi_{A,x_{i}}(x)=\frac{(Ch_{p})^{2}}{[(x_{p}-x^{p}_{i})^{2} + (Ch_{p})^2 ]^{3/2}} \prod^{d}_{k\neq p}\sqrt{(x_{k}-x^{k}_{i})^{2}+Ch^{2}_k}
+\ee
+and in the Gaussian case
+\be
+\phi_{A,x_{i}}(x)= \prod^{d}_{k=1}\exp{\frac{(x_{k}-x^{k}_{i})^{2}}{ Ch^{2}_k}}
+\ee
+
+
+Sums of RBFs can be very useful in approximating functions in a similar way to summing sinusoidal functions using Fourier Series expansion leads to the approximation of a periodic function.\\
+
 \subsection{Spectral Methods}
+
+Describe issues with Gibbs phenomena
+
+
+\subsection{Kansa method}
+
+Kansa's method \cite{rbf1} \cite{rbf2} is a spectral method of approximating u(x) via:
+
+\be
+u(x) = \sum^{N}_{i=1} \lambda_{i} \Phi(||x - x_{i})
+\label{RBFA}
+\ee
+
+Where $\Phi$ is the radial basis function of choice.
+
+For Kansa's method we choose a $\Xi = \Xi_{1} \cup \Xi_{2}$ which we will call central nodes and where $\Xi_{1} \in \Omega$ (i.e are interior points) whilst  $\Xi_{2} \in \partial \Omega$ exist on the boundary $\partial \Omega$
+
+The key of course, is to find the $\lambda$ coefficients for each of the summation terms that make the best approximation of the function u(x). For the elliptical PDE of (\ref{EPDE}) we can substitute (\ref{RBFA}) into the boundary counditions (\ref{EPDE1}) and (\ref{EPDE2}) to get:
+
+\be
+\sum_{i=1}^{N} \lambda_{i} L \phi_{x_{i}}(x_{j}) = f(x_{j}),\mbox{for j = 1,2,...n}
+\ee
+
+\be
+\sum_{i=1}^{N} \lambda_{i} \phi_{x_{i}}(x_{j}) = g(x_{j}),\mbox{for j = n+1,n+2,...N}
+\ee
+
+Whilst much work using collocation with RBFs had been performed using Kansa's method to solve elliptic boundary value problems, it wasn't until Myers et al. \cite:{rbf0} proposed the space time method that applications for parabolic problems were first successfully investigated.
+
+
+\subsection{Space-time method}
+
+In this chapter, we firstly review one well-known collocation method called the Kansa method which is utilised in this thesis in Section 3.1. We then introduce two main methods used for
+the parabolic problem (see Definition 3.2), the Method of Lines (MOL) and the space-time method in Section 3.2. In Section 3.3, we present one option pricing example to show the performance of the space-time method and the MOL when solving a parabolic problem.
+
+
 
 \subsection{Finite Difference}
 
 \subsection{Method of Lines}
+Describe how combinationation technique of MoL reduces Gibbs problem
 
 \subsection{Sparse Grid Collocation}
 
- 
+In the approximation field, high dimensional problems are always difficult because
+of the curse of dimensionality. Floater and Iske [36] proposed a multilevel interpolation
+scheme to circumvent this problem. The multilevel interpolation method requires
+decomposing the given data into a hierarchy of nested subsets. In [68, 69], Iske
+further studied the scheme and gave an efficient construction of such hierarchies.
+In [70], Iske and Levesley developed the multilevel scheme based on adaptive
+domain decomposition. Based on Floater-Iske setting, Narcowich, Schaback and
+Ward [91] demonstrated the multilevel method is a numerically stable method for
+the interpolation and gave some theoretical underpinnings. Further, Hales and
+Levesley [55] demonstrated the error estimates for the multilevel approximation
+using polyharmonic splines. Fasshauer and Jerome used the multilevel method
+with compactly supported radial basis functions (CSRBFs) to solve elliptic PDE
+in [28, 30]. In [26], Farrell and Wendland also used the multilevel RBF collocation
+method with CSRBFs to solve elliptic PDEs on bounded domains. Moreover, they
+demonstrated a convergence theory.
+Another way to overcome the problem is the sparse grid method introduced by
+Zenger [126]. This method relies on a multi-scale basis via a tensor product
+construction and saves a massive amount of storage and memory cost without
+45
+Multilevel sparse grid kernel collocation with RBFs 46
+loosing accuracy. Hemker [58] applied the finite volume method on sparse grids to
+solve three-dimensional elliptic problems. In [54], Griebel, Schneider and Zenger
+developed a combination technique for the sparse grid. They also demonstrated
+that the combination approach works for both smooth solutions and non-smooth
+solutions of linear problems, and even for non-linear problems. Griebel [52] employed
+finite difference in multilevel sparse grid method to solve elliptic PDEs. In 2013,
+Georgoulis, Levesley and Subhan [48] proposed an method called multilevel sparse
+grid kernel (MuSIK) for interpolation. Here, we extend this MuSIK method to
+the collocation problem.
+
+One of the advantages in using radial basis function is easy to construct even in
+high-dimensional problems. However, in order to achieve accuracy when dimension
+d is increasing, we have to fix the fill distance of full grid. That means the number
+of evenly distributed collocation points in every direction N is constant. As a
+result, the size of a full grid is growing exponentially as Nd. In contrast, the sparse
+grid kernel (SIK) algorithm which combines approximations based tensor product
+anisotropic radial basis functions on every sub-grid is a stable and efficient method
+when facing high dimension problem. The support of this matter is that under
+the assumption of sufficient smoothness of the data, the amount of nodes utilised
+can be reduced dramatically to guarantee a certain accuracy based on carefully
+constructed tensor product anisotropic basis function. Owing to the additional
+smoothness assumed, there is only a negligible loss of precision. The basic idea of
+SIK was first introduced about fifty years ago in [1, 106] and Zenger [126] proposed
+sparse grid methods in 1991.
+
+ Schreiber discussed tensor product of one-dimensional RBFs applying directly
+sparse grid methods in her thesis [103], where numerical results corresponding to 
+the resulting method were not promising. On the other hand, the direct using
+of non-tensor product RBFs in the sparse grid setting is not straightforward,
+since the approximation spaces are characterised by basis functions with different
+anisotropic scaling in various directions. By utilising such scaling, the solution
+obtained from sparse grid method is infeasible as there is no guarantee about the
+well-posedness of the resulting kernel-based interpolation problems.
+The strategy we adopt here is a sparse grid combination technique which was
+introduced in [54], afterwards this technique is operative in piecewise polynomial
+interpolation on sparse grids, for instance [12, 44, 46]. In sparse grid kernel
+collocation, the sparse grid is decomposed into a number of sub-grids firstly. In
+that case, all solutions that are constructed by solving collocation problems on each
+sub-grid are linearly combined to form a final solution on the sparse grid. The
+details about sparse grid kernel interpolation are discussed completely in [109],
+and here we present a particular case to introduce the collocation algorithm.
+Suppose u is target function mapping from domain 
+
 
 \section{Algorithm Details}
 
-\subsection{SiK-c Algo}
+\subsection{SiK-c}
+The basic Sparse Grid Col-located Interpolation Kernel (SiK-c)
 
-\subsection{MuSik-c Algo}
+N- matrix
+
+\subsection{MuSik-c}
+MuSiKc on the otherhand use multi-level co-located interpolation, where the results of each level are re-used as inputs for the next. As such, MuSiK-c is an inherently sequential evolution of SiKc.\\
+ The following diagram shows the processing flow of the algo.\\
+
+\includegraphics[scale=0.3]{MuSiKc1.png}
 
 \subsection{Computational Complexity Comparisons}
 
@@ -437,6 +663,15 @@ The Fourier transform of the Lagrange function $L^A$ is given by
 \begin{thebibliography}{99}
 \bibitem{mski2} Georgoulis, E.h., Levesley, J., Subhan, F. (2013), {\em Multilevel sparse kernel-based interpolation}, SIAM Journal on Scientific Computing, 2013, 35(2):A815-A831.
 \bibitem{mski1} Subhan, F. (2011), {\em Multilevel sparse kernel-based interpolation}, Ph.D. Thesis, University of Leicester, 2011.
+\bibitem{mski0} Zhao, Yangzhang (2017), {\em Multilevel sparse grid kernels collocation with radial basis functions for elliptic and parabolic problems}, Ph.D. Thesis, University of Leicester, 2017.
+\bibitem{rbf0} Myers, D.e.,De Iaco, S.,Posa, D.,De Cesare, L. (2002), {\em Space-time radial basis functions}, Computers and Mathematics with Applications 2002 43(3):539-549
+\bibitem{rbf1} E. J. Kansa. (1990), {\em Multiquadrics - a scattered data approximation scheme
+with applications to computational fluid-dynamics - I.}, Computers and Mathematics with Applications, 19(8-9):127–145, 1990.
+\bibitem{rbf2} E. J. Kansa. (1990), {\em Multiquadrics - a scattered data approximation scheme
+with applications to computational fluid-dynamics - II.}, Computers and Mathematics with Applications, 19(8-9):147–161, 1990.
+\bibitem{rbf3} R. Franke. (1982), {\em Scattered Data Interpolation: Tests of Some Method}, Mathematics of Computation. 38(157):181-200, 1982
+\bibitem{rbf4} A. Pena. (2005), {\em Option pricing with radial basis functions: a tutorial.} Technical
+report, Wilmott Magazine, 2005.
 \end{thebibliography}
 
 
