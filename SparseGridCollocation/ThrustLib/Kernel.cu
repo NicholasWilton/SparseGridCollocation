@@ -1299,6 +1299,9 @@ void TestArrayCopy()
 
 int main()
 {
+	cudaDeviceProp p;
+	cudaError_t e= cudaGetDeviceProperties(&p, 0);
+	int max = p.maxThreadsPerMultiProcessor;
 
 	//NodeRegistry nr;
 	//nr.Add(3,2);

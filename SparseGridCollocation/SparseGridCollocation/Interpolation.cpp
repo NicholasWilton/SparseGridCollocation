@@ -129,25 +129,25 @@ void Leicester::SparseGridCollocation::Interpolation::interpolateGenericND(strin
 		if (useCuda & mi.free > memory)
 		{
 			callCount++;
-			wcout << "Sending matrix size=" << memory << " bytes to GPU" << endl;
+			//wcout << "Sending matrix size=" << memory << " bytes to GPU" << endl;
 			ThrustLib::GaussianNd1 cudaGaussian(TXYZ, TXYZ);
 			
-			threads.push_back(std::thread(&Interpolation::shapelambdaNDGenericC, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, n, keys, vInterpolation, TXYZ, cudaGaussian));
-			//shapelambdaNDGenericC(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, n, keys, vInterpolation, TXYZ, cudaGaussian);
+			//threads.push_back(std::thread(&Interpolation::shapelambdaNDGenericC, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, n, keys, vInterpolation, TXYZ, cudaGaussian));
+			shapelambdaNDGenericC(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, n, keys, vInterpolation, TXYZ, cudaGaussian);
 		}
 		else
 		{
 			callCount++;
-			wcout << "Sending matrix size=" << memory << " bytes to CPU" << endl;
-			threads.push_back(std::thread(&Interpolation::shapelambdaNDGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
-			//shapelambdaNDGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
+			//wcout << "Sending matrix size=" << memory << " bytes to CPU" << endl;
+			//threads.push_back(std::thread(&Interpolation::shapelambdaNDGeneric, this, prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation));
+			shapelambdaNDGeneric(prefix, i, coef, tsec, r, sigma, T, E, inx1, inx2, N.row(i), keys, vInterpolation);
 		}
 		
 	}
 
 	
-	for (int i = 0; i < threads.size(); i++)
-		threads.at(i).join();
+	//for (int i = 0; i < threads.size(); i++)
+	//	threads.at(i).join();
 
 	vector<MatrixXd> l;
 	vector<MatrixXd> tx;
@@ -716,17 +716,17 @@ void Leicester::SparseGridCollocation::Interpolation::shapelambdaNDGenericC(stri
 	//bool f4 = Common::Utility::checkMatrix(mqd[3], dxx, 0.001, false);
 	//if (!f1 | !f2 | !f3 | !f4)
 	//{
-	//	Common::Utility::saveArray(TP, "cTX1.txt");
-	//	Common::Utility::saveArray(a, "cA.txt");
-	//	Common::Utility::saveArray(c, "cC.txt");
-	//	Common::Utility::saveArray(d, "cD.txt");
-	//	Common::Utility::saveArray(dt, "cDt.txt");
-	//	Common::Utility::saveArray(dx, "cDx.txt");
-	//	Common::Utility::saveArray(dxx, "cDxx.txt");
-	//	Common::Utility::saveArray(mqd[0], "cD1.txt");
-	//	Common::Utility::saveArray(mqd[1], "cDt1.txt");
-	//	Common::Utility::saveArray(mqd[2], "cDx1.txt");
-	//	Common::Utility::saveArray(mqd[3], "cDxx1.txt");
+	//	Common::Utility::WriteToTxt(TP, "cTX1.txt");
+	//	Common::Utility::WriteToTxt(a, "cA.txt");
+	//	Common::Utility::WriteToTxt(c, "cC.txt");
+	//	Common::Utility::WriteToTxt(d, "cD.txt");
+	//	Common::Utility::WriteToTxt(dt, "cDt.txt");
+	//	Common::Utility::WriteToTxt(dx, "cDx.txt");
+	//	Common::Utility::WriteToTxt(dxx, "cDxx.txt");
+	//	Common::Utility::WriteToTxt(mqd[0], "cD1.txt");
+	//	Common::Utility::WriteToTxt(mqd[1], "cDt1.txt");
+	//	Common::Utility::WriteToTxt(mqd[2], "cDx1.txt");
+	//	Common::Utility::WriteToTxt(mqd[3], "cDxx1.txt");
 	//}
 
 	MatrixXd P = dt + (sigma * sigma) * dxx / 2 + r * dx - r * d;
@@ -745,8 +745,7 @@ void Leicester::SparseGridCollocation::Interpolation::shapelambdaNDGenericC(stri
 	}
 
 	//if (prefix.compare("4") == 0)
-	//	Common::saveArray(u, "u.txt");
-
+		//Common::Utility::WriteToTxt(u, "u.txt");
 	for (int i = 0; i < num; i++)
 	{
 		double lower = 0.0;
@@ -816,9 +815,9 @@ void Leicester::SparseGridCollocation::Interpolation::shapelambdaNDGenericC(stri
 			u(i) = ppp;
 		}
 	}
-
+	
 	//if (prefix.compare("4") == 0)
-	//	Common::saveArray(u, "u.txt");
+	//Common::Utility::WriteToTxt(u, "u.txt");
 
 	MatrixXd tx = TP;
 
@@ -828,7 +827,7 @@ void Leicester::SparseGridCollocation::Interpolation::shapelambdaNDGenericC(stri
 	MatrixXd J = lu.matrixLU().triangularView<UpLoType::Upper>();
 	MatrixXd F = lu.matrixLU().triangularView<UpLoType::UnitLower>();
 	MatrixXd Fa = lu.permutationP().transpose() * F;
-
+	//Common::Utility::WriteToTxt(Fa, "Fa.txt");
 	/*SpMat Fa = lu.permutationP().transpose() * F.sparseView();
 	SparseLU<SparseMatrix<double, ColMajor>, COLAMDOrdering<int> > solver;
 	solver.analyzePattern(Fa);
@@ -842,6 +841,7 @@ void Leicester::SparseGridCollocation::Interpolation::shapelambdaNDGenericC(stri
 	//solver.factorize(Ja);
 
 	MatrixXd l = J.lu().solve(Jlamda);
+	//Common::Utility::WriteToTxt(l, "l.txt");
 	//MatrixXd l = solver.solve(Jlamda);
 	//wcout << Common::printMatrix(l) << endl;
 	Lambda[threadId] = l;

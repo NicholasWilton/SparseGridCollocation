@@ -1,9 +1,17 @@
 #pragma once
 using namespace Eigen;
+using namespace std;
+
 namespace Leicester
 {
 	namespace SparseGridCollocation
 	{
+		enum InitialMethod
+		{
+			MethodOfLines = 0,
+			MonteCarlo = 1
+		};
+
 		class API Params
 		{
 		public:
@@ -20,6 +28,8 @@ namespace Leicester
 			VectorXd inx1;
 			VectorXd inx2;
 			bool useCuda;
+			InitialMethod GenerateSmoothInitialUsing;
+			string SmoothInitialPath;
 		};
 	}
 }

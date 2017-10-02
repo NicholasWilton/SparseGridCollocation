@@ -12,3 +12,6 @@ end
 U_ini = phi * lamb;
 
 save Smoothinitial.mat X_ini U_ini Tdone
+saveMatrixB("SmoothInitialX.dat", X_ini)
+saveMatrixB("SmoothInitialU.dat", U_ini)
+saveMatrixB("SmoothInitialT.dat", Tdone)

@@ -117,6 +117,7 @@ MatrixXd Leicester::SparseGridCollocation::PDE::BlackScholesC(const MatrixXd &no
 		MatrixXd b = (pow(sigma, 2) / 2) * mqd[3] * lambda3[j];
 		MatrixXd c = r * mqd[2] * lambda3[j];
 		MatrixXd d = r * mqd[0] * lambda3[j];
+		wcout << "j=" << j << " arows=" << a.rows() << " brows=" << b.rows() << " crows=" << c.rows() << " drows=" << d.rows() << endl;
 		U3.col(j) = a + b + c - d;
 	}
 	MatrixXd s1 = U3.rowwise().sum();
@@ -230,7 +231,7 @@ MatrixXd Leicester::SparseGridCollocation::PDE::BlackScholesNdC(const MatrixXd &
 			vector<MatrixXd> mqd;
 			if (cudaGaussian != NULL & (j % 2 == 0))
 			{
-				wcout << "Sending matrix size=" << memory << " bytes to GPU" << endl;
+				//wcout << "Sending matrix size=" << memory << " bytes to GPU" << endl;
 				//Common::Utility::saveArray(node, "node_Ndc.txt");
 				//Common::Utility::saveArray(item[1][j], "CN_Ndc.txt");
 				//Common::Utility::saveArray(item[3][j], "A_Ndc.txt");
@@ -283,7 +284,7 @@ MatrixXd Leicester::SparseGridCollocation::PDE::BlackScholesNdC(const MatrixXd &
 			}
 			else
 			{
-				wcout << "Sending matrix size=" << memory << " bytes to CPU" << endl;
+				//wcout << "Sending matrix size=" << memory << " bytes to CPU" << endl;
 				mqd = RBF::GaussianND(node, item[1][j], item[3][j], item[2][j]);
 				vd[j] =mqd[0];
 				vdt[j] = mqd[1];
