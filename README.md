@@ -24,5 +24,6 @@ Intel MKL - as above
 CUDA SDK 8 - install if running the CUDA enabled version.
 
 
+## Warning - DO NOT upgrade CudaLib or ThrustLib projects when opening in Visual Studio 2017. CUDA SDK does not yet support this version of Visual Studio project file format so will break.
 
 Whilst I've tested both solutions on several platforms, if anything appears to be missing please don't hesitate to contact me.
