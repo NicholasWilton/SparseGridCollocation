@@ -32,7 +32,7 @@ namespace Leicester
 			static bool checkMatrix(MatrixXd expected, MatrixXd actual, double precision, bool print);
 			static void WriteToBinary(string fileName, MatrixXd matrix);
 			static void WriteToString(string fileName, MatrixXd matrix);
-			static bool saveArray(MatrixXd A, const std::string& file_path);
+			static bool WriteToTxt(MatrixXd A, const std::string& file_path);
 			static MatrixXd ReadBinary(string fileName, int rows, int cols);
 			static MatrixXd ReadBinary(string path, string fileName, int rows, int cols);
 			//static MatrixXd mult(MatrixXd &a, MatrixXd &b);

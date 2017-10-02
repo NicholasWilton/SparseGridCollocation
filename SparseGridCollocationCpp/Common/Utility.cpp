@@ -255,7 +255,7 @@ void Leicester::Common::Utility::WriteToString(string fileName, MatrixXd matrix)
 	fout.close();
 };
 
-bool Leicester::Common::Utility::saveArray(MatrixXd A, const std::string& file_path)
+bool Leicester::Common::Utility::WriteToTxt(MatrixXd A, const std::string& file_path)
 {
 	//size_t length = rows * cols;
 	std::ofstream os(file_path.c_str());

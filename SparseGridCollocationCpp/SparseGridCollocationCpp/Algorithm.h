@@ -4,6 +4,7 @@
 #include "Params.h"
 #include "Option.h"
 #include "BasketOption.h"
+#include <time.h>
 
 using Eigen::Matrix;
 using Eigen::MatrixXd;
@@ -46,6 +47,7 @@ namespace Leicester
 			//value - vector of items lamb, TX, C, A
 			//		- each in turn is a vector of Matrices
 			map<string, vector<vector<MatrixXd>>> InterpolationState;
+			MatrixXd GetTimings(vector<clock_t> timers);
 		};
 	}
 }

@@ -6,6 +6,7 @@
 #include "RBF.h"
 #include "BasketOption.h"
 #include "MatrixUtil.h"
+#include "Montecarlo.h"
 #include "TestNodes.h"
 #include <iomanip>
 #include <fstream>
@@ -284,11 +285,11 @@ SmoothInitial Leicester::SparseGridCollocation::MoL::MethodOfLinesND(Params p, M
 	}
 
 	stringstream ssX;
-	ssX << setprecision(16) << "SmoothInitial_EuroCall_" << p.T << "_" << p.Tend << "_" << p.dt << "_" << p.K << "_" << p.r << "_" << p.sigma << "_" << p.theta << "_" << ssinx1.str() << "_" << ssinx2.str() << "_X.dat";
+	ssX << setprecision(16) << p.SmoothInitialPath << "SmoothInitial_EuroCall_" << p.T << "_" << p.Tend << "_" << p.dt << "_" << p.K << "_" << p.r << "_" << p.sigma << "_" << p.theta << "_" << ssinx1.str() << "_" << ssinx2.str() << "_X.dat";
 	stringstream ssU;
-	ssU << setprecision(16) << "SmoothInitial_EuroCall_" << p.T << "_" << p.Tend << "_" << p.dt << "_" << p.K << "_" << p.r << "_" << p.sigma << "_" << p.theta << "_" << ssinx1.str() << "_" << ssinx2.str() << "_U.dat";
+	ssU << setprecision(16) << p.SmoothInitialPath << "SmoothInitial_EuroCall_" << p.T << "_" << p.Tend << "_" << p.dt << "_" << p.K << "_" << p.r << "_" << p.sigma << "_" << p.theta << "_" << ssinx1.str() << "_" << ssinx2.str() << "_U.dat";
 	stringstream ssT;
-	ssT << setprecision(16) << "SmoothInitial_EuroCall_" << p.T << "_" << p.Tend << "_" << p.dt << "_" << p.K << "_" << p.r << "_" << p.sigma << "_" << p.theta << "_" << ssinx1.str() << "_" << ssinx2.str() << "_T.dat";
+	ssT << setprecision(16) << p.SmoothInitialPath << "SmoothInitial_EuroCall_" << p.T << "_" << p.Tend << "_" << p.dt << "_" << p.K << "_" << p.r << "_" << p.sigma << "_" << p.theta << "_" << ssinx1.str() << "_" << ssinx2.str() << "_T.dat";
 
 	string fileX = ssX.str();
 	ifstream x(fileX.c_str());
@@ -318,16 +319,12 @@ SmoothInitial Leicester::SparseGridCollocation::MoL::MethodOfLinesND(Params p, M
 	}
 	else
 	{
-		SmoothInitial smoothInitial = MethodOfLinesND(p.T, p.Tdone, p.Tend, p.dt, p.K, p.r, p.sigma, p.theta, p.inx1, p.inx2, correlation);
-		//MatrixXd smthX(32769, smoothInitial.size());
-		//MatrixXd smthU(32769, smoothInitial.size());
-		//int col = 0;
-		//for (auto s : smoothInitial)
-		//{
-		//	smthX.col(col) = s[0];
-		//	smthU.col(col) = s[1];
-		//	col++;
-		//}
+		SmoothInitial smoothInitial;
+		if (p.GenerateSmoothInitialUsing == InitialMethod::MethodOfLines)
+			smoothInitial = MethodOfLinesND(p.T, p.Tdone, p.Tend, p.dt, p.K, p.r, p.sigma, p.theta, p.inx1, p.inx2, correlation);
+		else
+			smoothInitial = Montecarlo::BasketOption(p);
+
 		Utility::WriteToBinary(fileX, smoothInitial.S);
 		Utility::WriteToBinary(fileU, smoothInitial.U);
 		MatrixXd T(1, 1);
@@ -407,7 +404,7 @@ SmoothInitial Leicester::SparseGridCollocation::MoL::EuroCallOptionND(double T, 
 	MatrixXd Axx = MatrixXd::Zero(centralNodes.rows(), tnRows);
 	MatrixXd a1 = MatrixXd::Ones(c.rows(), testNodes.cols());
 	MatrixXd S = option->PayOffS(aroundStrikeNodes);
-	Utility::saveArray(S, "S.txt");
+	//Utility::saveArray(S, "S.txt");
 	MatrixXd Sc = option->PayOffS(centralNodes);
 	delete option;
 	cout << "MoL RBF Kernel interpolation\r\n";
@@ -736,8 +733,8 @@ vector<vector<VectorXd>> Leicester::SparseGridCollocation::MoL::EuroCallOptionND
 		D2_mid.col(j) = D2_mid.col(j).array() / (AroundE.array() * AroundE.array());
 	}
 
-	Utility::saveArray(A, "A.txt");
-	Utility::saveArray(u0, "u0.txt");
+	Utility::WriteToTxt(A, "A.txt");
+	Utility::WriteToTxt(u0, "u0.txt");
 	VectorXd lamb = A.lu().solve(u0);
 
 	MatrixXd uu0 = Axx*lamb;
@@ -753,11 +750,11 @@ vector<vector<VectorXd>> Leicester::SparseGridCollocation::MoL::EuroCallOptionND
 	MatrixXd d2 = D2.block(1, 0, D2.rows() - 2, D2.cols());
 
 	MatrixXd P = a * r - 0.5 * (sigma * sigma) * d2 - r * d1;
-	Utility::saveArray(P, "ND_P.txt");
+	Utility::WriteToTxt(P, "ND_P.txt");
 	MatrixXd H = a + dt * (1 - theta)* P;
-	Utility::saveArray(H, "ND_H.txt");
+	Utility::WriteToTxt(H, "ND_H.txt");
 	MatrixXd G = a - dt * theta * P;
-	Utility::saveArray(G, "ND_G.txt");
+	Utility::WriteToTxt(G, "ND_G.txt");
 
 	int count = 0;
 	cout << "MoL Iterative solver\r\n";

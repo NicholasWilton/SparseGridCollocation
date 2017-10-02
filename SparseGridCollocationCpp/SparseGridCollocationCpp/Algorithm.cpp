@@ -22,6 +22,7 @@
 //#include "C:\Users\User\Source\Repos\SparseGridCollocation\CudaLib\kernel.h"
 #include "SmoothInitial.h"
 
+
 using Eigen::Matrix;
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
@@ -74,23 +75,29 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::SIKc(int upper, in
 	cout << setprecision(16) << "inx1=" << p.inx1 << endl;
 	cout << setprecision(16) << "inx2=" << p.inx2 << endl;
 
+	int old1 = p.inx1[0];
+	int old2 = p.inx2[0];
+	p.inx1[0] = -p.K;
+	p.inx2[0] = 6.0 * p.K;
+
 	vector<VectorXd> smoothinitial = MoL::MethodOfLines(p);
 	SmoothInitialX::x = smoothinitial[0].head(smoothinitial[0].rows());
 	SmoothInitialU::u = smoothinitial[1].head(smoothinitial[1].rows());
 
-	p.Tdone = 0.1350;
-	VectorXd inx1(1);
-	inx1[0] = 0;
-	p.inx1 = inx1;
-	VectorXd inx2(1);
-	inx2[0] = 3.0 * p.K;
-	p.inx2 = inx2;
+	p.Tdone = smoothinitial[2][0];
+	//p.Tdone = 0.1350;
+	cout << setprecision(16) << "Tdone=" << p.Tdone << endl;
+	p.inx1[0] = old1;
+	p.inx2[0] = old2;
+
 
 	return SIKc(upper, lower, p, InterpolationState);
 }
 
 vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::SIKc(int upper, int lower, Params p, map<string, vector<vector<MatrixXd>>>& interpolation)
 {
+	vector<clock_t> timers;
+	timers.push_back(clock());
 	cout << "Starting SiK-c" << endl;
 
 	double E = p.K;// strike price
@@ -135,6 +142,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::SIKc(int upper, in
 			i.interpolateGeneric(_key, coef, tsec, nb, d, inx1, inx2, r, sigma, T, E, level, &interpolation);
 			interpolation[_key] = i.getResult();
 		}
+		timers.push_back(clock());
 	}
 	//Multi level interpolation requires successive reuse of results from prior levels
 	for (int count = 3; count <= 10; count++)
@@ -158,7 +166,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::SIKc(int upper, in
 			i.interpolateGeneric(_key, coef, tsec, nb + (count - 2), d, inx1, inx2, r, sigma, T, E, level, &interpolation);
 			interpolation[_key] = i.getResult();
 		}
-
+		timers.push_back(clock());
 	}
 
 	Common::Utility::Logger("inter_test");
@@ -202,7 +210,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::SIKc(int upper, in
 		threads.at(i).join();
 
 	Common::Utility::Logger("inter_test complete");
-	MatrixXd SiK(ch, upper - 3);
+	MatrixXd SiK(ch, upper - 1);
 
 	if (upper >= 2 & lower <= 2)
 	{
@@ -222,6 +230,8 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::SIKc(int upper, in
 		SiK.col(count) = V - V_;
 	}
 
+	timers.push_back(clock());
+
 	Option *option = new EuropeanCallOption(E, T);
 	VectorXd AP = option->Price(TX, r, sigma);
 	delete option;
@@ -239,7 +249,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::SIKc(int upper, in
 	}
 
 	InterpolationState = interpolation;
-	vector<MatrixXd> result = { SiK, RMS, Max };
+	vector<MatrixXd> result = { SiK, RMS, Max, GetTimings(timers) };
 	return result;
 }
 
@@ -279,6 +289,8 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKc(int upper, 
 
 vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKc(int upper, int lower, Params p, map<string, vector<vector<MatrixXd>>>& interpolation)
 {
+	vector<clock_t> timers;
+	timers.push_back(clock());
 	cout << "Starting MuSiK-c" << endl;
 
 	double E = p.K;// strike price
@@ -322,6 +334,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKc(int upper, 
 			i.interpolateGeneric(_key, coef, tsec, nb, d, inx1, inx2, r, sigma, T, E, level, &interpolation);
 			interpolation[_key] = i.getResult();
 		}
+		timers.push_back(clock());
 		level.push_back(_key);
 		level.push_back(key);
 	}
@@ -349,6 +362,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKc(int upper, 
 				i.interpolateGeneric(_key, coef, tsec, nb + (count - 2), d, inx1, inx2, r, sigma, T, E, level, &interpolation);
 				interpolation[_key] = i.getResult();
 			}
+			timers.push_back(clock());
 			level.push_back(_key);
 			level.push_back(key);
 		}
@@ -472,8 +486,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKc(int upper, 
 	//	countu++;
 	//}
 
-	EuropeanCallOption option(E, T);
-	VectorXd AP = option.Price(TX, r, sigma);
+	
 	Common::Utility::Logger("MuSIK addition");
 	int m = Us[0].rows();
 	MatrixXd MuSIK = MatrixXd::Zero(m, 9);
@@ -487,6 +500,10 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKc(int upper, 
 		}
 	}
 
+	timers.push_back(clock());
+
+	EuropeanCallOption option(E, T);
+	VectorXd AP = option.Price(TX, r, sigma);
 	VectorXd RMS = VectorXd::Ones(9, 1);
 	VectorXd Max = VectorXd::Ones(9, 1);
 
@@ -502,9 +519,28 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKc(int upper, 
 		Max[i] = m.maxCoeff();
 	}
 
+
 	InterpolationState = interpolation;
-	vector<MatrixXd> result = { MuSIK, RMS, Max };
+	vector<MatrixXd> result = { MuSIK, RMS, Max, GetTimings(timers) };
 	return result;
+}
+
+MatrixXd Leicester::SparseGridCollocation::Algorithm::GetTimings(vector<clock_t> timers)
+{
+	int timer = 0;
+	MatrixXd timings(1, timers.size() - 1);
+	for (auto clock : timers)
+	{
+		if (timer != 0)
+		{
+			double time = ((double)timers[timer] - (double)timers[timer - 1])
+				/ CLOCKS_PER_SEC;
+			timings(0, timer - 1) = time;
+
+		}
+		timer++;
+	}
+	return timings;
 }
 
 vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKcND(int upper, int lower, BasketOption option, Params p)
@@ -543,6 +579,8 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKcND(int upper
 
 vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKcND(int upper, int lower, BasketOption option, Params p, map<string, vector<vector<MatrixXd>>>& interpolation)
 {
+	vector<clock_t> timers;
+	timers.push_back(clock());
 	Interpolation::callCount = 0;
 	PDE::callCount = 0;
 	cout << "Starting MuSiK-c" << endl;
@@ -601,7 +639,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKcND(int upper
 		{
 			n = lvl + option.Underlying - dimension;
 			stringstream ss;
-			ss << 1 + lvl << "_" << n;
+			ss << 1 + lvl << "_" << 1 + lvl - dimension;
 			string key = ss.str();
 			{
 				Interpolation i;
@@ -612,6 +650,8 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKcND(int upper
 		}
 		for (auto key : newKeys)
 			level.push_back(key);
+
+		timers.push_back(clock());
 	}
 	lvl++;
 
@@ -640,7 +680,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKcND(int upper
 			{
 				n = lvl + option.Underlying - dimension;
 				stringstream ss2;
-				ss2 << 1 + lvl << "_" << n;
+				ss2 << 1 + lvl << "_" << 1 + lvl - dimension;
 				string key = ss2.str();
 				{
 					Interpolation i;
@@ -653,6 +693,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKcND(int upper
 				level.push_back(key);
 
 			sequence++;
+			timers.push_back(clock());
 		}
 	}
 	wcout << "Interpolation Call count=" << Interpolation::callCount << endl;
@@ -691,7 +732,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKcND(int upper
 			int n = lvl + option.Underlying;
 			InterTest interTest;
 			stringstream ss1;
-			ss1 << n;
+			ss1 << lvl + 1;
 			vector<vector<MatrixXd>> test_ = interpolation[ss1.str()];
 			threads.push_back(std::thread(&InterTest::parallelND, interTest, ss1.str(), TestGrid, test_[0], test_[1], test_[2], test_[3]));
 			//interTest.parallelND(ss1.str(), TestGrid, test_[0], test_[1], test_[2], test_[3]);
@@ -702,14 +743,14 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKcND(int upper
 			{
 				InterTest interTest_;
 				stringstream ss2;
-				ss2 << n << "_" << n - dimension;
+				ss2 << lvl + 1 << "_" << lvl + 1 - dimension;
 				vector<vector<MatrixXd>> test = interpolation[ss2.str()];
 				threads.push_back(std::thread(&InterTest::parallelND, interTest_, ss2.str(), TestGrid, test[0], test[1], test[2], test[3]));
 
 				//interTest_.parallelND(ss2.str(), TestGrid, test[0], test[1], test[2], test[3]);
 				interTests.push_back(interTest_);
 				//cout << "key:" << ss2.str() << endl;
-				dimension++;
+				//dimension++;
 			}
 
 
@@ -792,8 +833,7 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKcND(int upper
 	//	countu++;
 	//}
 
-	//TODO: basket option analytic price.
-	VectorXd AP = option.Price(TestGrid, r, sigma);
+	
 
 	Common::Utility::Logger("MuSIK addition");
 	int m = Us[0].rows();
@@ -808,6 +848,10 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKcND(int upper
 		}
 	}
 
+	timers.push_back(clock());
+
+	//TODO: basket option analytic price.
+	VectorXd AP = option.Price(TestGrid, r, sigma);
 	VectorXd RMS = VectorXd::Ones(9, 1);
 	VectorXd Max = VectorXd::Ones(9, 1);
 
@@ -825,7 +869,8 @@ vector<MatrixXd> Leicester::SparseGridCollocation::Algorithm::MuSIKcND(int upper
 	}
 
 	InterpolationState = interpolation;
-	vector<MatrixXd> result = { MuSIK, RMS, Max };
+
+	vector<MatrixXd> result = { MuSIK, RMS, Max, GetTimings(timers) };
 	return result;
 }
 
