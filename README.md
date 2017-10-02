@@ -6,6 +6,9 @@ Theis repository is quite large but download, clone with git or checkout with su
 SparseGridCollocationCpp - pure C++ version with no dependency on CUDA or an NVidia Graphics card
 SparseGridCollocation - The main CUDA-enabled project
 Dissertation - Pdf, tex and supporting files for the dissertation document.
+SparseGridCollocation\MatLab - YangZhang's original MatLab code with some small additions
+SparseGridCollocation\Documents\Quick Start Guide.docx - Some helpful advice on building the code in Visual Studio
+
 
 ## Dependencies
 Eigen - should be already within the \include directory
