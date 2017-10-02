@@ -17,7 +17,7 @@ SparseGridCollocation\Documents\Quick Start Guide.docx - Some helpful advice on 
 ## Dependencies
 Eigen - should be already within the \include directory
 
-QuantLib - download and install the version listed in the dissertation document
+QuantLib - download and install the version listed in the dissertation document, drop the source code in the \includes directory to re-point the C++ include path in Visual Studio project properties
 
 Intel MKL - as above
 
